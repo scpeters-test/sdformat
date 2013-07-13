@@ -16,7 +16,9 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include <sstream>
+#include <boost/filesystem.hpp>
 
 #include "sdf/Console.hh"
 
@@ -29,6 +31,15 @@ Console::Console()
 {
   this->msgStream = &std::cout;
   this->errStream = &std::cerr;
+
+  char* home;
+  if (!(home = getenv("HOME")))
+    sdfwarn << "Missing HOME environment variable; "
+      "no log file will be created.";
+
+  boost::filesystem::path logPath(home);
+  logPath = logPath / ".sdf/" / "sdf.log";
+  this->logStream.open(logPath.string().c_str(), std::ios::out);
 }
 
 //////////////////////////////////////////////////
@@ -46,35 +57,6 @@ Console *Console::Instance()
 }
 
 //////////////////////////////////////////////////
-void Console::Load()
-{
-  char logFilename[50];
-
-  // TODO: Reimplement logging
-  /*if (**(this->logDataP))
-    {
-    time_t t;
-    struct tm *localTime;
-    char baseFilename[50];
-
-    time(&t);
-    localTime = localtime(&t);
-
-    strftime(baseFilename, sizeof(baseFilename),
-    "sdf-%Y_%m_%d_%H_%M", localTime);
-
-    snprintf(logFilename, sizeof(logFilename), "%s.log", baseFilename);
-    }
-    else
-    {
-    */
-  snprintf(logFilename, strlen("/dev/null"), "/dev/null");
-  // }
-
-  this->logStream.open(logFilename, std::ios::out);
-}
-
-//////////////////////////////////////////////////
 void Console::SetQuiet(bool)
 {
 }
@@ -87,6 +69,7 @@ std::ostream &Console::ColorMsg(const std::string &lbl, int color)
   // else
   // {
   *this->msgStream << "\033[1;" << color << "m" << lbl << "\033[0m ";
+  this->logStream << lbl;
   return *this->msgStream;
   // }
 }
@@ -100,6 +83,8 @@ std::ostream &Console::ColorErr(const std::string &lbl,
 
   *this->errStream << "\033[1;" << color << "m" << lbl << " [" <<
     file.substr(index , file.size() - index)<< ":" << line << "]\033[0m ";
+  this->logStream << lbl << " [" << file.substr(index , file.size() - index) <<
+     ":" << line;
 
   return *this->errStream;
 }
