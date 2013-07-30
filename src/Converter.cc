@@ -174,6 +174,12 @@ void Converter::ConvertImpl(TiXmlElement *_elem, TiXmlElement *_convert)
   {
     Move(_elem, moveElem);
   }
+
+  for (TiXmlElement *addElem = _convert->FirstChildElement("add");
+     addElem; addElem = addElem->NextSiblingElement("add"))
+  {
+    Add(_elem, addElem);
+  }
 }
 
 /////////////////////////////////////////////////
@@ -220,6 +226,29 @@ void Converter::Rename(TiXmlElement *_elem, TiXmlElement *_renameElem)
     _elem->RemoveAttribute(fromAttrName);
     _elem->LinkEndChild(replaceTo);
   }
+}
+
+/////////////////////////////////////////////////
+void Converter::Add(TiXmlElement *_elem, TiXmlElement *_addElem)
+{
+  SDF_ASSERT(_elem != NULL, "SDF element is NULL");
+  SDF_ASSERT(_addElem != NULL, "Add element is NULL");
+
+  const char *attributeName = _addElem->Attribute("attribute");
+  const char *attributeValue = _addElem->Attribute("value");
+
+  if (!attributeName)
+  {
+    sdferr << "No 'attribute' name specified in <add>\n";
+    return;
+  }
+  if (!attributeValue)
+  {
+    sdferr << "No 'value' specified in <add>\n";
+    return;
+  }
+
+  _elem->SetAttribute(attributeName, attributeValue);
 }
 
 /////////////////////////////////////////////////
