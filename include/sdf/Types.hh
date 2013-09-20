@@ -19,7 +19,9 @@
 #define _SDF_TYPES_HH_
 
 #include <algorithm>
+#include <boost/variant.hpp>
 #include <cmath>
+#include <map>
 
 #if defined(__GNUC__)
 #define SDF_DEPRECATED(version) __attribute__((deprecated))
@@ -731,10 +733,14 @@ namespace sdf
     public: int32_t nsec;
   };
 
-  /// \brief A class for inertial information about a link.
-  class Inertia
-  {
-    public: double mass;
-  };
+  /// \def Variant
+  /// \brief boost::variant of all the valid data types.
+  typedef boost::variant<int, unsigned int, double, float, std::string,
+          char, bool, Color, Vector2i, Vector2d, Vector3, Pose, Quaternion,
+          Pose, Time> Variant;
+
+  /// \def PropertyMap
+  /// \brief Key value property map.
+  typedef std::map<std::string, sdf::Variant> PropertyMap;
 }
 #endif

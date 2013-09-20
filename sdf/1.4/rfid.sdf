@@ -1,2 +1,3 @@
 <element name="rfidtag" required="0">
+  <description>rfid tag</description>
 </element> <!-- End rfidtag -->

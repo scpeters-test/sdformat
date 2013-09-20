@@ -1,30 +1,32 @@
+add_subdirectory(src)
+
 set (sdfs
   1_3.convert
   actor.sdf
   audio_source.sdf
   audio_sink.sdf
-  box_shape.sdf
+  box.sdf
   camera.sdf
   collision.sdf
   contact.sdf
-  cylinder_shape.sdf
-  forcetorque.sdf
+  cylinder.sdf
+  force_torque.sdf
   geometry.sdf
   gps.sdf
   gripper.sdf
   gui.sdf
-  heightmap_shape.sdf
-  image_shape.sdf
+  heightmap.sdf
+  image.sdf
   imu.sdf
   inertial.sdf
   joint.sdf
   light.sdf
   link.sdf
-  mesh_shape.sdf
+  mesh.sdf
   model.sdf
   noise.sdf
   physics.sdf
-  plane_shape.sdf
+  plane.sdf
   plugin.sdf
   projector.sdf
   ray.sdf
@@ -35,7 +37,7 @@ set (sdfs
   scene.sdf
   sensor.sdf
   spherical_coordinates.sdf
-  sphere_shape.sdf
+  sphere.sdf
   sonar.sdf
   state.sdf
   surface.sdf
