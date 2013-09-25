@@ -25,6 +25,8 @@
   <build_depend>boost</build_depend>
     <run_depend>boost</run_depend>
 
+    <run_depend>catkin</run_depend>
+
   <build_depend>tinyxml</build_depend>
     <run_depend>tinyxml</run_depend>
 
