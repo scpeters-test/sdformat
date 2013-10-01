@@ -21,6 +21,7 @@
 #include <string>
 
 #include "sdf/SDFImpl.hh"
+#include "sdf/dom/Sdf.hh"
 
 /// \ingroup sdf_parser
 /// \brief namespace for Simulation Description Format parser
@@ -67,6 +68,8 @@ namespace sdf
   void copyChildren(ElementPtr _sdf, TiXmlElement *_xml);
 
   void addNestedModel(ElementPtr _sdf, ElementPtr _includeSDF);
+
+  sdf::Sdf parse(const std::string &_filename);
 }
 
 #endif

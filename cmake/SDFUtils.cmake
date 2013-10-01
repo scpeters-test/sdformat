@@ -125,5 +125,3 @@ macro (sdf_build_tests)
              ${CMAKE_BINARY_DIR}/test_results/${BINARY_NAME}.xml)
   endforeach()
 endmacro()
-
-

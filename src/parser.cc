@@ -849,4 +849,28 @@ void addNestedModel(ElementPtr _sdf, ElementPtr _includeSDF)
     elem = nextElem;
   }
 }
+
+/////////////////////////////////////////////////
+sdf::Sdf parse(const std::string &_filename)
+{
+  sdf::Sdf result;
+
+  sdf::SDFPtr sdf(new sdf::SDF);
+  if (!sdf::init(sdf))
+  {
+    std::cerr << "Unable to initialize SDF\n";
+    return result;
+  }
+
+  if (!sdf::readFile(_filename, sdf))
+  {
+    std::cerr << "Unable to read sdf file[" << _filename << "]\n";
+    return result;
+  }
+
+  result.SetFromSDF(sdf->root);
+
+  return result;
+}
+
 }

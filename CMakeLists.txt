@@ -207,7 +207,7 @@ else (buid_errors)
   ########################################
   # Make the cmake config files
   set(PKG_NAME ${PROJECT_NAME})
-  set(PKG_LIBRARIES sdformat)
+  set(PKG_LIBRARIES sdformat sdfdom)
   set(PKG_DEPENDS Boost)
   set(cmake_conf_file "cmake/sdf_config.cmake")
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/SDFormatConfig.cmake" @ONLY)

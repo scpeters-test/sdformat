@@ -1,5 +1,7 @@
 include (${sdf_cmake_dir}/SDFUtils.cmake)
 
+add_subdirectory(dom)
+
 set (headers
   Assert.hh
   Console.hh

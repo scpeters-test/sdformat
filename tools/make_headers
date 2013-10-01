@@ -1,0 +1,711 @@
+#!/usr/bin/ruby
+
+require "rexml/document"
+
+@@license = <<-END
+/*
+ * Copyright 2013 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+*/
+END
+
+@@header = []
+
+class Object
+  class << self; attr_accessor :name end
+  class << self; attr_accessor :description end
+  class << self; attr_accessor :scope end
+
+  def addDescription(_elem)
+    if _elem && _elem.elements["description"] != nil &&
+       _elem.elements["description"].text != nil
+      @description = _elem.elements["description"].text.gsub(
+        /\n/,'').concat(' ').scan(/.{1,40}[\W]/)
+    end
+  end
+
+  def printBrief(_file, _spaces)
+    if @description
+      size = 0
+      char_limit = 40
+ 
+      _file.printf("%*s/// \\brief %s\n", _spaces, "", @description[0])
+  
+      # Output remaining lines of the description.
+      @description.drop(1).each do |line|
+        _file.printf("%*s/// %s\n", _spaces, "", line)
+      end
+    end
+  end
+end
+
+#################################################
+# \brief An attribute in a Class
+class Attribute < Object
+  attr_accessor :type
+  attr_accessor :required
+  attr_accessor :noScoping
+  attr_accessor :name
+  attr_accessor :origName
+  attr_accessor :scope
+
+  ###############################################
+  def initialize(_type, _name,  _required, _scope)
+    @type = self.convertType(_type)
+    @origName =_name
+    @name = self.fixReservedWord(_name)
+    @required = _required
+    @noScoping = false
+    if !self.isStdType
+      @scope = _scope.empty? ? "sdf::" : _scope + "::"
+    else
+      @scope = ""
+    end
+  end
+
+  ###############################################
+  # \brief Return the scoped attribute type
+  def scopedType
+    return @scope + @type
+  end
+
+  ###############################################
+  # \brief Use this function to fix C reserverd words
+  def fixReservedWord(_name)
+    if _name == "static"
+      return "_" + _name
+    end
+    return _name
+  end
+
+  ###############################################
+  # \brief Convert an sdf typename to C type
+  def convertType(_type)
+    if !_type
+      return _type
+    end
+
+    if _type == "pose" || _type == "color" || _type.include?("vector") ||
+      _type == "quaternion" || _type == "time" || _type == "inertia"
+      return _type.capitalize
+    elsif _type == "string"
+      return "std::string"
+    else
+      return _type
+    end
+  end
+
+  ###############################################
+  # \brief Return true if @type is a standard type
+  def isStdType()
+   return @type == "Pose" || @type == "Color" || @type.include?("Vector") ||
+      @type == "Quaternion" || @type == "Time" ||
+      @type == "std::string" || @type == "int" || @type == "double" ||
+      @type == "float" || @type == "bool" || @type == "char" ||
+      @type == "unsigned int"
+  end
+
+  ###############################################
+  # \brief Print the accessor function implementations
+  def printAccessorImpl(_file, _namespace)
+    if !@type || @type.empty?
+      return
+    end
+
+    if @required == "0" || @required == "1"
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("%s %s%s() const\n{\n", self.scopedType, _namespace, @name)
+      _file.printf("  return this->%s_;\n", @name)
+      _file.printf("}\n")
+    else
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("%s %s%s(unsigned int _index) const\n{\n", self.scopedType,
+                   _namespace, @name)
+      _file.printf("  %s result;\n", self.scopedType);
+      _file.printf("  if (_index < this->%s_.size())\n",@name)
+      _file.printf("    result = this->%s_[_index];\n", @name)
+      _file.printf("  else\n")
+      _file.printf("    sdferr << \"Index of[\" << _index << \"] exceeds\"\n")
+      _file.printf("      \"array size[\" << this->%s_.size() << \"]\";\n",
+                   @name)
+      _file.printf("  return result;\n")
+      _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("unsigned int %s%s_size() const\n{\n",_namespace, @name)
+      _file.printf("  return this->%s_.size();\n", @name)
+      _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("const std::vector<%s> &%s%s() const\n{\n",
+                   self.scopedType, _namespace, @name)
+      _file.printf("  return this->%s_;\n", @name)
+      _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("std::vector<%s> *%smutable_%s()\n{\n", self.scopedType,
+                   _namespace, @name)
+      _file.printf("  return &(this->%s_);\n", @name)
+      _file.printf("}\n")
+    end
+  end
+
+  ###############################################
+  # \brief Print the accessor function definitions
+  def printAccessor(_file, _spaces, _namespace)
+    if !@type || @type.empty?
+      return
+    end
+
+    if @required == "0" || @required == "1"
+      _file.printf("%*s/// \\brief %s accessor\n", _spaces, "", @name)
+      _file.printf("%*s/// \\return The value of %s\n", _spaces, "", @name)
+      _file.printf("%*s/// \\sa set_%s\n", _spaces, "", @name)
+      _file.printf("%*spublic: %s %s() const;\n\n", _spaces, "", @type, @name)
+    else
+      _file.printf("%*s/// \\brief %s accessor\n", _spaces, "", @name)
+      _file.printf("%*s/// \\return The value of %s\n", _spaces, "", @name)
+      _file.printf("%*s/// \\param[in] _index Index into %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\sa set_%s\n", _spaces, "", @name)
+      _file.printf("%*spublic: %s %s(unsigned int _index) const;\n\n",
+                   _spaces, "", @type, @name)
+
+      _file.printf("%*s/// \\brief Get size of %s\n", _spaces, "", @name)
+      _file.printf("%*spublic: unsigned int %s_size() const;\n\n",
+                   _spaces, "", @name)
+
+      _file.printf("%*s/// \\brief Get %s vector\n", _spaces, "", @name)
+      _file.printf("%*s/// \\return Immutable %s vector\n", _spaces, "", @name)
+      _file.printf("%*spublic: const std::vector<%s> &%s() const;\n\n",
+                   _spaces, "", @type, @name)
+
+      _file.printf("%*s/// \\brief Get mutable %s vector\n", _spaces, "", @name)
+      _file.printf("%*s/// \\return Mutable %s vector\n", _spaces, "", @name)
+      _file.printf("%*spublic: std::vector<%s> *mutable_%s();\n\n", _spaces, "",
+             @type, @name)
+    end
+  end
+
+  ###############################################
+  # \brief Print setter function implementations
+  def printSetterImpl(_file, _namespace)
+    if !@type || @type.empty?
+      return
+    end
+
+    if @required == "0" || @required == "1"
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("%s *%smutable_%s()\n{\n", self.scopedType,
+                   _namespace, @name)
+      _file.printf("  return &(this->%s_);\n", @name)
+      _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("void %sset_%s(const %s &_v)\n{\n",
+                   _namespace, @name, self.scopedType)
+      _file.printf("  this->%s_ = _v;\n", @name)
+      _file.printf("}\n")
+
+    else
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("%s *%smutable_%s(unsigned int _index)\n{\n",
+             self.scopedType, _namespace, @name)
+      _file.printf("  %s *result = NULL;\n", self.scopedType)
+      _file.printf("  if (_index < this->%s_.size())\n",@name)
+      _file.printf("    result = &(this->%s_[_index]);\n", @name)
+      _file.printf("  else\n")
+      _file.printf("    sdferr << \"Index of[\" << _index << \"] exceeds\"\n")
+      _file.printf("      \"array size[\" << this->%s_.size() << \"]\";\n",
+                   @name)
+      _file.printf("  return result;\n")
+      _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("%s *%sadd_%s()\n{\n", self.scopedType, _namespace, @name)
+      _file.printf("  this->%s_.push_back(%s());\n", @name, self.scopedType)
+      _file.printf("  return &(this->%s_.back());\n", @name)
+      _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("void %sset_%s(const %s &_v, unsigned int _index)\n{\n",
+             _namespace, @name, self.scopedType)
+      _file.printf("  if (_index < this->%s_.size())\n",@name)
+      _file.printf("    this->%s_[_index] = _v;\n", @name)
+      _file.printf("  else\n")
+      _file.printf("    sdferr << \"Index of[\" << _index << \"] exceeds\"\n")
+      _file.printf("      \"array size[\" << this->%s_.size() << \"]\";\n",
+                   @name)
+      _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("void %sclear_%s()\n{\n",_namespace, @name)
+      _file.printf("  this->%s_.clear();\n", @name)
+      _file.printf("}\n")
+    end
+  end
+
+  ###############################################
+  # \brief Print setter function definitions
+  def printSetter(_file, _spaces)
+    if !@type || @type.empty?
+      return
+    end
+
+    if @required == "0" || @required == "1"
+      _file.printf("%*s/// \\brief Get mutable pointer to %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\sa set_%s\n", _spaces, "", @name)
+      _file.printf("%*spublic: %s *mutable_%s();\n\n",
+             _spaces, "", @type, @name)
+
+      _file.printf("%*s/// \\brief Set %s\n", _spaces, "", @name)
+      _file.printf("%*s/// \\param[in] _v New value for %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\sa mutable_%s\n", _spaces, "", @name)
+      _file.printf("%*spublic: void set_%s(const %s &_v);\n\n",
+             _spaces, "", @name, @type)
+    else
+      _file.printf("%*s/// \\brief Get mutable pointer to %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\param[in] _index Index into %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\sa set_%s\n", _spaces, "", @name)
+      _file.printf("%*spublic: %s *mutable_%s(unsigned int _index);\n\n",
+             _spaces, "", @type, @name)
+
+      _file.printf("%*s/// \\brief Add to %s\n", _spaces, "", @name)
+      _file.printf("%*spublic: %s *add_%s();\n\n", _spaces, "", @type, @name)
+
+      _file.printf("%*s/// \\brief Set %s\n", _spaces, "", @name)
+      _file.printf("%*s/// \\param[in] _v New value for %s\n", _spaces,
+                   "", @name)
+      _file.printf("%*s/// \\param[in] _index Index into %s\n", _spaces,
+                   "", @name)
+      _file.printf("%*s/// \\sa mutable_%s\n", _spaces, "", @name)
+      _file.printf(
+        "%*spublic: void set_%s(const %s &_v, unsigned int _index);\n\n",
+        _spaces, "", @name, @type)
+
+      _file.printf("%*s/// \\brief Clear %s\n", _spaces, "", @name)
+      _file.printf("%*spublic: void clear_%s();\n\n", _spaces, "", @name)
+    end
+  end
+
+  ###############################################
+  # \brief Print the definition of the attribute
+  def printDef(_file, _spaces, _namespace)
+    self.printBrief(_file, _spaces)
+    _file.printf("%*sprivate: ", _spaces, "")
+
+    if @required == "0" || @required == "1"
+      _file.printf("%s %s_;\n\n", self.scopedType , @name)
+    else
+      _file.printf("std::vector<%s> %s_;\n\n", self.scopedType , @name)
+    end
+  end
+end
+
+###############################################
+# \brief A C class
+class Class < Object
+  @includes = []
+  @attributes = []
+  @classes = []
+  @keyValueMap = []
+  attr_accessor :nameCamel
+  attr_accessor :name
+  attr_accessor :scope
+
+  ###############################################
+  # \brief Constructor
+  def initialize(_name, _scope)
+    @includes = []
+    @attributes = []
+    @classes = []
+    @keyValueMap = []
+    @nameCamel = _name.split('_').map{|e| e.capitalize}.join
+    @name = _name
+    @scope = _scope.empty? ? "sdf::" : _scope + "::"
+  end
+
+  ###############################################
+  # Add a subclass
+  def addClass(_elem)
+    cls = Class.new(_elem.attributes["name"], @scope + @nameCamel)
+    cls.addDescription(_elem)
+    @classes.push(cls)
+
+    attr = Attribute.new(cls.nameCamel, cls.name.downcase,
+                         _elem.attributes["required"], @scope + @nameCamel)
+
+    attr.addDescription(_elem)
+    @attributes.push(attr)
+
+    return cls
+  end
+
+  ###############################################
+  # \brief Add an <include> to the class
+  def addInclude(_elem)
+    inc = _elem.attributes["filename"].sub(
+      "\.sdf","")
+    incCamel = inc.split('_').map{|e| e.capitalize}.join
+    
+    attr = Attribute.new(incCamel, inc,
+                         _elem.attributes["required"], "")
+    attr.noScoping = true
+
+    @attributes.push(attr)
+   
+    @includes.push(inc)
+  end
+
+  ###############################################
+  # \brief Add an attribute to the class
+  def addAttribute(_elem)
+    attr = Attribute.new(_elem.attributes["type"], _elem.attributes["name"],
+                         _elem.attributes["required"], @scope + @nameCamel)
+
+    attr.addDescription(_elem)
+    @attributes.push(attr)
+  end
+
+  ###############################################
+  # \brief Print the class definition.
+  # \param[in] _file File that receives definition.
+  # \param[in] _spaces Number of spaces to use as formating.
+  def printDef(_file, _spaces, _scope)
+    self.printBrief(_file, _spaces)
+    if _spaces == 2
+      _file.printf("%*sclass %s\n", _spaces, "", @nameCamel)
+    else
+      _file.printf("%*spublic: class %s\n", _spaces, "", @nameCamel)
+    end
+    _file.printf("%*s{\n", _spaces, "")
+
+    # Print child class definitions.
+    @classes.each do |cls|
+      cls.printDef(_file, _spaces+2, _scope + @nameCamel + "::")
+    end
+
+    # Print attribute accessor definitions.
+    @attributes.each do |attr|
+      attr.printAccessor(_file, _spaces+2, _scope + @nameCamel+"::")
+    end
+
+    # Print attribute setter definitions.
+    @attributes.each do |attr|
+      attr.printSetter(_file, _spaces+2)
+    end
+
+    # Print out class operator= function definition
+    _file.printf("%*s/// \\brief Equal operator %s.\n",
+                 _spaces+2, "", @name)
+    _file.printf("%*s/// \\param[in] _v Value to copy.\n", _spaces+2, "")
+    _file.printf("%*s/// \\return Reference to this.\n", _spaces+2, "")
+    _file.printf("%*spublic: %s &operator=(const %s &_v);\n\n",
+           _spaces+2, "", @nameCamel, @nameCamel)
+
+    # Print out set from SDFPtr function definition
+    _file.printf("%*s/// \\brief Set from sdf::ElementPtr\n", _spaces+2, "")
+    _file.printf("%*s/// \\param[in] _sdf sdf::ElementPtr.\n", _spaces+2, "")
+    _file.printf("%*spublic: bool SetFromSDF(const sdf::ElementPtr _sdf);\n\n",
+           _spaces+2, "")
+
+    streamV = "_v"
+    if @attributes.empty?
+      streamV = "/*_v*/"
+    end
+
+    # Stream output operator 
+    _file.printf("%*s/// \\brief Stream insertion operator.\n", _spaces+2, "")
+    _file.printf("%*s/// \\param[in] _o Output stream.\n", _spaces+2, "")
+    _file.printf("%*s/// \\param[in] _v Object to output.\n", _spaces+2, "")
+    _file.printf("%*s/// \\return The stream.\n", _spaces+2, "")
+    _file.printf("%*spublic: std::string DebugString(int _spaces=0);\n\n",
+                 _spaces+2, "")
+
+
+    # Print property map definitions.
+    @keyValueMap.each do |iter|
+      _file.printf("%*s public: sdf::PropertyMap %s;\n",
+                   _spaces+2, "", iter)
+    end
+
+    # Print attribute definitions.
+    @attributes.each do |attr|
+      attr.printDef(_file, _spaces+2, _scope + @nameCamel + "::")
+    end
+
+    _file.printf("%*s};\n", _spaces, "")
+  end
+
+  ###############################################
+  # \brief Print the implementation of the class
+  def printImpl(_file, _spaces, _scope)
+    @classes.each do |cls|
+      cls.printImpl(_file, _spaces, _scope + @nameCamel + "::")
+    end
+
+    @attributes.each do |attr|
+      attr.printAccessorImpl(_file, _scope + @nameCamel+"::")
+      attr.printSetterImpl(_file, _scope + @nameCamel+"::")
+    end
+
+    # Print out class operator= function implementation.
+    value = "&_v"
+    sdfValue = "_sdf"
+    if @attributes.length() == 0 && @classes.length() == 0
+      value = "&/*_v*/"
+    sdfValue = "/*_sdf*/"
+    end
+    _file.printf("\n//////////////////////////////////////////////////\n")
+    _file.printf("%s &%s::operator=(const %s %s)\n{\n", _scope + @nameCamel,
+                 _scope+@nameCamel, _scope + @nameCamel, value)
+    @attributes.each do |attr|
+      _file.printf("  this->%s_ = _v.%s_;\n", attr.name, attr.name)
+    end
+
+    @classes.each do |cls|
+      _file.printf("  this->%s_ = _v.%s_;\n", cls.name, cls.name)
+    end
+    _file.printf("  return *this;\n")
+    _file.printf("}\n")
+
+
+    # Print SetFromSDF function implementation.
+    _file.printf("\n//////////////////////////////////////////////////\n")
+    _file.printf("bool %s::SetFromSDF(const sdf::ElementPtr %s)\n{\n",
+                 _scope+@nameCamel, sdfValue)
+
+    @attributes.each do |attr|
+      if (attr.required == "0" || attr.required == "1")
+        if attr.isStdType()
+          _file.printf("  this->%s_ = _sdf->Get<%s>(\"%s\");\n",
+                       attr.name, attr.type, attr.origName)
+        else
+          _file.printf("  this->%s_.SetFromSDF(_sdf->GetElement(\"%s\"));\n",
+                       attr.name, attr.origName)
+        end
+      else
+        _file.printf("  this->%s_.clear();\n", attr.name)
+        _file.printf("  for (sdf::ElementPtr iter = _sdf->GetElement(\"%s\");",
+                     attr.origName)
+        _file.printf("\n       iter != NULL;")
+        _file.printf(" iter = iter->GetNextElement(\"%s\"))\n", attr.origName)
+        _file.printf("  {\n")
+
+        if attr.isStdType()
+          _file.printf("    %s attr;\n", attr.type)
+          _file.printf("    attr = iter->Get<%s>();\n", attr.type)
+        else
+          _file.printf("    %s attr;\n", attr.scopedType)
+          _file.printf("    attr.SetFromSDF(iter);\n")
+        end
+
+        _file.printf("    this->%s_.push_back(attr);\n", attr.name)
+        _file.printf("  }\n\n")
+      end
+    end
+
+    _file.printf("  return true;\n")
+    _file.printf("}\n")
+
+    # Print DebugString function implementation.
+    _file.printf("\n//////////////////////////////////////////////////\n")
+    _file.printf("std::string %s::DebugString(int _spaces)\n{\n", 
+                 _scope+@nameCamel)
+    _file.printf("  std::ostringstream out;\n")
+    _file.printf("  std::string space(_spaces, ' ');\n")
+
+    _file.printf("  out << \"%s {\" << std::endl;\n" , @nameCamel)
+
+    @attributes.each do |attr|
+      if (attr.required == "0" || attr.required == "1")
+        if attr.isStdType()
+          _file.printf(
+            "  out << space << \"  %s: \" << this->%s_ << std::endl;\n",
+            attr.name, attr.name)
+        else
+          _file.printf("  out << space << \"  %s: \" \n", attr.name)
+          _file.printf("      << this->%s_.DebugString(_spaces+2) << std::endl;\n", attr.name)
+        end
+      else
+        _file.printf("  for (size_t i = 0; i < this->%s_.size(); ++i)\n",
+                     attr.name)
+        _file.printf("  {\n")
+        _file.printf("    out << space << \"  %s[\" << i << \"] : \"\n",
+                     attr.name)
+
+        if attr.isStdType()
+          _file.printf("        << this->%s_[i] << std::endl;\n", attr.name)
+        else
+          _file.printf("        << this->%s_[i].DebugString(_spaces+2) << std::endl;\n", attr.name)
+        end
+        _file.printf("  }\n\n")
+      end
+    end
+    _file.printf("  out << space << \"}\" << std::endl;\n", @nameCamel)
+    _file.printf("  return out.str();\n")
+    _file.printf("}\n")
+
+  end
+
+  ###############################################
+  # \brief Print includes from SDF description
+  def getIncludes()
+    result = []
+    @includes.each do |include|
+      result.push(include.split('_').map{|e| e.capitalize}.join)
+    end
+
+    @classes.each do |cls|
+      result.concat(cls.getIncludes()).uniq!
+    end
+
+    return result
+  end
+
+  ###############################################
+  # \brief Print the header
+  def printHeader(_file)
+    _file.print(@@license)
+    _file.printf("#ifndef _SDF_%s_\n", @name.upcase)
+    _file.printf("#define _SDF_%s_\n\n", @name.upcase)
+
+    _file.printf("#include <string>\n")
+    _file.printf("#include <vector>\n")
+    _file.printf("#include <sdf/Types.hh>\n")
+
+    self.getIncludes().each do |include|
+      _file.printf("#include <sdf/dom/%s.hh>\n", include)
+    end
+
+    _file.printf("\n")
+
+    spaces = 2
+
+    _file.printf("namespace sdf\n{\n")
+    self.printDef(_file, spaces, "")
+    _file.printf("}\n")
+    _file.printf("#endif\n")
+  end
+
+  ###############################################
+  # \brief Print the source file
+  def printSource(_file)
+    _file.print(@@license)
+    _file.printf("#include <sdf/sdf.hh>\n")
+    _file.printf("#include <sdf/dom/%s.hh>\n", @nameCamel)
+
+    spaces = 0
+    _file.printf("namespace sdf\n{\n")
+    self.printImpl(_file, spaces, "")
+    _file.printf("}")
+  end
+
+  ###############################################
+  # \brief Parse SDF definition.
+  def parse(elem)
+    if elem.get_elements("element").size > 0 ||
+       elem.get_elements("attribute").size > 0 ||
+       elem.get_elements("include").size > 0
+      cls = self.addClass(elem)
+
+      elem.elements.each("element") do |child|
+        if child.attributes["copy_data"] == nil
+          cls.parse(child)
+        else
+          printf("COPY DATA\n")
+          @keyValueMap.push(child.attributes["name"])
+        end
+      end
+
+      elem.elements.each("attribute") do |child|
+        cls.addAttribute(child)
+      end
+
+      elem.elements.each("include") do |child|
+        cls.addInclude(child)
+      end
+
+    else
+      if elem.attributes["copy_data"] != nil
+        @keyValueMap.push(elem.attributes["name"])
+      else
+        self.addAttribute(elem)
+      end
+    end
+  end
+end
+
+
+dir = "/home/nkoenig/work/sdformat/sdf/1.4/*.sdf"
+src_outdir = "/home/nkoenig/work/sdformat/src/dom/"
+hdr_outdir = "/home/nkoenig/work/sdformat/include/sdf/dom/"
+
+sourceCMake = File.open(src_outdir + "CMakeLists.txt", "w")
+sourceCMake.printf("APPEND_TO_CACHED_LIST (dom_sources \"dom_sources\"\n")
+
+headerCMake = File.open(hdr_outdir + "CMakeLists.txt", "w")
+headerCMake.printf("include (${sdf_cmake_dir}/SDFUtils.cmake)\n")
+headerCMake.printf("set (headers\n")
+
+Dir.glob(dir) do |item|
+  printf("Processing[%s]\n", item)
+  doc = REXML::Document.new File.new(item)
+
+  spaces = 2
+  doc.elements.each_with_index("element") do |elem, i|
+    cls = Class.new(elem.attributes["name"], "")
+    cls.addDescription(elem)
+
+    elem.elements.each("element") do |child|
+      cls.parse(child)
+    end
+
+    elem.elements.each("attribute") do |child|
+      cls.addAttribute(child)
+    end
+
+    elem.elements.each("include") do |child|
+      cls.addInclude(child)
+    end
+
+    # Print header file 
+    file = File.open(hdr_outdir + cls.nameCamel + ".hh", "w")
+    cls.printHeader(file)
+    file.close()
+
+    # Print source file 
+    file = File.open(src_outdir + cls.nameCamel + ".cc", "w")
+    cls.printSource(file)
+    file.close()
+
+    sourceCMake.printf("  dom/%s.cc\n", cls.nameCamel)
+    headerCMake.printf("  %s.hh\n", cls.nameCamel)
+  end
+end
+
+sourceCMake.printf(")\n")
+#sourceCMake.printf("sdf_add_library(sdfdom ${sources})\n")
+#sourceCMake.printf("target_link_libraries(sdfdom sdformat)\n")
+#sourceCMake.printf("sdf_install_library(sdfdom)")
+sourceCMake.close
+
+headerCMake.printf(")\n")
+headerCMake.printf("sdf_install_includes(\"dom\" ${headers})")
+headerCMake.close

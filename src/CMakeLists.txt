@@ -1,10 +1,14 @@
 include (${sdf_cmake_dir}/SDFUtils.cmake)
 
-include_directories(${PROJECT_SOURCE_DIR}/src/urdf)
+include_directories(
+  ${PROJECT_SOURCE_DIR}/src/urdf
+)
 
 link_directories(
   ${PROJECT_BINARY_DIR}/test
 )
+
+add_subdirectory(dom)
 
 set (sources
   Assert.cc
@@ -33,7 +37,7 @@ set (gtest_sources
 )
 sdf_build_tests(${gtest_sources})
 
-sdf_add_library(sdformat ${sources})
+sdf_add_library(sdformat ${sources} ${dom_sources})
 target_link_libraries(sdformat
   ${tinyxml_libraries}
   ${Boost_LIBRARIES}
