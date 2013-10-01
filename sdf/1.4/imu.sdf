@@ -19,6 +19,7 @@
     <include filename="noise.sdf" required="0"/>
   </element>
 
+  <!-- The following should be deprecated in favor of the elements that include noise.sdf -->
   <element name="noise" required="0">
     <description>The properties of the noise model that should be applied to generated data</description>
     <element name="type" type="string" default="gaussian" required="1">
