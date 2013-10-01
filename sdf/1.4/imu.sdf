@@ -5,6 +5,20 @@
     <description>Topic on which data is published.</description>
   </element>
 
+  <element name="accel" required="0">
+    <description>
+      Parameters related to acceleration measurement.
+    </description>
+    <include filename="noise.sdf" required="0"/>
+  </element>
+
+  <element name="rate" required="0">
+    <description>
+      Parameters related to angular rate measurement.
+    </description>
+    <include filename="noise.sdf" required="0"/>
+  </element>
+
   <element name="noise" required="0">
     <description>The properties of the noise model that should be applied to generated data</description>
     <element name="type" type="string" default="gaussian" required="1">
