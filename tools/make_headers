@@ -129,6 +129,11 @@ class Attribute < Object
       _file.printf("%s %s%s() const\n{\n", self.scopedType, _namespace, @name)
       _file.printf("  return this->%s_;\n", @name)
       _file.printf("}\n")
+
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("bool %shas_%s() const\n{\n", _namespace, @name)
+      _file.printf("  return this->has_%s_;\n", @name)
+      _file.printf("}\n")
     else
       _file.printf("\n//////////////////////////////////////////////////\n")
       _file.printf("%s %s%s(unsigned int _index) const\n{\n", self.scopedType,
@@ -174,6 +179,12 @@ class Attribute < Object
       _file.printf("%*s/// \\return The value of %s\n", _spaces, "", @name)
       _file.printf("%*s/// \\sa set_%s\n", _spaces, "", @name)
       _file.printf("%*spublic: %s %s() const;\n\n", _spaces, "", @type, @name)
+
+      _file.printf("%*s/// \\brief %s Has \n", _spaces, "", @name)
+      _file.printf("%*s/// \\return The ture if %s is set.\n",
+                   _spaces, "", @name)
+      _file.printf("%*spublic: bool has_%s() const;\n\n",
+                   _spaces, "", @name)
     else
       _file.printf("%*s/// \\brief %s accessor\n", _spaces, "", @name)
       _file.printf("%*s/// \\return The value of %s\n", _spaces, "", @name)
@@ -210,12 +221,14 @@ class Attribute < Object
       _file.printf("\n//////////////////////////////////////////////////\n")
       _file.printf("%s *%smutable_%s()\n{\n", self.scopedType,
                    _namespace, @name)
+      _file.printf("  this->has_%s_ = true;\n", @name)
       _file.printf("  return &(this->%s_);\n", @name)
       _file.printf("}\n")
 
       _file.printf("\n//////////////////////////////////////////////////\n")
       _file.printf("void %sset_%s(const %s &_v)\n{\n",
                    _namespace, @name, self.scopedType)
+      _file.printf("  this->has_%s_ = true;\n", @name)
       _file.printf("  this->%s_ = _v;\n", @name)
       _file.printf("}\n")
 
@@ -312,6 +325,8 @@ class Attribute < Object
 
     if @required == "0" || @required == "1"
       _file.printf("%s %s_;\n\n", self.scopedType , @name)
+
+      _file.printf("%*sprivate: bool has_%s_;\n\n", _spaces, "", @name)
     else
       _file.printf("std::vector<%s> %s_;\n\n", self.scopedType , @name)
     end
@@ -492,12 +507,14 @@ class Class < Object
                  _scope+@nameCamel, sdfValue)
 
     @attributes.each do |attr|
+      _file.printf("  if (_sdf->HasElement(\"%s\"))\n", attr.origName)
+      _file.printf("  {\n")
       if (attr.required == "0" || attr.required == "1")
         if attr.isStdType()
-          _file.printf("  this->%s_ = _sdf->Get<%s>(\"%s\");\n",
+          _file.printf("    this->set_%s(_sdf->Get<%s>(\"%s\"));\n",
                        attr.name, attr.type, attr.origName)
         else
-          _file.printf("  this->%s_.SetFromSDF(_sdf->GetElement(\"%s\"));\n",
+          _file.printf("    this->%s_.SetFromSDF(_sdf->GetElement(\"%s\"));\n",
                        attr.name, attr.origName)
         end
       else
@@ -519,6 +536,7 @@ class Class < Object
         _file.printf("    this->%s_.push_back(attr);\n", attr.name)
         _file.printf("  }\n\n")
       end
+      _file.printf("  }\n")
     end
 
     _file.printf("  return true;\n")
@@ -537,11 +555,19 @@ class Class < Object
       if (attr.required == "0" || attr.required == "1")
         if attr.isStdType()
           _file.printf(
-            "  out << space << \"  %s: \" << this->%s_ << std::endl;\n",
+            "  if (this->has_%s())\n", attr.name)
+          _file.printf("  {\n")
+
+          _file.printf(
+            "    out << space << \"  %s: \" << this->%s_ << std::endl;\n",
             attr.name, attr.name)
+          _file.printf("  }\n")
         else
-          _file.printf("  out << space << \"  %s: \" \n", attr.name)
-          _file.printf("      << this->%s_.DebugString(_spaces+2) << std::endl;\n", attr.name)
+          _file.printf("  if (this->has_%s())\n", attr.name)
+          _file.printf("  {\n")
+          _file.printf("    out << space << \"  %s: \" \n", attr.name)
+          _file.printf("        << this->%s_.DebugString(_spaces+2) << std::endl;\n", attr.name)
+          _file.printf("  }\n")
         end
       else
         _file.printf("  for (size_t i = 0; i < this->%s_.size(); ++i)\n",
