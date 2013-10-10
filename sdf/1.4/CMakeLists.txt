@@ -1,5 +1,3 @@
-add_subdirectory(src)
-
 set (sdfs
   1_3.convert
   actor.sdf

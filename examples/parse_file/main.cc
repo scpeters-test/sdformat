@@ -4,31 +4,30 @@
 
 int main(int _argc, char ** _argv)
 {
+  // Parse the SDF file, and get a Sdf object.
   sdf::Sdf sdf = sdf::parse(_argv[1]);
+
+  // Output all the values.
   std::cout << sdf.DebugString() << std::endl;
 
-  /*
-  sdf::SDFPtr sdf(new sdf::SDF);
-  if (!sdf::init(sdf))
+  // Output the version of SDF used.
+  std::cout << "SDF Version[" << sdf.version() << "]\n";
+
+  // Output a little info about each world
+  for (unsigned int i = 0; i < sdf.world_size(); ++i)
   {
-    std::cerr << "Unable to initialize SDF\n";
-    return -1;
+    // Get the world
+    sdf::World world = sdf.world(i);
+
+    std::cout << "World Name[" << world.name() << "]\n";
+    std::cout << "  Model Count[" << world.model_size() << "]\n";
+    for (unsigned int j = 0; j < world.model_size(); ++j)
+    {
+      std::cout << "    Model[" << j << "] Name["
+        << world.model(j).name() << "] "
+        << "Pose[" << world.model(j).pose() << "]\n";
+    }
   }
-
-  if (!sdf::readFile(_argv[1], sdf))
-  {
-    std::cerr << "Unable to read sdf file[" << _argv[1] << "]\n";
-    return -1;
-  }
-
-  sdf->root->PrintValues("");
-
-  std::cout << "--------------------------------------\n";
-
-  sdf::Sdf sdfDom;
-  sdfDom.SetFromSDF(sdf->root);
-  std::cout << sdfDom.DebugString() << std::endl;
-  */
 
   return 0;
 }

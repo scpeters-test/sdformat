@@ -411,6 +411,12 @@ class Class < Object
     end
     _file.printf("%*s{\n", _spaces, "")
 
+    _file.printf("%*s  /// \\brief Constructor.\n", _spaces, "")
+    _file.printf("%*s  public: %s();\n\n", _spaces, "", @nameCamel)
+
+    _file.printf("%*s  /// \\brief Destructor.\n", _spaces, "")
+    _file.printf("%*s  public: virtual ~%s();\n\n", _spaces, "", @nameCamel)
+
     # Print child class definitions.
     @classes.each do |cls|
       cls.printDef(_file, _spaces+2, _scope + @nameCamel + "::")
@@ -475,6 +481,34 @@ class Class < Object
       cls.printImpl(_file, _spaces, _scope + @nameCamel + "::")
     end
 
+    # Print the class constructor
+    _file.printf("\n//////////////////////////////////////////////////\n")
+    _file.printf("%s::%s()", _scope + @nameCamel, @nameCamel)
+
+    inits = ""
+    i = 0
+    @attributes.each do |attr|
+      if attr.required == "0" || attr.required == "1"
+        inits += i > 0 ? "\n  ," : "\n   "
+        inits += "has_#{attr.name}_(false)"
+        i += 1
+      end
+    end
+
+    if !inits.empty?
+      _file.printf(" :%s", inits)
+    end
+    _file.printf("\n")
+
+
+    _file.printf("{\n")
+    _file.printf("}\n")
+
+    # Print the class destructor
+    _file.printf("\n//////////////////////////////////////////////////\n")
+    _file.printf("%s::~%s()\n{\n", _scope + @nameCamel, @nameCamel)
+    _file.printf("}\n")
+
     @attributes.each do |attr|
       attr.printAccessorImpl(_file, _scope + @nameCamel+"::")
       attr.printSetterImpl(_file, _scope + @nameCamel+"::")
@@ -507,7 +541,8 @@ class Class < Object
                  _scope+@nameCamel, sdfValue)
 
     @attributes.each do |attr|
-      _file.printf("  if (_sdf->HasElement(\"%s\"))\n", attr.origName)
+      _file.printf("  if (_sdf->HasElement(\"%s\") ||", attr.origName)
+      _file.printf("      _sdf->HasAttribute(\"%s\"))\n", attr.origName)
       _file.printf("  {\n")
       if (attr.required == "0" || attr.required == "1")
         if attr.isStdType()
@@ -516,6 +551,7 @@ class Class < Object
         else
           _file.printf("    this->%s_.SetFromSDF(_sdf->GetElement(\"%s\"));\n",
                        attr.name, attr.origName)
+          _file.printf("    this->has_%s_ = true;\n", attr.name);
         end
       else
         _file.printf("  this->%s_.clear();\n", attr.name)
@@ -566,7 +602,7 @@ class Class < Object
           _file.printf("  if (this->has_%s())\n", attr.name)
           _file.printf("  {\n")
           _file.printf("    out << space << \"  %s: \" \n", attr.name)
-          _file.printf("        << this->%s_.DebugString(_spaces+2) << std::endl;\n", attr.name)
+          _file.printf("        << this->%s_.DebugString(_spaces+2);\n", attr.name)
           _file.printf("  }\n")
         end
       else
@@ -579,7 +615,7 @@ class Class < Object
         if attr.isStdType()
           _file.printf("        << this->%s_[i] << std::endl;\n", attr.name)
         else
-          _file.printf("        << this->%s_[i].DebugString(_spaces+2) << std::endl;\n", attr.name)
+          _file.printf("        << this->%s_[i].DebugString(_spaces+2);\n", attr.name)
         end
         _file.printf("  }\n\n")
       end

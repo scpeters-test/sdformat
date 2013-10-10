@@ -21,7 +21,7 @@
 #include "test_config.h"
 
 const std::string SDF_TEST_FILE =
-  std::string(PROJECT_SOURCE_PATH) + "/test/integration/audio.sdf";
+  std::string(PROJECT_SOURCE_PATH) + "/test/data/audio.sdf";
 
 TEST(SDFParser, AudioSDF_FullParameters_noThrow)
 {

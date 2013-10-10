@@ -22,10 +22,10 @@
 #include "test_config.h"
 
 const std::string SDF_TEST_FILE = std::string(PROJECT_SOURCE_PATH)
-  + "/test/integration/fixed_joint_reduction.sdf";
+  + "/test/data/fixed_joint_reduction.sdf";
 const std::string SDF_TEST_FILE_SIMPLE =
   std::string(PROJECT_SOURCE_PATH)
-  + "/test/integration/fixed_joint_reduction_simple.sdf";
+  + "/test/data/fixed_joint_reduction_simple.sdf";
 
 const double gc_tolerance = 1e-6;
 
