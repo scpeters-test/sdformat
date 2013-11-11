@@ -1,10 +1,12 @@
 include (${sdf_cmake_dir}/SDFUtils.cmake)
 
-include_directories(${PROJECT_SOURCE_DIR}/src/urdf)
-
 link_directories(
   ${PROJECT_BINARY_DIR}/test
+  ${urdfdom_LIBRARY_DIRS}
 )
+
+# URDF include directories
+include_directories(${urdfdom_INCLUDE_DIRS})
 
 set (sources
   Assert.cc
@@ -15,14 +17,6 @@ set (sources
   parser_urdf.cc
   Param.cc
   SDF.cc
-  urdf/urdf_parser/model.cpp
-  urdf/urdf_parser/link.cpp
-  urdf/urdf_parser/joint.cpp
-  urdf/urdf_parser/pose.cpp
-  urdf/urdf_parser/twist.cpp
-  urdf/urdf_parser/urdf_model_state.cpp
-  urdf/urdf_parser/urdf_sensor.cpp
-  urdf/urdf_parser/world.cpp
 )
 
 set (gtest_sources
@@ -37,5 +31,6 @@ sdf_add_library(sdformat ${sources})
 target_link_libraries(sdformat
   ${tinyxml_libraries}
   ${Boost_LIBRARIES}
+  ${urdfdom_LIBRARIES}
 )
 sdf_install_library(sdformat)

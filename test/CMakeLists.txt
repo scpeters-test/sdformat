@@ -2,13 +2,16 @@ include_directories (
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_BINARY_DIR}/include
   ${Boost_INCLUDE_DIRS}
+  ${urdfdom_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/test/gtest/include
   ${PROJECT_SOURCE_DIR}/test/gtest
   ${PROJECT_SOURCE_DIR}/test
 )
+message(STATUS ${urdfdom_INCLUDE_DIRS})
 
 link_directories(
   ${Boost_LIBRARY_DIRS}
+  ${urdfdom_LIBRARY_DIRS}
 )
 
 configure_file (test_config.h.in ${PROJECT_BINARY_DIR}/test_config.h)

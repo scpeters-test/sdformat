@@ -24,3 +24,10 @@ else ()
     "tinyxml include paths. Use this to override automatic detection.")
   set (tinyxml_libraries "tinyxml" CACHE INTERNAL "tinyxml libraries")
 endif ()
+
+#################################################
+# Find urdfdom
+find_package(urdfdom REQUIRED)
+if (NOT urdfdom_FOUND)
+  BUILD_ERROR ("urdfdom not found. Please install urdfdom-dev")
+endif()
