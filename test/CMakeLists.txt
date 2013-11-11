@@ -7,7 +7,6 @@ include_directories (
   ${PROJECT_SOURCE_DIR}/test/gtest
   ${PROJECT_SOURCE_DIR}/test
 )
-message(STATUS ${urdfdom_INCLUDE_DIRS})
 
 link_directories(
   ${Boost_LIBRARY_DIRS}
