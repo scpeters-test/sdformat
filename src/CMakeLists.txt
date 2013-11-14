@@ -28,8 +28,13 @@ add_library(urdfdom_parser STATIC
   urdf/urdf_parser/world.cpp
 )
 
-set_target_properties(urdfdom_parser
-    PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
+if (UNIX)
+  check_gcc_visibility()
+  if (GCC_SUPPORTS_VISIBILITY)
+     set_target_properties(urdfdom_parser
+                           PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
+  endif()
+endif()
 
 set (gtest_sources
   SDF_TEST.cc
