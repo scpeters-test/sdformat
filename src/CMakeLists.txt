@@ -15,6 +15,9 @@ set (sources
   parser_urdf.cc
   Param.cc
   SDF.cc
+)
+
+add_library(urdfdom_parser STATIC
   urdf/urdf_parser/model.cpp
   urdf/urdf_parser/link.cpp
   urdf/urdf_parser/joint.cpp
@@ -24,6 +27,9 @@ set (sources
   urdf/urdf_parser/urdf_sensor.cpp
   urdf/urdf_parser/world.cpp
 )
+
+set_target_properties(urdfdom_parser
+    PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
 
 set (gtest_sources
   SDF_TEST.cc
@@ -35,6 +41,7 @@ sdf_build_tests(${gtest_sources})
 
 sdf_add_library(sdformat ${sources})
 target_link_libraries(sdformat
+  urdfdom_parser
   ${tinyxml_libraries}
   ${Boost_LIBRARIES}
 )
