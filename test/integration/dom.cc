@@ -46,3 +46,21 @@ TEST(DOM, ParseWorldBlank)
 
   EXPECT_EQ(sdf.world(0).name(), "default");
 }
+
+/////////////////////////////////////////////////
+TEST(DOM, ParseDoubleWorld)
+{
+  boost::filesystem::path path = PROJECT_SOURCE_PATH;
+  path = path / "test" / "data" / "double_world.sdf";
+
+  // Parse the SDF file, and get a Sdf object.
+  sdf::Sdf sdf = sdf::parse(path.string());
+
+  EXPECT_EQ(sdf.world_size(), 2u);
+
+  EXPECT_EQ(sdf.world(0).name(), "default");
+  EXPECT_EQ(sdf.world(0).model_size(), 1u);
+
+  EXPECT_EQ(sdf.world(1).name(), "other");
+  EXPECT_EQ(sdf.world(1).model_size(), 1u);
+}
