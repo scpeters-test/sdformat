@@ -102,13 +102,15 @@ macro (sdf_build_tests)
     add_executable(${BINARY_NAME} ${GTEST_SOURCE_file})
 
     add_dependencies(${BINARY_NAME}
-      gtest gtest_main sdformat
+      gtest
+      gtest_main
+      sdformat
       ${tinyxml_libraries}
       )
   
     target_link_libraries(${BINARY_NAME}
-      libgtest.a
-      libgtest_main.a
+      ${GTEST_LIBRARY}
+      ${GTEST_MAIN_LIBRARY}
       sdformat
       pthread
       ${tinyxml_libraries}
