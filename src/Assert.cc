@@ -21,7 +21,7 @@
 /*
  * When using the flag BOOST_ENABLE_ASSERT_HANDLER, the boost functions
  * assert_failed and assertion_failed_msg function need to be defined. SDF
- * behaviour is to thrown a gazebo::common::AssertionInternalError.
+ * behaviour is to throw a sdf::AssertionInternalError.
  */
 namespace boost
 {

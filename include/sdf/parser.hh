@@ -21,12 +21,38 @@
 #include <string>
 
 #include "sdf/SDFImpl.hh"
-#include "sdf/system_util.hh"
+#include "sdf/SDFHelper.hh"
+#include "sdf/SystemUtil.hh"
 
 /// \ingroup sdf_parser
 /// \brief namespace for Simulation Description Format parser
 namespace sdf
 {
+  /// \brief Find the absolute path of a file.
+  /// \param[in] _filename Name of the file to find.
+  /// \param[in] _searchLocalPath True to search for the file in the current
+  /// working directory.
+  /// \param[in] _useCallback True to find a file based on a registered
+  /// callback if the file is not found via the normal mechanism.
+  SDFORMAT_VISIBLE
+  std::string findFile(const std::string &_filename,
+                       bool _searchLocalPath = true,
+                       bool _useCallback = false);
+
+  /// \brief Associate paths to a URI.
+  /// Example paramters: "model://", "/usr/share/models:~/.gazebo/models"
+  /// \param[in] _uri URI that will be mapped to _path
+  /// \param[in] _path Colon separated set of paths.
+  SDFORMAT_VISIBLE
+  void addURIPath(const std::string &_uri, const std::string &_path);
+
+  /// \brief Set a helper object, which may contain custom code to aid in
+  /// finding files and processing of specific xml elements.
+  /// \param[in] _helper Reference to a helper object.
+  /// \sa SDFHelper
+  SDFORMAT_VISIBLE
+  void setHelper(const SDFHelper &_helper);
+
   /// \brief Init based on the installed sdf_format.xml file
   SDFORMAT_VISIBLE
   bool init(SDFPtr _sdf);
@@ -80,8 +106,5 @@ namespace sdf
 
   SDFORMAT_VISIBLE
   void copyChildren(ElementPtr _sdf, TiXmlElement *_xml);
-
-  SDFORMAT_VISIBLE
-  void addNestedModel(ElementPtr _sdf, ElementPtr _includeSDF);
 }
 #endif

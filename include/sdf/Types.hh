@@ -20,8 +20,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 
-#include "sdf/system_util.hh"
+#include "sdf/SystemUtil.hh"
 
 #if defined(__GNUC__)
 #define SDF_DEPRECATED(version) __attribute__((deprecated))
@@ -36,6 +37,8 @@
 
 namespace sdf
 {
+
+
   /// \brief check if two values are equal, within a tolerance
   /// \param[in] _a the first value
   /// \param[in] _b the second value
@@ -738,5 +741,13 @@ namespace sdf
   {
     public: double mass;
   };
+
+  class SDFORMAT_VISIBLE Property
+  {
+    public: std::string value;
+    public: std::multimap<std::string, Property> children;
+  };
+
+  typedef std::multimap<std::string, Property> PropertyMap; 
 }
 #endif

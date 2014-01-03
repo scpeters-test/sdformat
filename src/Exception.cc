@@ -14,11 +14,6 @@
  * limitations under the License.
  *
  */
-/*
- * Desc: Gazebo Error
- * Author: Nathan Koenig
- * Date: 07 May 2007
- */
 
 #include "sdf/Console.hh"
 #include "sdf/Exception.hh"

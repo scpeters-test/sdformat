@@ -7,9 +7,10 @@ set (headers
   Exception.hh
   Param.hh
   parser.hh
+  SDFHelper.hh
   SDFImpl.hh
   Types.hh
-  system_util.hh
+  SystemUtil.hh
 )
 
 set (sdf_headers "" CACHE INTERNAL "SDF headers" FORCE)
@@ -20,5 +21,4 @@ endforeach()
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sdf.hh.in
                 ${CMAKE_CURRENT_BINARY_DIR}/sdf.hh)
 
-sdf_install_includes("" ${headers} parser_urdf.hh
-  ${CMAKE_CURRENT_BINARY_DIR}/sdf.hh)
+sdf_install_includes("" ${headers} ${CMAKE_CURRENT_BINARY_DIR}/sdf.hh)

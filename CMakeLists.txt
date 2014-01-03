@@ -203,8 +203,9 @@ else (buid_errors)
     add_subdirectory(test)
     add_subdirectory(src)
     add_subdirectory(include/sdf)
-    add_subdirectory(sdf)
     add_subdirectory(doc)
+
+    install(PROGRAMS "tools/sdfc" DESTINATION ${BIN_INSTALL_DIR})
   endif(BUILD_SDF)
 
   ########################################

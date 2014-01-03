@@ -22,6 +22,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
+#include "sdf/parser.hh"
 #include "sdf/SDFImpl.hh"
 #include "sdf/Assert.hh"
 #include "sdf/Console.hh"
@@ -31,17 +32,17 @@ using namespace sdf;
 
 /////////////////////////////////////////////////
 bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
-                        bool _quiet)
+                        const std::string &_rootName, bool _quiet)
 {
   TiXmlElement *elem = _doc->FirstChildElement("gazebo");
 
-  // Replace <gazebo> with <sdf>
+  // Replace <gazebo> with the root element name.
   if (elem && boost::lexical_cast<double>(_toVersion) >= 1.3)
   {
-    elem->SetValue("sdf");
+    elem->SetValue(_rootName);
   }
   else if (!elem)
-    elem = _doc->FirstChildElement("sdf");
+    elem = _doc->FirstChildElement(_rootName);
 
   if (!elem || !elem->Attribute("version"))
   {

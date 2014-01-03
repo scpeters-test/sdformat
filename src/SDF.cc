@@ -27,12 +27,7 @@
 using namespace sdf;
 std::string SDF::version = SDF_VERSION;
 
-typedef std::list<boost::filesystem::path> PathList;
-typedef std::map<std::string, PathList> URIPathMap;
-
-URIPathMap g_uriPathMap;
-
-boost::function<std::string (const std::string &)> g_findFileCB;
+/*boost::function<std::string (const std::string &)> g_findFileCB;
 
 /////////////////////////////////////////////////
 void sdf::setFindCallback(
@@ -42,111 +37,17 @@ void sdf::setFindCallback(
 }
 
 /////////////////////////////////////////////////
-std::string sdf::findFile(const std::string &_filename, bool _searchLocalPath,
-    bool _useCallback)
+std::string sdf::uriToFilename(const std::string &_uri)
 {
-  boost::filesystem::path path = _filename;
-
-  // Check to see if _filename is URI. If so, resolve the URI path.
-  for (URIPathMap::iterator iter = g_uriPathMap.begin();
-       iter != g_uriPathMap.end(); ++iter)
-  {
-    // Check to see if the URI in the global map is the first part of the
-    // given filename
-    if (_filename.find(iter->first) == 0)
-    {
-      std::string suffix = _filename;
-      boost::replace_first(suffix, iter->first, "");
-
-      // Check each path in the list.
-      for (PathList::iterator pathIter = iter->second.begin();
-           pathIter != iter->second.end(); ++pathIter)
-      {
-        // Return the path string if the path + suffix exists.
-        if (boost::filesystem::exists((*pathIter) / suffix))
-          return ((*pathIter) / suffix).string();
-      }
-    }
-  }
-
-  // Next check the install path.
-  path = boost::filesystem::path(SDF_SHARE_PATH) / _filename;
-  if (boost::filesystem::exists(path))
-    return path.string();
-
-  // Next check the versioned install path.
-  path = boost::filesystem::path(SDF_VERSION_PATH) / _filename;
-  if (boost::filesystem::exists(path))
-    return path.string();
-
-  // Next check SDF_PATH environment variable
-  char *pathCStr = getenv("SDF_PATH");
-  if (pathCStr)
-  {
-    std::vector<std::string> paths;
-    boost::split(paths, pathCStr, boost::is_any_of(":"));
-    for (std::vector<std::string>::iterator iter = paths.begin();
-         iter != paths.end(); ++iter)
-    {
-      path = boost::filesystem::path(*iter) / _filename;
-      if (boost::filesystem::exists(path))
-        return path.string();
-    }
-  }
-
-  // Next check to see if the given file exists.
-  path = boost::filesystem::path(_filename);
-  if (boost::filesystem::exists(path))
-    return path.string();
-
-
-  // Finally check the local path, if the flag is set.
-  if (_searchLocalPath)
-  {
-    path = boost::filesystem::current_path() / _filename;
-
-    if (boost::filesystem::exists(path))
-      return path.string();
-  }
-
-  // If we still haven't found the file, use the registered callback if the
-  // flag has been set
-  if (_useCallback)
-  {
-    if (!g_findFileCB)
-    {
-      sdferr << "Tried to use callback in sdf::findFile(), but the callback "
-        "is empty.  Did you call sdf::setFindCallback()?";
-      return std::string();
-    }
-    else
-      return g_findFileCB(_filename);
-  }
-
-  return std::string();
+  return _uri;
 }
 
 /////////////////////////////////////////////////
-void sdf::addURIPath(const std::string &_uri, const std::string &_path)
+bool sdf::processInclude(SDFPtr _sdf, TiXmlElement *_elemXml)
 {
-  // Split _path on colons.
-  std::list<std::string> parts;
-  boost::split(parts, _path, boost::is_any_of(":"));
-
-  // Add each part of the colon separated path to the global URI map.
-  for (std::list<std::string>::iterator iter = parts.begin();
-       iter != parts.end(); ++iter)
-  {
-    boost::filesystem::path path = *iter;
-
-    // Only add valid paths
-    if (!(*iter).empty() && boost::filesystem::exists(path) &&
-        boost::filesystem::is_directory(path))
-    {
-      g_uriPathMap[_uri].push_back(path);
-    }
-  }
+  return true;
 }
+*/
 
 /////////////////////////////////////////////////
 Element::Element()

@@ -34,7 +34,7 @@
 
 #include "sdf/Console.hh"
 #include "sdf/Types.hh"
-#include "sdf/system_util.hh"
+#include "sdf/SystemUtil.hh"
 
 namespace sdf
 {

@@ -24,7 +24,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "sdf/system_util.hh"
+#include "sdf/SystemUtil.hh"
 
 namespace sdf
 {

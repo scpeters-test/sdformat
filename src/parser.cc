@@ -27,10 +27,120 @@
 #include "sdf/parser.hh"
 #include "sdf/sdf_config.h"
 
-#include "sdf/parser_urdf.hh"
-
 namespace sdf
 {
+typedef std::list<boost::filesystem::path> PathList;
+typedef std::map<std::string, PathList> URIPathMap;
+
+URIPathMap g_uriPathMap;
+SDFHelper g_sdfHelper;
+
+/////////////////////////////////////////////////
+std::string findFile(const std::string &_filename, bool _searchLocalPath,
+    bool _useCallback)
+{
+  boost::filesystem::path path = _filename;
+
+  // Check to see if _filename is URI. If so, resolve the URI path.
+  for (URIPathMap::iterator iter = g_uriPathMap.begin();
+       iter != g_uriPathMap.end(); ++iter)
+  {
+    // Check to see if the URI in the global map is the first part of the
+    // given filename
+    if (_filename.find(iter->first) == 0)
+    {
+      std::string suffix = _filename;
+      boost::replace_first(suffix, iter->first, "");
+
+      // Check each path in the list.
+      for (PathList::iterator pathIter = iter->second.begin();
+           pathIter != iter->second.end(); ++pathIter)
+      {
+        // Return the path string if the path + suffix exists.
+        if (boost::filesystem::exists((*pathIter) / suffix))
+          return ((*pathIter) / suffix).string();
+      }
+    }
+  }
+
+  // Next check the install path.
+  path = boost::filesystem::path(SDF_SHARE_PATH) / _filename;
+  if (boost::filesystem::exists(path))
+    return path.string();
+
+  // Next check the versioned install path.
+  path = boost::filesystem::path(SDF_VERSION_PATH) / _filename;
+  if (boost::filesystem::exists(path))
+    return path.string();
+
+  // Next check SDF_PATH environment variable
+  char *pathCStr = getenv("SDF_PATH");
+  if (pathCStr)
+  {
+    std::vector<std::string> paths;
+    boost::split(paths, pathCStr, boost::is_any_of(":"));
+    for (std::vector<std::string>::iterator iter = paths.begin();
+         iter != paths.end(); ++iter)
+    {
+      path = boost::filesystem::path(*iter) / _filename;
+      if (boost::filesystem::exists(path))
+        return path.string();
+    }
+  }
+
+  // Next check to see if the given file exists.
+  path = boost::filesystem::path(_filename);
+  if (boost::filesystem::exists(path))
+    return path.string();
+
+
+  // Finally check the local path, if the flag is set.
+  if (_searchLocalPath)
+  {
+    path = boost::filesystem::current_path() / _filename;
+
+    if (boost::filesystem::exists(path))
+      return path.string();
+  }
+
+  // If we still haven't found the file, use the registered callback if the
+  // flag has been set
+  if (_useCallback)
+  {
+    return g_sdfHelper.FindFile(_filename);
+  }
+
+  return std::string();
+}
+
+/////////////////////////////////////////////////
+void addURIPath(const std::string &_uri, const std::string &_path)
+{
+  // Split _path on colons.
+  std::list<std::string> parts;
+  boost::split(parts, _path, boost::is_any_of(":"));
+
+  // Add each part of the colon separated path to the global URI map.
+  for (std::list<std::string>::iterator iter = parts.begin();
+       iter != parts.end(); ++iter)
+  {
+    boost::filesystem::path path = *iter;
+
+    // Only add valid paths
+    if (!(*iter).empty() && boost::filesystem::exists(path) &&
+        boost::filesystem::is_directory(path))
+    {
+      g_uriPathMap[_uri].push_back(path);
+    }
+  }
+}
+
+/////////////////////////////////////////////////
+void setHelper(const SDFHelper &_helper)
+{
+  g_sdfHelper = _helper;
+}
+
 //////////////////////////////////////////////////
 bool init(SDFPtr _sdf)
 {
@@ -260,20 +370,7 @@ bool readFile(const std::string &_filename, SDFPtr _sdf)
   if (readDoc(&xmlDoc, _sdf, filename))
     return true;
   else
-  {
-    sdf::URDF2SDF u2g;
-    TiXmlDocument doc = u2g.InitModelFile(filename);
-    if (sdf::readDoc(&doc, _sdf, "urdf file"))
-    {
-      sdfdbg << "parse from urdf file [" << _filename << "].\n";
-      return true;
-    }
-    else
-    {
-      sdferr << "parse as old deprecated model file failed.\n";
-      return false;
-    }
-  }
+    sdferr << "Failed to parse SDF file.\n";
 
   return false;
 }
@@ -286,20 +383,7 @@ bool readString(const std::string &_xmlString, SDFPtr _sdf)
   if (readDoc(&xmlDoc, _sdf, "data-string"))
     return true;
   else
-  {
-    sdf::URDF2SDF u2g;
-    TiXmlDocument doc = u2g.InitModelString(_xmlString);
-    if (sdf::readDoc(&doc, _sdf, "urdf string"))
-    {
-      sdfdbg << "Parsing from urdf.\n";
-      return true;
-    }
-    else
-    {
-      sdferr << "parse as old deprecated model file failed.\n";
-      return false;
-    }
-  }
+    sdferr << "Failed to parse SDF file.\n";
 
   return false;
 }
@@ -329,16 +413,14 @@ bool readDoc(TiXmlDocument *_xmlDoc, SDFPtr _sdf, const std::string &_source)
   }
 
   // check sdf version, use old parser if necessary
-  TiXmlElement *sdfNode = _xmlDoc->FirstChildElement("sdf");
-  if (!sdfNode)
-    sdfNode = _xmlDoc->FirstChildElement("gazebo");
+  TiXmlElement *sdfNode = _xmlDoc->FirstChildElement(g_sdfHelper.GetRootName());
 
   if (sdfNode && sdfNode->Attribute("version"))
   {
     if (strcmp(sdfNode->Attribute("version"), SDF::version.c_str()) != 0)
     {
       sdfwarn << "Converting a deprecated source[" << _source << "].\n";
-      Converter::Convert(_xmlDoc, SDF::version);
+      Converter::Convert(_xmlDoc, SDF::version, g_sdfHelper.GetRootName());
     }
 
     // parse new sdf xml
@@ -379,9 +461,7 @@ bool readDoc(TiXmlDocument *_xmlDoc, ElementPtr _sdf,
   }
 
   // check sdf version, use old parser if necessary
-  TiXmlElement *sdfNode = _xmlDoc->FirstChildElement("sdf");
-  if (!sdfNode)
-    sdfNode = _xmlDoc->FirstChildElement("gazebo");
+  TiXmlElement *sdfNode = _xmlDoc->FirstChildElement(g_sdfHelper.GetRootName());
 
   if (sdfNode && sdfNode->Attribute("version"))
   {
@@ -389,7 +469,7 @@ bool readDoc(TiXmlDocument *_xmlDoc, ElementPtr _sdf,
                SDF::version.c_str()) != 0)
     {
       sdfwarn << "Converting a deprecated SDF source[" << _source << "].\n";
-      Converter::Convert(_xmlDoc, SDF::version);
+      Converter::Convert(_xmlDoc, SDF::version, g_sdfHelper.GetRootName());
     }
 
     TiXmlElement* elemXml = sdfNode;
@@ -504,90 +584,44 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
     std::string filename;
 
     // Iterate over all the child elements
-    TiXmlElement* elemXml = NULL;
+    TiXmlElement *elemXml = NULL;
     for (elemXml = _xml->FirstChildElement(); elemXml;
          elemXml = elemXml->NextSiblingElement())
     {
       if (std::string("include") == elemXml->Value())
       {
-        std::string modelPath;
+        std::string includePath;
 
         if (elemXml->FirstChildElement("uri"))
         {
-          modelPath = sdf::findFile(
+          includePath = sdf::findFile(
               elemXml->FirstChildElement("uri")->GetText(), true, true);
 
-          // Test the model path
-          if (modelPath.empty())
+          // Test the include path
+          if (includePath.empty())
           {
             sdferr << "Unable to find uri["
               << elemXml->FirstChildElement("uri")->GetText() << "]\n";
-
-            std::string uri = elemXml->FirstChildElement("uri")->GetText();
-            size_t modelFound = uri.find("model://");
-            if ( modelFound != 0u)
-            {
-              sdferr << "Invalid uri[" << uri << "]. Should be model://"
-                    << uri << "\n";
-            }
             continue;
           }
           else
           {
-            boost::filesystem::path dir(modelPath);
+            boost::filesystem::path dir(includePath);
             if (!boost::filesystem::exists(dir) ||
                 !boost::filesystem::is_directory(dir))
             {
-              sdferr << "Directory doesn't exist[" << modelPath << "]\n";
+              sdferr << "Directory doesn't exist[" << includePath << "]\n";
               continue;
             }
           }
 
-          boost::filesystem::path manifestPath = modelPath;
-
-          /// \todo This hardcoded bit is very Gazebo centric. It should
-          /// be abstracted away, possible through a plugin to SDF.
-          if (boost::filesystem::exists(manifestPath / "model.config"))
+          // Allow special processing of URI paths.
+          filename = g_sdfHelper.UriToFilename(includePath);
+          if (filename.empty())
           {
-            manifestPath /= "model.config";
-          }
-          else
-          {
-            sdfwarn << "The manifest.xml for a model is deprecated. "
-                   << "Please rename manifest.xml to "
-                   << "model.config" << ".\n";
-
-            manifestPath /= "manifest.xml";
-          }
-
-          TiXmlDocument manifestDoc;
-          if (manifestDoc.LoadFile(manifestPath.string()))
-          {
-            TiXmlElement *modelXML = manifestDoc.FirstChildElement("model");
-            if (!modelXML)
-              sdferr << "No <model> element in manifest["
-                    << manifestPath << "]\n";
-            else
-            {
-              TiXmlElement *sdfXML = modelXML->FirstChildElement("sdf");
-
-              TiXmlElement *sdfSearch = sdfXML;
-
-              // Find the SDF element that matches our current SDF version.
-              while (sdfSearch)
-              {
-                if (sdfSearch->Attribute("version") &&
-                    std::string(sdfSearch->Attribute("version")) == SDF_VERSION)
-                {
-                  sdfXML = sdfSearch;
-                  break;
-                }
-
-                sdfSearch = sdfSearch->NextSiblingElement("sdf");
-              }
-
-              filename = modelPath + "/" + sdfXML->GetText();
-            }
+            sdferr << "Unable to process <include> with URI["
+                   << includePath << "]\n";
+            continue;
           }
         }
         else
@@ -615,54 +649,14 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
           return false;
         }
 
-        if (elemXml->FirstChildElement("name"))
-        {
-          includeSDF->root->GetElement("model")->GetAttribute(
-              "name")->SetFromString(
-                elemXml->FirstChildElement("name")->GetText());
-        }
-
-        if (elemXml->FirstChildElement("pose"))
-        {
-          includeSDF->root->GetElement("model")->GetElement(
-              "pose")->GetValue()->SetFromString(
-                elemXml->FirstChildElement("pose")->GetText());
-        }
-
-        if (elemXml->FirstChildElement("static"))
-        {
-          includeSDF->root->GetElement("model")->GetElement(
-              "static")->GetValue()->SetFromString(
-                elemXml->FirstChildElement("static")->GetText());
-        }
-
-        for (TiXmlElement *childElemXml = elemXml->FirstChildElement();
-             childElemXml; childElemXml = childElemXml->NextSiblingElement())
-        {
-          if (std::string("plugin") == childElemXml->Value())
-          {
-            sdf::ElementPtr pluginElem;
-            pluginElem = includeSDF->root->GetElement(
-                "model")->AddElement("plugin");
-
-            pluginElem->GetAttribute("filename")->SetFromString(
-                childElemXml->Attribute("filename"));
-            pluginElem->GetAttribute("name")->SetFromString(
-                childElemXml->Attribute("name"));
-          }
-        }
-
-        if (_sdf->GetName() == "model")
-        {
-          addNestedModel(_sdf, includeSDF->root);
-        }
-        else
+        // Allow special processing of includes
+        if (g_sdfHelper.ProcessInclude(includeSDF, elemXml))
         {
           includeSDF->root->GetFirstElement()->SetParent(_sdf);
           _sdf->InsertElement(includeSDF->root->GetFirstElement());
           // TODO: This was used to store the included filename so that when
-          // a world is saved, the included model's SDF is not stored in the
-          // world file. This highlights the need to make model inclusion
+          // an SDF is saved, the included SDF is not stored in the
+          // main SDF file. This highlights the need to make SDF inclusion
           // a core feature of SDF, and not a hack that that parser handles
           // includeSDF->root->GetFirstElement()->SetInclude(elemXml->Attribute(
           //      "filename"));
@@ -712,18 +706,9 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
       {
         if (!_sdf->HasElement(elemDesc->GetName()))
         {
-          if (_sdf->GetName() == "joint" &&
-              _sdf->Get<std::string>("type") != "ball")
-          {
-            sdferr << "XML Missing required element[" << elemDesc->GetName()
-              << "], child of element[" << _sdf->GetName() << "]\n";
-            return false;
-          }
-          else
-          {
-            // Add default element
-            _sdf->AddElement(elemDesc->GetName());
-          }
+          sdferr << "XML Missing required element[" << elemDesc->GetName()
+            << "], child of element[" << _sdf->GetName() << "]\n";
+          return false;
         }
       }
     }
@@ -771,82 +756,6 @@ void copyChildren(ElementPtr _sdf, TiXmlElement *_xml)
       copyChildren(element, elemXml);
       _sdf->InsertElement(element);
     }
-  }
-}
-
-/////////////////////////////////////////////////
-void addNestedModel(ElementPtr _sdf, ElementPtr _includeSDF)
-{
-  ElementPtr modelPtr = _includeSDF->GetElement("model");
-  ElementPtr elem = modelPtr->GetFirstElement();
-  std::map<std::string, std::string> replace;
-
-  Pose modelPose =
-    modelPtr->Get<Pose>("pose");
-
-  std::string modelName = modelPtr->Get<std::string>("name");
-  while (elem)
-  {
-    if (elem->GetName() == "link")
-    {
-      std::string elemName = elem->Get<std::string>("name");
-      std::string newName =  modelName + "::" + elemName;
-      replace[elemName] = newName;
-      if (elem->HasElementDescription("pose"))
-      {
-        Pose newPose = Pose(
-          modelPose.pos +
-            modelPose.rot.RotateVector(elem->Get<Pose>("pose").pos),
-            modelPose.rot * elem->Get<Pose>("pose").rot);
-        elem->GetElement("pose")->Set(newPose);
-      }
-    }
-    else if (elem->GetName() == "joint")
-    {
-      // for joints, we need to
-      //   prefix name like we did with links, and
-      std::string elemName = elem->Get<std::string>("name");
-      std::string newName =  modelName + "::" + elemName;
-      replace[elemName] = newName;
-      //   rotate the joint axis because they are model-global
-      if (elem->HasElement("axis"))
-      {
-        ElementPtr axisElem = elem->GetElement("axis");
-        Vector3 newAxis =  modelPose.rot.RotateVector(
-          axisElem->Get<Vector3>("xyz"));
-        axisElem->GetElement("xyz")->Set(newAxis);
-      }
-    }
-    elem = elem->GetNextElement();
-  }
-
-  std::string str = _includeSDF->ToString("");
-  for (std::map<std::string, std::string>::iterator iter = replace.begin();
-       iter != replace.end(); ++iter)
-  {
-    boost::replace_all(str, std::string("\"")+iter->first + "\"",
-                       std::string("\"") + iter->second + "\"");
-    boost::replace_all(str, std::string("'")+iter->first + "'",
-                       std::string("'") + iter->second + "'");
-    boost::replace_all(str, std::string(">")+iter->first + "<",
-                       std::string(">") + iter->second + "<");
-  }
-
-  _includeSDF->ClearElements();
-  readString(str, _includeSDF);
-
-  elem = _includeSDF->GetElement("model")->GetFirstElement();
-  ElementPtr nextElem;
-  while (elem)
-  {
-    nextElem = elem->GetNextElement();
-
-    if (elem->GetName() != "pose")
-    {
-      elem->SetParent(_sdf);
-      _sdf->InsertElement(elem);
-    }
-    elem = nextElem;
   }
 }
 }

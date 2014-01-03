@@ -22,7 +22,7 @@
 #include <sstream>
 #include <string>
 
-#include "sdf/system_util.hh"
+#include "sdf/SystemUtil.hh"
 
 namespace sdf
 {
@@ -73,7 +73,7 @@ namespace sdf
     /// \brief The error string
     private: std::string str;
 
-    /// \brief stream insertion operator for Gazebo Error
+    /// \brief stream insertion operator for SDF Error
     /// \param[in] _out the output stream
     /// \param[in] _err the exception
     public: friend std::ostream &operator<<(std::ostream& _out,
@@ -84,7 +84,7 @@ namespace sdf
   };
 
   /// \class InternalError Exception.hh common/common.hh
-  /// \brief Class for generating Internal Gazebo Errors:
+  /// \brief Class for generating Internal SDF Errors:
   ///        those errors which should never happend and
   ///        represent programming bugs.
   class SDFORMAT_VISIBLE InternalError : public Exception

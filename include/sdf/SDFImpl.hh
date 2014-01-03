@@ -17,6 +17,7 @@
 #ifndef _SDFIMPL_HH_
 #define _SDFIMPL_HH_
 
+#include <tinyxml.h>
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
@@ -24,7 +25,7 @@
 
 #include "sdf/Types.hh"
 #include "sdf/Param.hh"
-#include "sdf/system_util.hh"
+#include "sdf/SystemUtil.hh"
 
 /// \ingroup sdf_parser
 /// \brief namespace for Simulation Description Format parser
@@ -48,30 +49,28 @@ namespace sdf
   /// \addtogroup sdf
   /// \{
 
-  /// \brief Find the absolute path of a file.
-  /// \param[in] _filename Name of the file to find.
-  /// \param[in] _searchLocalPath True to search for the file in the current
-  /// working directory.
-  /// \param[in] _useCallback True to find a file based on a registered
-  /// callback if the file is not found via the normal mechanism.
-  SDFORMAT_VISIBLE
-  std::string findFile(const std::string &_filename,
-                       bool _searchLocalPath = true,
-                       bool _useCallback = false);
-
-  /// \brief Associate paths to a URI.
-  /// Example paramters: "model://", "/usr/share/models:~/.gazebo/models"
-  /// \param[in] _uri URI that will be mapped to _path
-  /// \param[in] _path Colon separated set of paths.
-  SDFORMAT_VISIBLE
-  void addURIPath(const std::string &_uri, const std::string &_path);
-
+/*
   /// \brief Set the callback to use when SDF can't find a file.
   /// The callback should return a complete path to the requested file, or
   /// and empty string if the file was not found in the callback.
   /// \param[in] _cb The callback function.
   SDFORMAT_VISIBLE
   void setFindCallback(boost::function<std::string (const std::string &)> _cb);
+
+  /// \brief Convert a URI to a filename. This allows special processing of
+  /// URI strings.
+  /// \param[in] _uri The URI string.
+  /// \return A string containing the fully-qualified path to an SDF file.
+  SDFORMAT_VISIBLE
+  std::string uriToFilename(const std::string &_uri);
+
+  /// \brief Allow special processing of included files.
+  /// \param[in,out] _sdf The SDF that will be included..
+  /// \param[in] _elemXml Raw XML for the <include>.
+  /// \return True if successful.
+  SDFORMAT_VISIBLE
+  bool processInclude(SDFPtr _sdf, TiXmlElement *_elemXml);
+  */
 
   /// \class Element Element.hh sdf/sdf.hh
   /// \brief SDF Element class

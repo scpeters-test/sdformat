@@ -20,7 +20,7 @@
 #include <tinyxml.h>
 #include <string>
 
-#include "sdf/system_util.hh"
+#include "sdf/SystemUtil.hh"
 
 namespace sdf
 {
@@ -33,6 +33,7 @@ namespace sdf
     /// \param[in] _quiet False to be more verbose
     public: static bool Convert(TiXmlDocument *_doc,
                                 const std::string &_toVersion,
+                                const std::string &_rootName,
                                 bool _quiet = false);
 
     /// \cond

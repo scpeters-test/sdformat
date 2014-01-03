@@ -28,3 +28,11 @@ foreach(dep @PKG_DEPENDS@)
 endforeach()
 
 list(APPEND @PKG_NAME@_LDFLAGS -L@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@)
+
+find_program(SDFormat_SDFC_EXECUTABLE
+  NAMES sdfc
+  DOC "The SDFormat compiler"
+  PATHS
+  @CMAKE_INSTALL_PREFIX@/bin
+)
+mark_as_advanced(SDFormat_SDFC_EXECUTABLE)

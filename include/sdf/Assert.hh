@@ -20,7 +20,7 @@
 #include <boost/assert.hpp>
 
 /// \brief This macro define the standard way of launching an exception
-/// inside gazebo.
+/// inside SDF.
 #define SDF_ASSERT(_expr, _msg) BOOST_ASSERT_MSG(_expr, _msg)
 
 #endif
