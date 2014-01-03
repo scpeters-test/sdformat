@@ -4,7 +4,7 @@ require "rexml/document"
 require "optparse"
 
 @@namespace = nil
-@@path = "/home/nkoenig/work/robot_xml/rml/1.5"
+@@path = nil
 
 # The license header for each generated file
 @@license = <<-END
@@ -858,6 +858,8 @@ opt_parser = OptionParser.new do |o|
        "SDF file to compile") {|path| infile = path}
   o.on("-o", "--out [path]", String,
        "Output directory for source and header files") {|path| outdir = path}
+  o.on("-s", "--sdf [path]", String,
+       "Directory containing all the SDF files") {|path| @@path = path}
   o.on("-n", "--name [name_space]", String,
        "Namespace for generated files") {|name_space| @@namespace = name_space}
   o.on("-h", "--help", "Display this help message") do
@@ -875,6 +877,14 @@ elsif !File.exists?(infile)
   exit
 end
 
+if @@path.nil?
+  puts "Missing option -s."
+  exit
+elsif !Dir.exists?(@@path)
+  puts "SDF source dir[#{@@path}] does not exist\n"
+  exit
+end
+
 if outdir.nil?
   puts "Missing output directory, option -o."
   exit
@@ -887,14 +897,6 @@ if @@namespace.nil?
   exit
 end
 
-#sourceCMake = File.open(outdir + "CMakeLists.txt", "w")
-#sourceCMake.printf("APPEND_TO_CACHED_LIST (dom_sources \"dom_sources\"\n")
-
-#headerCMake = File.open(outdir + "CMakeLists.txt", "w")
-#headerCMake.printf("include (${sdf_cmake_dir}/SDFUtils.cmake)\n")
-#headerCMake.printf("set (headers\n")
-
-#Dir.glob(File.join(indir,"*.sdf")) do |item|
 doc = REXML::Document.new File.new(infile)
 
 spaces = 2
@@ -927,18 +929,4 @@ doc.elements.each_with_index("element") do |elem, i|
   file = File.open(File.join(outdir, out_source), "w")
   cls.printSource(file)
   file.close()
-
-  #sourceCMake.printf("  %s.cc\n", cls.nameCamel)
-  #headerCMake.printf("  %s.hh\n", cls.nameCamel)
 end
-#end
-
-#sourceCMake.printf(")\n")
-#sourceCMake.printf("sdf_add_library(sdfdom ${sources})\n")
-#sourceCMake.printf("target_link_libraries(sdfdom sdformat)\n")
-#sourceCMake.printf("sdf_install_library(sdfdom)")
-#sourceCMake.close
-
-#headerCMake.printf(")\n")
-#headerCMake.printf("sdf_install_includes(\"dom\" ${headers})")
-#headerCMake.close
