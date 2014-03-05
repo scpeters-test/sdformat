@@ -2480,6 +2480,7 @@ void CreateJoint(TiXmlElement *_root,
       { rotatedJointAxis.x, rotatedJointAxis.y, rotatedJointAxis.z };
       AddKeyValue(jointAxis, "xyz",
           Values2str(3, rotatedJointAxisArray));
+      AddKeyValue(jointAxis, "use_parent_model_frame", "true");
       if (_link->parent_joint->dynamics)
         AddKeyValue(jointAxisDynamics, "damping",
             Values2str(1, &_link->parent_joint->dynamics->damping));
