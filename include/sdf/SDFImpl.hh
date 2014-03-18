@@ -19,8 +19,10 @@
 
 #include <vector>
 #include <string>
+#pragma GCC visibility push(default)
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#pragma GCC visibility pop
 
 #include "sdf/Types.hh"
 #include "sdf/Param.hh"

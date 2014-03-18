@@ -22,7 +22,9 @@
 #include <fstream>
 #include <string>
 
+#pragma GCC visibility push(default)
 #include <boost/shared_ptr.hpp>
+#pragma GCC visibility pop
 
 #include "sdf/system_util.hh"
 
