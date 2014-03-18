@@ -18,6 +18,7 @@
 #ifndef _SDF_PARAM_HH_
 #define _SDF_PARAM_HH_
 
+#pragma GCC visibility push(default)
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <boost/lexical_cast.hpp>
 #endif
@@ -27,6 +28,7 @@
 #include <boost/any.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
+#pragma GCC visibility pop
 
 #include <typeinfo>
 #include <string>
