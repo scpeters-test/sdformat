@@ -17,10 +17,12 @@
 
 #include <vector>
 #include <set>
+#pragma GCC visibility push(default)
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#pragma GCC visibility pop
 
 #include "sdf/SDFImpl.hh"
 #include "sdf/Assert.hh"

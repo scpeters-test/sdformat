@@ -18,7 +18,9 @@
 #include <stdio.h>
 #include <map>
 
+#pragma GCC visibility push(default)
 #include <boost/filesystem.hpp>
+#pragma GCC visibility pop
 
 #include "sdf/Console.hh"
 #include "sdf/Converter.hh"

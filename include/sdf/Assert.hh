@@ -17,7 +17,9 @@
 #ifndef _SDF_ASSERT_HH_
 #define _SDF_ASSERT_HH_
 
+#pragma GCC visibility push(default)
 #include <boost/assert.hpp>
+#pragma GCC visibility pop
 
 /// \brief This macro define the standard way of launching an exception
 /// inside gazebo.

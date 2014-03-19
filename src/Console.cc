@@ -18,8 +18,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sstream>
+#pragma GCC visibility push(default)
 #include <boost/filesystem.hpp>
 #include <boost/thread/mutex.hpp>
+#pragma GCC visibility pop
 
 #include "sdf/Console.hh"
 
