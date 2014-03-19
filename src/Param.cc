@@ -21,6 +21,7 @@
 
 #include <math.h>
 #include "sdf/Param.hh"
+#include "visible.h"
 
 using namespace sdf;
 
