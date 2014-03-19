@@ -21,11 +21,10 @@
 
 #include <math.h>
 #include "sdf/Param.hh"
-#include "visible.h"
 
 using namespace sdf;
 
-class GAZEBO_VISIBLE string_set : public boost::static_visitor<>
+class SDFORMAT_VISIBLE string_set : public boost::static_visitor<>
 {
   public: string_set(const std::string &_value)
           {this->value = _value;}
@@ -38,7 +37,7 @@ class GAZEBO_VISIBLE string_set : public boost::static_visitor<>
   public: std::string value;
 };
 
-class GAZEBO_VISIBLE any_set : public boost::static_visitor<>
+class SDFORMAT_VISIBLE any_set : public boost::static_visitor<>
 {
   public: any_set(const boost::any &_value)
           {this->value = _value;}
