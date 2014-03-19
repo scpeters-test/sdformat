@@ -40,7 +40,9 @@
 
 #include <string>
 #include <map>
+#pragma GCC visibility push(default)
 #include <boost/function.hpp>
+#pragma GCC visibility pop
 #include <urdf_model/link.h>
 #include <urdf_exception/exception.h>
 

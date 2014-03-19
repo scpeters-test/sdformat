@@ -42,7 +42,10 @@
 #include <string>
 #include <map>
 #include <tinyxml.h>
+
+#pragma GCC visibility push(default)
 #include <boost/function.hpp>
+#pragma GCC visibility pop
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 
