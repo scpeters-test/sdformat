@@ -92,12 +92,12 @@ message (STATUS "----------------------------------------\n")
 set (CMAKE_C_FLAGS_ALL " -Wall -Wextra -Wno-long-long -Wno-unused-value -Wno-unused-value -Wno-unused-value -Wno-unused-value -Wfloat-equal -Wshadow -Winit-self -Wswitch-default -Wmissing-include-dirs -pedantic" CACHE INTERNAL "General C Flags")
 
 # Check and add visibility hidden by default
-if (UNIX)
-  check_gcc_visibility()
-  if (GCC_SUPPORTS_VISIBILITY)
-         SET(CMAKE_C_FLAGS_ALL "${CMAKE_C_FLAGS_ALL} -fvisibility=hidden")
-  endif()
-endif()
+#if (UNIX)
+#  check_gcc_visibility()
+#  if (GCC_SUPPORTS_VISIBILITY)
+#         SET(CMAKE_C_FLAGS_ALL "${CMAKE_C_FLAGS_ALL} -fvisibility=hidden")
+#  endif()
+#endif()
 
 #####################################
 # Build type link flags
