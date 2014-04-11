@@ -1,6 +1,11 @@
 #!/usr/bin/ruby
 
 require "rexml/document"
+require "optparse"
+
+indir = nil
+outdir = nil
+@@namespace = nil
 
 # The license header for each generated file
 @@license = <<-END
@@ -95,7 +100,7 @@ class Attribute < Object
 
     # Add scoping if the type is non-standard.
     if !self.isStdType
-      @scope = _scope.empty? ? "sdf::" : _scope + "::"
+      @scope = _scope.empty? ? @@namespace + "::" : _scope + "::"
     else
       @scope = ""
     end
@@ -141,7 +146,7 @@ class Attribute < Object
   # \brief Return true if @type is a standard type.
   # \return (bool) If @type is a standard SDF or C type.
   def isStdType()
-   return @type == "Pose" || @type == "Color" || @type.include?("Vector") ||
+   return @type == "Pose" || @type == "Color" || @type == "Vector" ||
       @type == "Quaternion" || @type == "Time" ||
       @type == "std::string" || @type == "int" || @type == "double" ||
       @type == "float" || @type == "bool" || @type == "char" ||
@@ -463,7 +468,7 @@ class Class < Object
     @name = _name
 
     # Apply appropriate scoping.
-    @scope = _scope.empty? ? "sdf::" : _scope + "::"
+    @scope = _scope.empty? ? @@namespace + "::" : _scope + "::"
   end
 
   ###############################################
@@ -553,7 +558,7 @@ class Class < Object
     # Print out set from SDFPtr function definition
     _file.printf("%*s/// \\brief Set from sdf::ElementPtr\n", _spaces+2, "")
     _file.printf("%*s/// \\param[in] _sdf sdf::ElementPtr.\n", _spaces+2, "")
-    _file.printf("%*spublic: bool SetFromSDF(const sdf::ElementPtr _sdf);\n\n",
+    _file.printf("%*spublic: bool SetFromXML(const sdf::ElementPtr _sdf);\n\n",
            _spaces+2, "")
 
     streamV = "_v"
@@ -645,9 +650,9 @@ class Class < Object
     _file.printf("}\n")
 
 
-    # Print SetFromSDF function implementation.
+    # Print SetFromXML function implementation.
     _file.printf("\n//////////////////////////////////////////////////\n")
-    _file.printf("bool %s::SetFromSDF(const sdf::ElementPtr %s)\n{\n",
+    _file.printf("bool %s::SetFromXML(const sdf::ElementPtr %s)\n{\n",
                  _scope+@nameCamel, sdfValue)
 
     @attributes.each do |attr|
@@ -659,7 +664,7 @@ class Class < Object
           _file.printf("    this->set_%s(_sdf->Get<%s>(\"%s\"));\n",
                        attr.name, attr.type, attr.origName)
         else
-          _file.printf("    this->%s_.SetFromSDF(_sdf->GetElement(\"%s\"));\n",
+          _file.printf("    this->%s_.SetFromXML(_sdf->GetElement(\"%s\"));\n",
                        attr.name, attr.origName)
           _file.printf("    this->has_%s_ = true;\n", attr.name);
         end
@@ -676,7 +681,7 @@ class Class < Object
           _file.printf("    attr = iter->Get<%s>();\n", attr.type)
         else
           _file.printf("    %s attr;\n", attr.scopedType)
-          _file.printf("    attr.SetFromSDF(iter);\n")
+          _file.printf("    attr.SetFromXML(iter);\n")
         end
 
         _file.printf("    this->%s_.push_back(attr);\n", attr.name)
@@ -755,22 +760,22 @@ class Class < Object
   # \brief Print the header
   def printHeader(_file)
     _file.print(@@license)
-    _file.printf("#ifndef _SDF_%s_\n", @name.upcase)
-    _file.printf("#define _SDF_%s_\n\n", @name.upcase)
+    _file.printf("#ifndef _%s_%s_\n", @@namespace.upcase, @name.upcase)
+    _file.printf("#define _%s_%s_\n\n", @@namespace.upcase, @name.upcase)
 
     _file.printf("#include <string>\n")
     _file.printf("#include <vector>\n")
     _file.printf("#include <sdf/Types.hh>\n")
 
     self.getIncludes().each do |include|
-      _file.printf("#include <sdf/dom/%s.hh>\n", include)
+      _file.printf("#include \"%s.hh\"\n", include)
     end
 
     _file.printf("\n")
 
     spaces = 2
 
-    _file.printf("namespace sdf\n{\n")
+    _file.printf("namespace #{@@namespace}\n{\n")
     self.printDef(_file, spaces, "")
     _file.printf("}\n")
     _file.printf("#endif\n")
@@ -781,10 +786,10 @@ class Class < Object
   def printSource(_file)
     _file.print(@@license)
     _file.printf("#include <sdf/sdf.hh>\n")
-    _file.printf("#include <sdf/dom/%s.hh>\n", @nameCamel)
+    _file.printf("#include \"%s.hh\"\n", @nameCamel)
 
     spaces = 0
-    _file.printf("namespace sdf\n{\n")
+    _file.printf("namespace #{@@namespace}\n{\n")
     self.printImpl(_file, spaces, "")
     _file.printf("}")
   end
@@ -824,19 +829,48 @@ class Class < Object
   end
 end
 
+opt_parser = OptionParser.new do |o|
+  o.on("-i", "--in [path]", String,
+       "Directory containing SDF files") {|path| indir = path}
+  o.on("-o", "--out [path]", String,
+       "Output directory for source and header files") {|path| outdir = path}
+  o.on("-n", "--name [name_space]", String,
+       "Namespace for generated files") {|name_space| @@namespace = name_space}
+  o.on("-h", "--help", "Display this help message") do
+    puts opt_parser
+    exit
+  end
+end
+opt_parser.parse!
 
-dir = "/home/nkoenig/work/sdformat/sdf/1.4/*.sdf"
-src_outdir = "/home/nkoenig/work/sdformat/src/dom/"
-hdr_outdir = "/home/nkoenig/work/sdformat/include/sdf/dom/"
+if indir.nil?
+  puts "Missing option -i."
+  exit
+elsif !Dir.exists?(indir)
+  puts "Input directory[#{indir}] does not exist\n"
+  exit
+end
 
-sourceCMake = File.open(src_outdir + "CMakeLists.txt", "w")
-sourceCMake.printf("APPEND_TO_CACHED_LIST (dom_sources \"dom_sources\"\n")
+if outdir.nil?
+  puts "Missing output directory, option -o."
+  exit
+elsif !Dir.exists?(outdir)
+  Dir.mkdir(outdir)
+end
 
-headerCMake = File.open(hdr_outdir + "CMakeLists.txt", "w")
-headerCMake.printf("include (${sdf_cmake_dir}/SDFUtils.cmake)\n")
-headerCMake.printf("set (headers\n")
+if @@namespace.nil?
+  puts "Missing option -n."
+  exit
+end
 
-Dir.glob(dir) do |item|
+#sourceCMake = File.open(outdir + "CMakeLists.txt", "w")
+#sourceCMake.printf("APPEND_TO_CACHED_LIST (dom_sources \"dom_sources\"\n")
+
+#headerCMake = File.open(outdir + "CMakeLists.txt", "w")
+#headerCMake.printf("include (${sdf_cmake_dir}/SDFUtils.cmake)\n")
+#headerCMake.printf("set (headers\n")
+
+Dir.glob(File.join(indir,"*.sdf")) do |item|
   printf("Processing[%s]\n", item)
   doc = REXML::Document.new File.new(item)
 
@@ -858,26 +892,26 @@ Dir.glob(dir) do |item|
     end
 
     # Print header file 
-    file = File.open(hdr_outdir + cls.nameCamel + ".hh", "w")
+    file = File.open(File.join(outdir, cls.nameCamel + ".hh"), "w")
     cls.printHeader(file)
     file.close()
 
     # Print source file 
-    file = File.open(src_outdir + cls.nameCamel + ".cc", "w")
+    file = File.open(File.join(outdir, cls.nameCamel + ".cc"), "w")
     cls.printSource(file)
     file.close()
 
-    sourceCMake.printf("  dom/%s.cc\n", cls.nameCamel)
-    headerCMake.printf("  %s.hh\n", cls.nameCamel)
+    #sourceCMake.printf("  %s.cc\n", cls.nameCamel)
+    #headerCMake.printf("  %s.hh\n", cls.nameCamel)
   end
 end
 
-sourceCMake.printf(")\n")
+#sourceCMake.printf(")\n")
 #sourceCMake.printf("sdf_add_library(sdfdom ${sources})\n")
 #sourceCMake.printf("target_link_libraries(sdfdom sdformat)\n")
 #sourceCMake.printf("sdf_install_library(sdfdom)")
-sourceCMake.close
+#sourceCMake.close
 
-headerCMake.printf(")\n")
-headerCMake.printf("sdf_install_includes(\"dom\" ${headers})")
-headerCMake.close
+#headerCMake.printf(")\n")
+#headerCMake.printf("sdf_install_includes(\"dom\" ${headers})")
+#headerCMake.close
