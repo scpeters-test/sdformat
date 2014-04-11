@@ -184,6 +184,15 @@ class Attribute < Object
       _file.printf("bool %shas_%s() const\n{\n", _namespace, @name)
       _file.printf("  return this->has_%s_;\n", @name)
       _file.printf("}\n")
+
+      # Print "type *Class::mutable_attribute()" accesor.
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("%s *%smutable_%s()\n{\n", self.scopedType,
+                   _namespace, @name)
+      _file.printf("  this->has_%s_ = true;\n", @name)
+      _file.printf("  return &(this->%s_);\n", @name)
+      _file.printf("}\n")
+
     # Print functions for attributes that are a vector of values.
     else
       # Print "bool Class::has_attribute()" accesor.
@@ -206,6 +215,20 @@ class Attribute < Object
       _file.printf("  return result;\n")
       _file.printf("}\n")
 
+      # Print "type *Class::mutable_attribute()" accesor.
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("%s *%smutable_%s(unsigned int _index)\n{\n",
+             self.scopedType, _namespace, @name)
+      _file.printf("  %s *result = NULL;\n", self.scopedType)
+      _file.printf("  if (_index < this->%s_.size())\n",@name)
+      _file.printf("    result = &(this->%s_[_index]);\n", @name)
+      _file.printf("  else\n")
+      _file.printf("    sdferr << \"Index of[\" << _index << \"] exceeds\"\n")
+      _file.printf("      \"array size[\" << this->%s_.size() << \"]\";\n",
+                   @name)
+      _file.printf("  return result;\n")
+      _file.printf("}\n")
+
       # Print "uint Class::attribute_size()" accesor.
       _file.printf("\n//////////////////////////////////////////////////\n")
       _file.printf("unsigned int %s%s_size() const\n{\n",_namespace, @name)
@@ -219,14 +242,12 @@ class Attribute < Object
       _file.printf("  return this->%s_;\n", @name)
       _file.printf("}\n")
 
-      # The mutable accessors and setters are disabled. Put back in if they
-      # are needed.
       # Print "vector<type> *Class::mutable_attribute()" accesor.
-      # _file.printf("\n//////////////////////////////////////////////////\n")
-      # _file.printf("std::vector<%s> *%smutable_%s()\n{\n", self.scopedType,
-      #              _namespace, @name)
-      # _file.printf("  return &(this->%s_);\n", @name)
-      # _file.printf("}\n")
+      _file.printf("\n//////////////////////////////////////////////////\n")
+      _file.printf("std::vector<%s> *%smutable_%s()\n{\n", self.scopedType,
+                   _namespace, @name)
+      _file.printf("  return &(this->%s_);\n", @name)
+      _file.printf("}\n")
     end
   end
 
@@ -255,6 +276,14 @@ class Attribute < Object
                    _spaces, "", @name)
       _file.printf("%*spublic: bool has_%s() const;\n\n",
                    _spaces, "", @name)
+
+      # Print "type *Class::mutable_attribute()" accesor definition.
+      _file.printf("%*s/// \\brief Get mutable pointer to %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\return Pointer to %s\n", _spaces, "", @name)
+      _file.printf("%*spublic: %s *mutable_%s();\n\n", _spaces, "",
+                   self.scopedType, @name)
+
     # Print functions for attributes that are vector of values.
     else
       # Print "bool Class::has_attribute()" accesor definition.
@@ -273,6 +302,16 @@ class Attribute < Object
       _file.printf("%*spublic: %s %s(unsigned int _index) const;\n\n",
                    _spaces, "", self.scopedType, @name)
 
+      # Print "type *Class::mutable_attribute(index)" accesor definition.
+      _file.printf("%*s/// \\brief Get mutable pointer to %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\param[in] _index Index into %s\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\return Pointer to %s, NULL on error\n",
+                   _spaces, "", @name)
+      _file.printf("%*spublic: %s *mutable_%s(unsigned int _index);\n\n",
+             _spaces, "", self.scopedType, @name)
+
       # Print "uint Class::attribute_size()" accesor.
       _file.printf("%*s/// \\brief Get size of %s\n", _spaces, "", @name)
       _file.printf("%*spublic: unsigned int %s_size() const;\n\n",
@@ -284,14 +323,13 @@ class Attribute < Object
       _file.printf("%*spublic: const std::vector<%s> &%s() const;\n\n",
                    _spaces, "", self.scopedType, @name)
 
-      # The mutable accessors and setters are disabled. Put back in if they
-      # are needed.
-      # _file.printf("%*s/// \\brief Get mutable %s vector\n",
-      #              _spaces, "", @name)
-      # _file.printf("%*s/// \\return Mutable %s vector\n",
-      #              _spaces, "", @name)
-      # _file.printf("%*spublic: std::vector<%s> *mutable_%s();\n\n",
-      #              _spaces, "", @type, @name)
+      # Print "vector<type> *Class::mutable_attribute()" accesor.
+      _file.printf("%*s/// \\brief Get mutable %s vector\n",
+                   _spaces, "", @name)
+      _file.printf("%*s/// \\return Mutable %s vector\n",
+                   _spaces, "", @name)
+      _file.printf("%*spublic: std::vector<%s> *mutable_%s();\n\n",
+                   _spaces, "", self.scopedType, @name)
     end
   end
 
@@ -307,15 +345,6 @@ class Attribute < Object
 
     # Print functions for attributes that are single values.
     if @required == "0" || @required == "1"
-      # The mutable accessors and setters are disabled. Put back in if they
-      # are needed.
-      # _file.printf("\n//////////////////////////////////////////////////\n")
-      # _file.printf("%s *%smutable_%s()\n{\n", self.scopedType,
-      #              _namespace, @name)
-      # _file.printf("  this->has_%s_ = true;\n", @name)
-      # _file.printf("  return &(this->%s_);\n", @name)
-      # _file.printf("}\n")
-
       # Print "void Class::set_attribute(type)" function
       _file.printf("\n//////////////////////////////////////////////////\n")
       _file.printf("void %sset_%s(const %s &_v)\n{\n",
@@ -325,21 +354,6 @@ class Attribute < Object
       _file.printf("}\n")
     # Print functions for attributes that are a vector of values.
     else
-      # The mutable accessors and setters are disabled. Put back in if they
-      # are needed.
-      # _file.printf("\n//////////////////////////////////////////////////\n")
-      # _file.printf("%s *%smutable_%s(unsigned int _index)\n{\n",
-      #        self.scopedType, _namespace, @name)
-      # _file.printf("  %s *result = NULL;\n", self.scopedType)
-      # _file.printf("  if (_index < this->%s_.size())\n",@name)
-      # _file.printf("    result = &(this->%s_[_index]);\n", @name)
-      # _file.printf("  else\n")
-      # _file.printf("    sdferr << \"Index of[\" << _index << \"] exceeds\"\n")
-      # _file.printf("      \"array size[\" << this->%s_.size() << \"]\";\n",
-      #              @name)
-      # _file.printf("  return result;\n")
-      # _file.printf("}\n")
-
       # Print "type *Class::add_attribute()" function
       _file.printf("\n//////////////////////////////////////////////////\n")
       _file.printf("%s *%sadd_%s()\n{\n", self.scopedType, _namespace, @name)
@@ -379,33 +393,14 @@ class Attribute < Object
 
     # Print functions for attributes that are single values.
     if @required == "0" || @required == "1"
-      # The mutable accessors and setters are disabled. Put back in if they
-      # are needed.
-      # _file.printf("%*s/// \\brief Get mutable pointer to %s\n",
-      #              _spaces, "", @name)
-      # _file.printf("%*s/// \\sa set_%s\n", _spaces, "", @name)
-      # _file.printf("%*spublic: %s *mutable_%s();\n\n",
-      #        _spaces, "", @type, @name)
-
       # Print "void Class::set_attribute(type)" function
       _file.printf("%*s/// \\brief Set %s\n", _spaces, "", @name)
       _file.printf("%*s/// \\param[in] _v New value for %s\n",
                    _spaces, "", @name)
-      _file.printf("%*s/// \\sa mutable_%s\n", _spaces, "", @name)
       _file.printf("%*spublic: void set_%s(const %s &_v);\n\n",
              _spaces, "", @name, self.scopedType)
     # Print functions for attributes that are a vector of values.
     else
-      # The mutable accessors and setters are disabled. Put back in if they
-      # are needed.
-      # _file.printf("%*s/// \\brief Get mutable pointer to %s\n",
-      #              _spaces, "", @name)
-      # _file.printf("%*s/// \\param[in] _index Index into %s\n",
-      #              _spaces, "", @name)
-      # _file.printf("%*s/// \\sa set_%s\n", _spaces, "", @name)
-      # _file.printf("%*spublic: %s *mutable_%s(unsigned int _index);\n\n",
-      #        _spaces, "", @type, @name)
-
       # Print "type *Class::add_attribute()" function
       _file.printf("%*s/// \\brief Add to %s\n", _spaces, "", @name)
       _file.printf("%*spublic: %s *add_%s();\n\n", _spaces, "",
@@ -417,7 +412,6 @@ class Attribute < Object
                    "", @name)
       _file.printf("%*s/// \\param[in] _index Index into %s\n", _spaces,
                    "", @name)
-      _file.printf("%*s/// \\sa mutable_%s\n", _spaces, "", @name)
       _file.printf(
         "%*spublic: void set_%s(const %s &_v, unsigned int _index);\n\n",
         _spaces, "", @name, self.scopedType)
@@ -583,6 +577,13 @@ class Class < Object
     _file.printf("%*spublic: bool SetFromXML(const sdf::ElementPtr _sdf);\n\n",
            _spaces+2, "")
 
+    # Print out set from File function definition
+    _file.printf("%*s/// \\brief Set from file.\n", _spaces+2, "")
+    _file.printf("%*s/// \\param[in] _file Filename to load from.\n",
+                 _spaces+2, "")
+    _file.printf("%*spublic: bool SetFromFile(const std::string &_file);\n\n",
+                 _spaces+2, "")
+
     streamV = "_v"
     if @attributes.empty?
       streamV = "/*_v*/"
@@ -599,7 +600,7 @@ class Class < Object
 
     # Print property map definitions.
     @keyValueMap.each do |iter|
-      _file.printf("%*spublic: sdf::PropertyMap %s;\n\n",
+      _file.printf("%*spublic: sdf::PropertyList %s;\n\n",
                    _spaces+2, "", iter)
     end
 
@@ -711,6 +712,32 @@ class Class < Object
       _file.printf("  }\n")
     end
 
+    _file.printf("  return true;\n")
+    _file.printf("}\n")
+
+    # Print SetFromFile function implementation.
+    _file.printf("\n//////////////////////////////////////////////////\n")
+    _file.printf("bool %s::SetFromFile(const std::string &_file)\n{\n",
+                 _scope+@nameCamel, sdfValue)
+    _file.printf("  // Load the world file\n")
+    _file.printf("  sdf::SDFPtr sdf(new sdf::SDF);\n")
+    _file.printf("  if (!sdf::init(sdf))\n")
+    _file.printf("  {\n")
+    _file.printf("    sdferr << \"Unable to initialize sdf\\n\";\n")
+    _file.printf("    return false;\n")
+    _file.printf("  }\n\n")
+    _file.printf("  if (!sdf::readFile(sdf::findFile(_file), sdf))\n")
+    _file.printf("  {\n")
+    _file.printf("    sdferr << \"Unable to read sdf file[\" \n")
+    _file.printf("           << _file<< \"]\\n\";\n")
+    _file.printf("    return false;\n")
+    _file.printf("  }\n\n")
+    _file.printf("  if (!this->SetFromXML(sdf->root))\n")
+    _file.printf("  {\n")
+    _file.printf("    sdferr << \"Unable to set object from SDF file[\" \n")
+    _file.printf("           << _file<< \"]\\n\";\n")
+    _file.printf("    return false;\n")
+    _file.printf("  }\n\n")
     _file.printf("  return true;\n")
     _file.printf("}\n")
 
@@ -839,7 +866,6 @@ class Class < Object
       elem.elements.each("include") do |child|
         cls.addInclude(child)
       end
-
     else
       if elem.attributes["copy_data"] != nil
         @keyValueMap.push(elem.attributes["name"])

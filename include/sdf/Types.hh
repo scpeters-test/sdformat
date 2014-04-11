@@ -20,7 +20,7 @@
 
 #include <algorithm>
 #include <cmath>
-#include <map>
+#include <list>
 
 #include "sdf/SystemUtil.hh"
 
@@ -37,8 +37,6 @@
 
 namespace sdf
 {
-
-
   /// \brief check if two values are equal, within a tolerance
   /// \param[in] _a the first value
   /// \param[in] _b the second value
@@ -744,10 +742,11 @@ namespace sdf
 
   class SDFORMAT_VISIBLE Property
   {
+    public: std::string key;
     public: std::string value;
-    public: std::multimap<std::string, Property> children;
+    public: std::list<Property> properties;
   };
 
-  typedef std::multimap<std::string, Property> PropertyMap; 
+  typedef std::list<Property> PropertyList; 
 }
 #endif
