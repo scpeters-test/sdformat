@@ -1,0 +1,4 @@
+// Automatically generated
+#include <rml/rml_config.h>
+#include <rml/RMLHelper.hh>
+${rml_headers}

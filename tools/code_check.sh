@@ -15,12 +15,8 @@ else
 fi
 
 # Use a suppression file for unused function checking
-SUPPRESS=/tmp/sdf_cpp_check.suppress
-echo "*:src/SDF.cc" > $SUPPRESS
-echo "*:src/Assert.cc" >> $SUPPRESS
-echo "*:src/Console.cc" >> $SUPPRESS
+SUPPRESS=/tmp/rml_cpp_check.suppress
 echo "*:src/parser.cc" >> $SUPPRESS
-echo "*:src/parser_urdf.cc" >> $SUPPRESS
 
 CHECK_FILE_DIRS="./src ./include ./test/performance ./test/integration"
 
@@ -28,7 +24,7 @@ CHECK_FILE_DIRS="./src ./include ./test/performance ./test/integration"
 CPPCHECK_BASE="cppcheck -q"
 CPPCHECK_BASE2="cppcheck -q --suppressions-list=$SUPPRESS"
 CPPCHECK_FILES=`find $CHECK_FILE_DIRS -name "*.cc"`
-CPPCHECK_INCLUDES="-I include -I . -I src/urdf -I $builddir -I $builddir/include"
+CPPCHECK_INCLUDES="-I include -I . -I $builddir -I $builddir/include"
 CPPCHECK_COMMAND1="-j 4 --enable=style,performance,portability,information $CPPCHECK_FILES"
 # Unused function checking must happen in one job
 CPPCHECK_COMMAND2="--enable=unusedFunction $CPPCHECK_FILES"
@@ -57,8 +53,7 @@ else
 fi
 
 # cpplint
-# exclude urdf files for now, since they generate lots of errors
-CPPLINT_FILES=`find $CHECK_FILE_DIRS -name "*.cc" -o -name "*.hh" | grep -iv urdf`
+CPPLINT_FILES=`find $CHECK_FILE_DIRS -name "*.cc" -o -name "*.hh"`
 if [ $xmlout -eq 1 ]; then
   (echo $CPPLINT_FILES | xargs python tools/cpplint.py 2>&1) \
     | python tools/cpplint_to_cppcheckxml.py 2> $xmldir/cpplint.xml

@@ -20,17 +20,17 @@ if(UNIX AND NOT WIN32)
  endif(CMAKE_UNAME)
 endif()
 
-project (SDFormat)
+project (RML)
 string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
-set (SDF_MAJOR_VERSION 1)
-set (SDF_MINOR_VERSION 4)
-set (SDF_PATCH_VERSION 11)
+set (RML_MAJOR_VERSION 0)
+set (RML_MINOR_VERSION 1)
+set (RML_PATCH_VERSION 0)
 
-set (SDF_VERSION ${SDF_MAJOR_VERSION}.${SDF_MINOR_VERSION})
-set (SDF_VERSION_FULL ${SDF_MAJOR_VERSION}.${SDF_MINOR_VERSION}.${SDF_PATCH_VERSION})
+set (RML_VERSION ${RML_MAJOR_VERSION}.${RML_MINOR_VERSION})
+set (RML_VERSION_FULL ${RML_MAJOR_VERSION}.${RML_MINOR_VERSION}.${RML_PATCH_VERSION})
 
-message (STATUS "${PROJECT_NAME} version ${SDF_VERSION_FULL}")
+message (STATUS "${PROJECT_NAME} version ${RML_VERSION_FULL}")
 set (CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
 
 # Include GNUInstallDirs to get canonical paths
@@ -48,7 +48,7 @@ if(LD_LIBRARY_PATH)
   set (ENV{LD_LIBRARY_PATH} ${LD_LIBRARY_PATH}:$ENV{LD_LIBRARY_PATH})
 endif()
 
-set (INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}/sdformat-${SDF_VERSION}/sdf") 
+set (INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}/rml-${RML_VERSION}/rml") 
 set (LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR} CACHE STRING "Installation directory for libraries (relative to CMAKE_INSTALL_PREFIX)") 
 set (BIN_INSTALL_DIR ${CMAKE_INSTALL_BINDIR} CACHE STRING "Installation directory for binaries (relative to CMAKE_INSTALL_PREFIX)") 
 
@@ -76,15 +76,15 @@ if (USE_FULL_RPATH)
   endif("${isSystemDir}" STREQUAL "-1")
 endif()
 
-set (BUILD_SDF ON CACHE INTERNAL "Build SDF" FORCE)
+set (BUILD_RML ON CACHE INTERNAL "Build RML" FORCE)
 set (build_errors "" CACHE INTERNAL "build errors" FORCE)
 set (build_warnings "" CACHE INTERNAL "build warnings" FORCE)
 
-set (sdf_cmake_dir ${PROJECT_SOURCE_DIR}/cmake CACHE PATH
+set (rml_cmake_dir ${PROJECT_SOURCE_DIR}/cmake CACHE PATH
      "Location of CMake scripts")
 
  message (STATUS "\n\n====== Finding 3rd Party Packages ======")
-include (${sdf_cmake_dir}/SearchForStuff.cmake)
+include (${rml_cmake_dir}/SearchForStuff.cmake)
 message (STATUS "----------------------------------------\n")
 
 #####################################
@@ -149,11 +149,11 @@ endif()
 #################################################
 # OS Specific initialization
 if (UNIX)
-  sdf_setup_unix()
+  rml_setup_unix()
 else (WIN32)
-  sdf_setup_windows()
+  rml_setup_windows()
 else (APPLE)
-  sdf_setup_apple()
+  rml_setup_apple()
 endif()
 
 #################################################
@@ -186,59 +186,62 @@ else (buid_errors)
 
   ########################################
   # Write the config.h file
-  configure_file (${sdf_cmake_dir}/sdf_config.h.in
-    ${PROJECT_BINARY_DIR}/sdf/sdf_config.h)
-  sdf_install_includes("" ${PROJECT_BINARY_DIR}/sdf/sdf_config.h)
+  configure_file (${rml_cmake_dir}/rml_config.h.in
+    ${PROJECT_BINARY_DIR}/src/rml_config.h)
+  rml_install_includes("" ${PROJECT_BINARY_DIR}/src/rml_config.h)
 
   message (STATUS "C Flags:${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
   message (STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
   message (STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
  
-  if (BUILD_SDF)
+  if (BUILD_RML)
     include_directories(include
       ${PROJECT_BINARY_DIR}
-      ${PROJECT_BINARY_DIR}/include
+      ${SDFormat_INCLUDE_DIRS}
       )
+
+    link_directories(${SDFormat_LIBRARY_DIRS})
 
     add_subdirectory(test)
     add_subdirectory(src)
-    add_subdirectory(include/sdf)
-    add_subdirectory(sdf)
+    #add_subdirectory(include/rml)
+    add_subdirectory(rml)
     add_subdirectory(doc)
-  endif(BUILD_SDF)
+  endif(BUILD_RML)
 
   ########################################
   # Make the package config file
-  configure_file(${CMAKE_SOURCE_DIR}/cmake/sdformat_pc.in
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake/sdformat.pc @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/sdformat.pc DESTINATION
+  configure_file(${CMAKE_SOURCE_DIR}/cmake/rml_pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/rml.pc @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/rml.pc DESTINATION
     ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
 
   ########################################
   # Make the cmake config files
   set(PKG_NAME ${PROJECT_NAME})
-  set(PKG_LIBRARIES sdformat)
+  set(PKG_LIBRARIES rml)
   set(PKG_DEPENDS Boost)
-  set(cmake_conf_file "cmake/sdf_config.cmake")
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/SDFormatConfig.cmake" @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SDFormatConfig.cmake DESTINATION ${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME_LOWER}/ COMPONENT cmake)
+  set(cmake_conf_file "cmake/rml_config.cmake")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/RMLConfig.cmake" @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/RMLConfig.cmake DESTINATION ${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME_LOWER}/ COMPONENT cmake)
 
   ########################################
   # Package Creation: 
-  include (${sdf_cmake_dir}/sdf_cpack.cmake)
-  set (CPACK_PACKAGE_VERSION "${SDF_VERSION_FULL}")
-  set (CPACK_PACKAGE_VERSION_MAJOR "${SDF_MAJOR_VERSION}")
-  set (CPACK_PACKAGE_VERSION_MINOR "${SDF_MINOR_VERSION}")
-  set (CPACK_PACKAGE_VERSION_PATCH "${SDF_PATCH_VERSION}")
+  include (${rml_cmake_dir}/rml_cpack.cmake)
+  set (CPACK_PACKAGE_VERSION "${RML_VERSION_FULL}")
+  set (CPACK_PACKAGE_VERSION_MAJOR "${RML_MAJOR_VERSION}")
+  set (CPACK_PACKAGE_VERSION_MINOR "${RML_MINOR_VERSION}")
+  set (CPACK_PACKAGE_VERSION_PATCH "${RML_PATCH_VERSION}")
 
   if (CPACK_GENERATOR)
     message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
 
-    configure_file("${sdf_cmake_dir}/cpack_options.cmake.in"
-                   ${SDF_CPACK_CFG_FILE} @ONLY)
-    set(CPACK_PROJECT_CONFIG_FILE ${SDF_CPACK_CFG_FILE})
+    configure_file("${rml_cmake_dir}/cpack_options.cmake.in"
+                   ${RML_CPACK_CFG_FILE} @ONLY)
+    set(CPACK_PROJECT_CONFIG_FILE ${RML_CPACK_CFG_FILE})
     include (CPack)
   endif()
 
-  message(STATUS "Configuration successful. Type make to compile sdf")
+  message(STATUS "Configuration successful. Type make to compile RM")
 endif(build_errors)
+

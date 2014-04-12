@@ -1,59 +1,67 @@
-include (${sdf_cmake_dir}/SDFUtils.cmake)
+include (${rml_cmake_dir}/RMLUtils.cmake)
 
 link_directories(
   ${PROJECT_BINARY_DIR}/test
 )
 
-if (USE_EXTERNAL_URDF)
-  link_directories(${URDF_LIBRARY_DIRS})
-endif()
-
 set (sources
-  Assert.cc
-  Console.cc
-  Converter.cc
-  Exception.cc
-  parser.cc
-  parser_urdf.cc
-  Param.cc
-  SDF.cc
+  RMLHelper.cc
 )
-
-if (USE_EXTERNAL_URDF)
-  include_directories(${URDF_INCLUDE_DIRS})
-else()
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/urdf)
-  set(sources ${sources}
-  urdf/urdf_parser/model.cpp
-  urdf/urdf_parser/link.cpp
-  urdf/urdf_parser/joint.cpp
-  urdf/urdf_parser/pose.cpp
-  urdf/urdf_parser/twist.cpp
-  urdf/urdf_parser/urdf_model_state.cpp
-  urdf/urdf_parser/urdf_sensor.cpp
-  urdf/urdf_parser/world.cpp
-)
-endif()
 
 set (gtest_sources
-  SDF_TEST.cc
-  Console_TEST.cc
-  Converter_TEST.cc
-  parser_urdf_TEST.cc
 )
-sdf_build_tests(${gtest_sources})
+rml_build_tests(${gtest_sources})
 
-sdf_add_library(sdformat ${sources})
-target_link_libraries(sdformat
-  ${tinyxml_libraries}
+# This variable should contain the name of subdirectory that will be
+# used to generate the C++ DOM files.
+set(DOM_DIR 1.5)
+
+#################################################
+# The following code generates the C++ DOM files and library.
+
+set (SDF_SRCS)
+set (SDF_HDRS)
+set (SDF_ROOT ${CMAKE_SOURCE_DIR}/rml)
+
+file(GLOB files "${SDF_ROOT}/${DOM_DIR}/*.sdf")
+
+foreach(FIL ${files})
+  get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
+  get_filename_component(FIL_WE ${FIL} NAME_WE)
+
+  list(APPEND SDF_SRCS "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.cc")
+  list(APPEND SDF_HDRS "${FIL_WE}.hh")
+  list(APPEND SDF_HDRS_FINAL "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.hh")
+
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.cc"
+           "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.hh"
+    COMMAND ${SDFormat_SDFC_EXECUTABLE}
+    ARGS -s ${SDF_ROOT}/${DOM_DIR} -i ${ABS_FIL} -o ${CMAKE_CURRENT_BINARY_DIR} -n "rml"
+    DEPENDS ${ABS_FIL}
+    COMMENT "Running C++ SDF compiler on ${FIL}"
+    VERBATIM)
+endforeach()
+
+set_source_files_properties(${SDF_SRCS} ${SDF_HDRS} PROPERTIES GENERATED TRUE)
+
+rml_add_library(rml ${sources} ${SDF_SRCS})
+target_link_libraries(rml
+  ${SDFormat_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
-message (STATUS "URDF_LIBRARY_DIRS=${URDF_LIBRARY_DIRS}")
-message (STATUS "URDF_LIBRARIES=${URDF_LIBRARIES}")
+rml_install_library(rml)
 
-if (USE_EXTERNAL_URDF)
-  target_link_libraries(sdformat ${URDF_LIBRARIES})
-endif()
+#################################################
+# Configure the rml.hh file.
+set (rml_headers "")
+foreach (hdr ${SDF_HDRS})
+  APPEND_TO_CACHED_STRING(rml_headers "SDF Headers" "#include <rml/${hdr}>\n")
+endforeach()
 
-sdf_install_library(sdformat)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/rml.hh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/rml.hh)
+
+rml_install_includes("" ${SDF_HDRS_FINAL} RMLHelper.hh
+  ${CMAKE_CURRENT_BINARY_DIR}/rml.hh)

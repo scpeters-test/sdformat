@@ -3238,7 +3238,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=[]):
   if (filename != '-' and file_extension != 'cc' and file_extension != 'h'
       and file_extension != 'cpp' and file_extension != 'hh'):
     if (filename != "CMakeLists.txt" and file_extension != "in"
-        and file_extension != "proto" and file_extension != "sdf"):
+        and file_extension != "proto" and file_extension != "rml"):
       pass
       #sys.stderr.write('Ignoring %s; not a .cc or .h file\n' % filename)
   else:

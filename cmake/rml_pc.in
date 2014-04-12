@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/@LIB_INSTALL_DIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: RML
+Description: Robot Markup Language (RML)
+Version: @RML_VERSION_FULL@
+Requires:
+Libs: -L${libdir} -lrml
+CFlags: -I${includedir}/rml-@SDF_VERSION@
