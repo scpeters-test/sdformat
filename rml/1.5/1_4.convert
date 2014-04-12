@@ -1,0 +1,12 @@
+<convert name="sdf">
+  <convert name="world">
+    <convert name="state">
+      <convert name="joint">
+        <move>
+          <from element="angle"/>
+          <to element="angle::radians"/>
+        </move>
+      </convert>
+    </convert>
+  </convert>
+</convert> <!-- End SDF -->
