@@ -6,6 +6,10 @@
     <description>The type of the dynamics engine. Current options are ode, bullet, simbody and rtql8.  Defaults to ode if left unspecified.</description>
   </attribute>
 
+  <element name="plugin" type="string" default="" required="0">
+    <description>Plugin that instantiates the physics engine</description>
+  </element>
+
   <element name="max_step_size" type="double" default="0.001" required="1">
     <description>Maximum time step size at which every system in simulation can interact with the states of the world.  (was physics.sdf's dt).</description>
   </element>
