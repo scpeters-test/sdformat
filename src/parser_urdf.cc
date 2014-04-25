@@ -1678,14 +1678,6 @@ void PrintCollisionGroups(UrdfLinkPtr _link)
   sdfdbg << "COLLISION LUMPING: link: [" << _link->name << "] contains ["
     << static_cast<int>(_link->collision_array.size())
     << "] collisions.\n";
-  for (std::vector<UrdfCollisionPtr>::iterator
-      colsIt = _link->collision_array.begin();
-      colsIt != _link->collision_array.end(); ++colsIt)
-  {
-    sdfdbg << "    collision_array: [" << colsIt->first << "] has ["
-      << static_cast<int>(colsIt->second->size())
-      << "] Collision objects\n";
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2054,85 +2046,21 @@ void CreateLink(TiXmlElement *_root,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreateCollisions(TiXmlElement* _elem,
-    ConstUrdfLinkPtr _link)
+void CreateCollisions(TiXmlElement* _elem, ConstUrdfLinkPtr _link)
 {
-  // loop through all collision groups. as well as additional collision from
-  //   lumped meshes (fixed joint reduction)
+  // loop through collisions
   for (std::vector<UrdfCollisionPtr>::const_iterator
-      collisionsIt = _link->collision_array.begin();
-      collisionsIt != _link->collision_array.end(); ++collisionsIt)
+      collision =  _link->collision_array.begin();
+      collision != _link->collision_array.end();
+      ++collision)
   {
-    unsigned int defaultMeshCount = 0;
-    unsigned int groupMeshCount = 0;
-    unsigned int lumpMeshCount = 0;
-    // loop through collisions in each group
-    for (std::vector<UrdfCollisionPtr>::iterator
-        collision = collisionsIt->second->begin();
-        collision != collisionsIt->second->end();
-        ++collision)
-    {
-      if (collisionsIt->first == "default")
-      {
-        sdfdbg << "creating default collision for link [" << _link->name
-               << "]";
+    sdfdbg << "creating default collision for link [" << _link->name
+           << "]";
 
-        std::string collisionPrefix = _link->name;
+    std::string collisionPrefix = _link->name + (*collision)->name;
 
-        if (defaultMeshCount > 0)
-        {
-          // append _[meshCount] to link name for additional collisions
-          std::ostringstream collisionNameStream;
-          collisionNameStream << collisionPrefix << "_" << defaultMeshCount;
-          collisionPrefix = collisionNameStream.str();
-        }
-
-        /* make a <collision> block */
-        CreateCollision(_elem, _link, *collision, collisionPrefix);
-
-        // only 1 default mesh
-        ++defaultMeshCount;
-      }
-      else if (collisionsIt->first.find(std::string("lump::")) == 0)
-      {
-        // if collision name starts with "lump::", pass through
-        //   original parent link name
-        sdfdbg << "creating lump collision [" << collisionsIt->first
-               << "] for link [" << _link->name << "].\n";
-        /// collisionPrefix is the original name before lumping
-        std::string collisionPrefix = collisionsIt->first.substr(6);
-
-        if (lumpMeshCount > 0)
-        {
-          // append _[meshCount] to link name for additional collisions
-          std::ostringstream collisionNameStream;
-          collisionNameStream << collisionPrefix << "_" << lumpMeshCount;
-          collisionPrefix = collisionNameStream.str();
-        }
-
-        CreateCollision(_elem, _link, *collision, collisionPrefix);
-        ++lumpMeshCount;
-      }
-      else
-      {
-        sdfdbg << "adding collisions from collision group ["
-              << collisionsIt->first << "]\n";
-
-        std::string collisionPrefix = _link->name + std::string("_") +
-          collisionsIt->first;
-
-        if (groupMeshCount > 0)
-        {
-          // append _[meshCount] to _link name for additional collisions
-          std::ostringstream collisionNameStream;
-          collisionNameStream << collisionPrefix << "_" << groupMeshCount;
-          collisionPrefix = collisionNameStream.str();
-        }
-
-        CreateCollision(_elem, _link, *collision, collisionPrefix);
-        ++groupMeshCount;
-      }
-    }
+    /* make a <collision> block */
+    CreateCollision(_elem, _link, *collision, collisionPrefix);
   }
 }
 
@@ -2140,83 +2068,18 @@ void CreateCollisions(TiXmlElement* _elem,
 void CreateVisuals(TiXmlElement* _elem,
     ConstUrdfLinkPtr _link)
 {
-  // loop through all visual groups. as well as additional visuals from
-  //   lumped meshes (fixed joint reduction)
-  for (std::map<std::string,
-      boost::shared_ptr<std::vector<UrdfVisualPtr> > >::const_iterator
-      visualsIt = _link->visual_array.begin();
-      visualsIt != _link->visual_array.end(); ++visualsIt)
+  // loop through visuals
+  for (std::vector<UrdfVisualPtr>::const_iterator
+      visual = _link->visual_array.begin();
+      visual != _link->visual_array.end(); ++visual)
   {
-    unsigned int defaultMeshCount = 0;
-    unsigned int groupMeshCount = 0;
-    unsigned int lumpMeshCount = 0;
-    // loop through all visuals in this group
-    for (std::vector<UrdfVisualPtr>::iterator
-        visual = visualsIt->second->begin();
-        visual != visualsIt->second->end();
-        ++visual)
-    {
-      if (visualsIt->first == "default")
-      {
-        sdfdbg << "creating default visual for link [" << _link->name
-               << "]";
+    sdfdbg << "creating default visual for link [" << _link->name
+           << "]";
 
-        std::string visualPrefix = _link->name;
+    std::string visualPrefix = _link->name + (*visual)->name;
 
-        if (defaultMeshCount > 0)
-        {
-          // append _[meshCount] to _link name for additional visuals
-          std::ostringstream visualNameStream;
-          visualNameStream << visualPrefix << "_" << defaultMeshCount;
-          visualPrefix = visualNameStream.str();
-        }
-
-        // create a <visual> block
-        CreateVisual(_elem, _link, *visual, visualPrefix);
-
-        // only 1 default mesh
-        ++defaultMeshCount;
-      }
-      else if (visualsIt->first.find(std::string("lump::")) == 0)
-      {
-        // if visual name starts with "lump::", pass through
-        //   original parent link name
-        sdfdbg << "creating lump visual [" << visualsIt->first
-               << "] for link [" << _link->name << "].\n";
-        /// visualPrefix is the original name before lumping
-        std::string visualPrefix = visualsIt->first.substr(6);
-
-        if (lumpMeshCount > 0)
-        {
-          // append _[meshCount] to _link name for additional visuals
-          std::ostringstream visualNameStream;
-          visualNameStream << visualPrefix << "_" << lumpMeshCount;
-          visualPrefix = visualNameStream.str();
-        }
-
-        CreateVisual(_elem, _link, *visual, visualPrefix);
-        ++lumpMeshCount;
-      }
-      else
-      {
-        sdfdbg << "adding visuals from visual group ["
-              << visualsIt->first << "]\n";
-
-        std::string visualPrefix = _link->name + std::string("_") +
-          visualsIt->first;
-
-        if (groupMeshCount > 0)
-        {
-          // append _[meshCount] to _link name for additional visuals
-          std::ostringstream visualNameStream;
-          visualNameStream << visualPrefix << "_" << groupMeshCount;
-          visualPrefix = visualNameStream.str();
-        }
-
-        CreateVisual(_elem, _link, *visual, visualPrefix);
-        ++groupMeshCount;
-      }
-    }
+    // create a <visual> block
+    CreateVisual(_elem, _link, *visual, visualPrefix);
   }
 }
 
