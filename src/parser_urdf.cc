@@ -1893,11 +1893,7 @@ std::string GetGeometryBoundingBox(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-#if USE_EXTERNAL_URDF
 void PrintCollisionGroups(UrdfLinkPtr _link)
-#else
-void PrintCollisionGroups(UrdfLinkPtr /*_link*/)
-#endif
 {
 #if USE_EXTERNAL_URDF
   sdfdbg << "COLLISION LUMPING: link: [" << _link->name << "] contains ["
@@ -1913,7 +1909,9 @@ void PrintCollisionGroups(UrdfLinkPtr /*_link*/)
       << "] Collision objects\n";
   }
 #else
-  sdfdbg << "COLLISION Groups not availabe in this version of urdfdom.\n";
+  sdfdbg << "COLLISION LUMPING: link: [" << _link->name << "] contains ["
+    << static_cast<int>(_link->collision_array.size())
+    << "] collisions.\n";
 #endif
 }
 
