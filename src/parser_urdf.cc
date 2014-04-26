@@ -297,15 +297,107 @@ std::string Vector32Str(const urdf::Vector3 _vector)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void ReduceCollisionToParent(UrdfLinkPtr _link, UrdfCollisionPtr _collision)
+void ReduceCollisionToParent(UrdfLinkPtr _link,
+#if USE_EXTERNAL_URDF
+    const std::string &_groupName,
+#else
+    const std::string &/*_groupName*/,
+#endif
+    UrdfCollisionPtr _collision)
 {
-  _link->collision_array.push_back(_collision);
+  boost::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
+#if USE_EXTERNAL_URDF
+  if (_link->collision)
+  {
+    cols.reset(new std::vector<UrdfCollisionPtr>);
+    cols->push_back(_link->collision);
+  }
+  else
+  {
+    cols = boost::shared_ptr<std::vector<UrdfCollisionPtr> >(
+            &_link->collision_array);
+  }
+
+  if (!cols)
+  {
+    // group does not exist, create one and add to map
+    cols.reset(new std::vector<UrdfCollisionPtr>);
+    // new group name, create add vector to map and add Collision to the vector
+    _link->collision_groups.insert(make_pair(_groupName, cols));
+  }
+#else
+  cols = boost::shared_ptr<std::vector<UrdfCollisionPtr> >(
+          &_link->collision_array);
+#endif
+
+  // add Collision to the vector of collisions in link
+  std::vector<UrdfCollisionPtr>::iterator colIt =
+    find(cols->begin(), cols->end(), _collision);
+
+  if (colIt != cols->end())
+    sdfwarn << "attempted to add collision to link ["
+      << _link->name
+#if USE_EXTERNAL_URDF
+      << "], but it already exists under group ["
+      << _groupName << "]\n";
+#else
+      << "], but it already exists in link\n";
+#endif
+
+  else
+    cols->push_back(_collision);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void ReduceVisualToParent(UrdfLinkPtr _link, UrdfVisualPtr _visual)
+void ReduceVisualToParent(UrdfLinkPtr _link,
+#if USE_EXTERNAL_URDF
+    const std::string &_groupName,
+#else
+    const std::string &/*_groupName*/,
+#endif
+    UrdfVisualPtr _visual)
 {
-  _link->visual_array.push_back(_visual);
+  boost::shared_ptr<std::vector<UrdfVisualPtr> > viss;
+#if USE_EXTERNAL_URDF
+  if (_link->visual)
+  {
+    viss.reset(new std::vector<UrdfVisualPtr>);
+    viss->push_back(_link->visual);
+  }
+  else
+  {
+    viss = boost::shared_ptr<std::vector<UrdfVisualPtr> >(&_link->visual_array);
+  }
+
+  if (!viss)
+  {
+    // group does not exist, create one and add to map
+    viss.reset(new std::vector<UrdfVisualPtr>);
+    // new group name, create vector, add vector to map and
+    //   add Visual to the vector
+    _link->visual_groups.insert(make_pair(_groupName, viss));
+    sdfdbg << "successfully added a new visual group name ["
+          << _groupName << "]\n";
+  }
+#else
+  viss = boost::shared_ptr<std::vector<UrdfVisualPtr> >(&_link->visual_array);
+#endif
+
+  // group exists, add Visual to the vector in the map if it's not there
+  std::vector<UrdfVisualPtr>::iterator visIt
+    = find(viss->begin(), viss->end(), _visual);
+
+  if (visIt != viss->end())
+    sdfwarn << "attempted to add visual to link ["
+      << _link->name
+#if USE_EXTERNAL_URDF
+      << "], but it already exists under group ["
+      << _groupName << "]\n";
+#else
+      << "], but it already exists in link.\n";
+#endif
+  else
+    viss->push_back(_visual);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -769,24 +861,137 @@ void ReduceInertialToParent(UrdfLinkPtr _link)
 /// reduce fixed joints:  lump visuals to parent link
 void ReduceVisualsToParent(UrdfLinkPtr _link)
 {
+  // lump visual to parent
+  // lump all visual to parent, assign group name
+  // "lump::"+group name+"::'+_link name
+  // lump but keep the _link name in(/as) the group name,
+  // so we can correlate visuals to visuals somehow.
+#if USE_EXTERNAL_URDF
+  for (std::map<std::string,
+      boost::shared_ptr<std::vector<UrdfVisualPtr> > >::iterator
+      visualsIt = _link->visual_groups.begin();
+      visualsIt != _link->visual_groups.end(); ++visualsIt)
+  {
+    if (visualsIt->first.find(std::string("lump::")) == 0)
+    {
+      // it's a previously lumped mesh, re-lump under same _groupName
+      std::string lumpGroupName = visualsIt->first;
+      sdfdbg << "re-lumping group name [" << lumpGroupName
+             << "] to link [" << _link->getParent()->name << "]\n";
+      for (std::vector<UrdfVisualPtr>::iterator
+          visualIt = visualsIt->second->begin();
+          visualIt != visualsIt->second->end(); ++visualIt)
+      {
+        // transform visual origin from _link frame to parent link
+        // frame before adding to parent
+        (*visualIt)->origin = TransformToParentFrame((*visualIt)->origin,
+            _link->parent_joint->parent_to_joint_origin_transform);
+        // add the modified visual to parent
+        ReduceVisualToParent(_link->getParent(), lumpGroupName,
+            *visualIt);
+      }
+    }
+    else
+    {
+      // default and any other groups meshes
+      std::string lumpGroupName = std::string("lump::")+_link->name;
+      sdfdbg << "adding modified lump group name [" << lumpGroupName
+             << "] to link [" << _link->getParent()->name << "].\n";
+      for (std::vector<UrdfVisualPtr>::iterator
+          visualIt = visualsIt->second->begin();
+          visualIt != visualsIt->second->end(); ++visualIt)
+      {
+        // transform visual origin from _link frame to
+        // parent link frame before adding to parent
+        (*visualIt)->origin = TransformToParentFrame((*visualIt)->origin,
+            _link->parent_joint->parent_to_joint_origin_transform);
+        // add the modified visual to parent
+        ReduceVisualToParent(_link->getParent(), lumpGroupName,
+            *visualIt);
+      }
+    }
+  }
+#else
+  std::string lumpGroupName = std::string("lump::")+_link->name;
   for (std::vector<UrdfVisualPtr>::iterator
       visualIt = _link->visual_array.begin();
       visualIt != _link->visual_array.end(); ++visualIt)
   {
-    // transform visual origin from _link frame to parent link
-    // frame before adding to parent
+    // transform visual origin from _link frame to
+    // parent link frame before adding to parent
     (*visualIt)->origin = TransformToParentFrame((*visualIt)->origin,
         _link->parent_joint->parent_to_joint_origin_transform);
     // add the modified visual to parent
-    // ReduceVisualToParent(_link->getParent(), *visualIt);
-    _link->getParent()->visual_array.push_back(*visualIt);
+    ReduceVisualToParent(_link->getParent(), lumpGroupName,
+        *visualIt);
   }
+#endif
 }
 
 /////////////////////////////////////////////////
 /// reduce fixed joints:  lump collisions to parent link
 void ReduceCollisionsToParent(UrdfLinkPtr _link)
 {
+  // lump collision parent
+  // lump all collision to parent, assign group name
+  // "lump::"+group name+"::'+_link name
+  // lump but keep the _link name in(/as) the group name,
+  // so we can correlate visuals to collisions somehow.
+#if USE_EXTERNAL_URDF
+  for (std::map<std::string,
+      boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::iterator
+      collisionsIt = _link->collision_groups.begin();
+      collisionsIt != _link->collision_groups.end(); ++collisionsIt)
+  {
+    if (collisionsIt->first.find(std::string("lump::")) == 0)
+    {
+      // if it's a previously lumped mesh, relump under same _groupName
+      std::string lumpGroupName = collisionsIt->first;
+      sdfdbg << "re-lumping collision [" << collisionsIt->first
+             << "] for link [" << _link->name
+             << "] to parent [" << _link->getParent()->name
+             << "] with group name [" << lumpGroupName << "]\n";
+      for (std::vector<UrdfCollisionPtr>::iterator
+          collisionIt = collisionsIt->second->begin();
+          collisionIt != collisionsIt->second->end(); ++collisionIt)
+      {
+        // transform collision origin from _link frame to
+        // parent link frame before adding to parent
+        (*collisionIt)->origin = TransformToParentFrame(
+            (*collisionIt)->origin,
+            _link->parent_joint->parent_to_joint_origin_transform);
+        // add the modified collision to parent
+        ReduceCollisionToParent(_link->getParent(), lumpGroupName,
+            *collisionIt);
+      }
+    }
+    else
+    {
+      // default and any other group meshes
+      std::string lumpGroupName = std::string("lump::")+_link->name;
+      sdfdbg << "lumping collision [" << collisionsIt->first
+             << "] for link [" << _link->name
+             << "] to parent [" << _link->getParent()->name
+             << "] with group name [" << lumpGroupName << "]\n";
+      for (std::vector<UrdfCollisionPtr>::iterator
+          collisionIt = collisionsIt->second->begin();
+          collisionIt != collisionsIt->second->end(); ++collisionIt)
+      {
+        // transform collision origin from _link frame to
+        // parent link frame before adding to parent
+        (*collisionIt)->origin = TransformToParentFrame(
+            (*collisionIt)->origin,
+            _link->parent_joint->parent_to_joint_origin_transform);
+
+        // add the modified collision to parent
+        ReduceCollisionToParent(_link->getParent(), lumpGroupName,
+            *collisionIt);
+      }
+    }
+  }
+  // this->PrintCollisionGroups(_link->getParent());
+#else
+  std::string lumpGroupName = std::string("lump::")+_link->name;
   for (std::vector<UrdfCollisionPtr>::iterator
       collisionIt = _link->collision_array.begin();
       collisionIt != _link->collision_array.end(); ++collisionIt)
@@ -796,10 +1001,12 @@ void ReduceCollisionsToParent(UrdfLinkPtr _link)
     (*collisionIt)->origin = TransformToParentFrame(
         (*collisionIt)->origin,
         _link->parent_joint->parent_to_joint_origin_transform);
+
     // add the modified collision to parent
-    // ReduceCollisionToParent(_link->getParent(), *collisionIt);
-    _link->getParent()->collision_array.push_back(*collisionIt);
+    ReduceCollisionToParent(_link->getParent(), lumpGroupName,
+        *collisionIt);
   }
+#endif
 }
 
 /////////////////////////////////////////////////
@@ -1010,8 +1217,21 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       {
         sdf->material = GetKeyValueAsString(childElem);
       }
-      else if (childElem->ValueStr() == "visual")
+      else if (0 && childElem->ValueStr() == "visual")
       {
+        // anything inside of visual tags:
+        // <gazebo reference="link_name">
+        //   <visual>
+        //     <extention_stuff_here/>
+        //   </visual>
+        // </gazebl>
+        // are treated as blobs that gets inserted
+        // into visuals for the link
+        // <visual name="link_name[anything here]">
+        //   <stuff_from_urdf_link_visuals/>
+        //   <extention_stuff_here/>
+        // </visual>
+
         // a place to store converted doc
         for (TiXmlElement* e = childElem->FirstChildElement(); e;
             e = e->NextSiblingElement())
@@ -1673,11 +1893,28 @@ std::string GetGeometryBoundingBox(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+#if USE_EXTERNAL_URDF
 void PrintCollisionGroups(UrdfLinkPtr _link)
+#else
+void PrintCollisionGroups(UrdfLinkPtr /*_link*/)
+#endif
 {
+#if USE_EXTERNAL_URDF
   sdfdbg << "COLLISION LUMPING: link: [" << _link->name << "] contains ["
-    << static_cast<int>(_link->collision_array.size())
+    << static_cast<int>(_link->collision_groups.size())
     << "] collisions.\n";
+  for (std::map<std::string,
+      boost::shared_ptr<std::vector<UrdfCollisionPtr > > >::iterator
+      colsIt = _link->collision_groups.begin();
+      colsIt != _link->collision_groups.end(); ++colsIt)
+  {
+    sdfdbg << "    collision_groups: [" << colsIt->first << "] has ["
+      << static_cast<int>(colsIt->second->size())
+      << "] Collision objects\n";
+  }
+#else
+  sdfdbg << "COLLISION Groups not availabe in this version of urdfdom.\n";
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2046,41 +2283,227 @@ void CreateLink(TiXmlElement *_root,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreateCollisions(TiXmlElement* _elem, ConstUrdfLinkPtr _link)
+void CreateCollisions(TiXmlElement* _elem,
+    ConstUrdfLinkPtr _link)
 {
-  // loop through collisions
+  // loop through all collision groups. as well as additional collision from
+  //   lumped meshes (fixed joint reduction)
+#if USE_EXTERNAL_URDF
+  for (std::map<std::string,
+      boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::const_iterator
+      collisionsIt = _link->collision_groups.begin();
+      collisionsIt != _link->collision_groups.end(); ++collisionsIt)
+  {
+    unsigned int defaultMeshCount = 0;
+    unsigned int groupMeshCount = 0;
+    unsigned int lumpMeshCount = 0;
+    // loop through collisions in each group
+    for (std::vector<UrdfCollisionPtr>::iterator
+        collision = collisionsIt->second->begin();
+        collision != collisionsIt->second->end();
+        ++collision)
+    {
+      if (collisionsIt->first == "default")
+      {
+        sdfdbg << "creating default collision for link [" << _link->name
+               << "]";
+
+        std::string collisionPrefix = _link->name;
+
+        if (defaultMeshCount > 0)
+        {
+          // append _[meshCount] to link name for additional collisions
+          std::ostringstream collisionNameStream;
+          collisionNameStream << collisionPrefix << "_" << defaultMeshCount;
+          collisionPrefix = collisionNameStream.str();
+        }
+
+        /* make a <collision> block */
+        CreateCollision(_elem, _link, *collision, collisionPrefix);
+
+        // only 1 default mesh
+        ++defaultMeshCount;
+      }
+      else if (collisionsIt->first.find(std::string("lump::")) == 0)
+      {
+        // if collision name starts with "lump::", pass through
+        //   original parent link name
+        sdfdbg << "creating lump collision [" << collisionsIt->first
+               << "] for link [" << _link->name << "].\n";
+        /// collisionPrefix is the original name before lumping
+        std::string collisionPrefix = collisionsIt->first.substr(6);
+
+        if (lumpMeshCount > 0)
+        {
+          // append _[meshCount] to link name for additional collisions
+          std::ostringstream collisionNameStream;
+          collisionNameStream << collisionPrefix << "_" << lumpMeshCount;
+          collisionPrefix = collisionNameStream.str();
+        }
+
+        CreateCollision(_elem, _link, *collision, collisionPrefix);
+        ++lumpMeshCount;
+      }
+      else
+      {
+        sdfdbg << "adding collisions from collision group ["
+              << collisionsIt->first << "]\n";
+
+        std::string collisionPrefix = _link->name + std::string("_") +
+          collisionsIt->first;
+
+        if (groupMeshCount > 0)
+        {
+          // append _[meshCount] to _link name for additional collisions
+          std::ostringstream collisionNameStream;
+          collisionNameStream << collisionPrefix << "_" << groupMeshCount;
+          collisionPrefix = collisionNameStream.str();
+        }
+
+        CreateCollision(_elem, _link, *collision, collisionPrefix);
+        ++groupMeshCount;
+      }
+    }
+  }
+#else
+  unsigned int defaultMeshCount = 0;
   for (std::vector<UrdfCollisionPtr>::const_iterator
-      collision =  _link->collision_array.begin();
+      collision = _link->collision_array.begin();
       collision != _link->collision_array.end();
       ++collision)
   {
     sdfdbg << "creating default collision for link [" << _link->name
            << "]";
 
-    std::string collisionPrefix = _link->name + (*collision)->name;
+    std::string collisionPrefix = _link->name;
+
+    if (defaultMeshCount > 0)
+    {
+      // append _[meshCount] to link name for additional collisions
+      std::ostringstream collisionNameStream;
+      collisionNameStream << collisionPrefix << "_" << defaultMeshCount;
+      collisionPrefix = collisionNameStream.str();
+    }
 
     /* make a <collision> block */
     CreateCollision(_elem, _link, *collision, collisionPrefix);
+
+    // only 1 default mesh
+    ++defaultMeshCount;
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void CreateVisuals(TiXmlElement* _elem,
     ConstUrdfLinkPtr _link)
 {
-  // loop through visuals
+  // loop through all visual groups. as well as additional visuals from
+  //   lumped meshes (fixed joint reduction)
+#if USE_EXTERNAL_URDF
+  for (std::map<std::string,
+      boost::shared_ptr<std::vector<UrdfVisualPtr> > >::const_iterator
+      visualsIt = _link->visual_groups.begin();
+      visualsIt != _link->visual_groups.end(); ++visualsIt)
+  {
+    unsigned int defaultMeshCount = 0;
+    unsigned int groupMeshCount = 0;
+    unsigned int lumpMeshCount = 0;
+    // loop through all visuals in this group
+    for (std::vector<UrdfVisualPtr>::iterator
+        visual = visualsIt->second->begin();
+        visual != visualsIt->second->end();
+        ++visual)
+    {
+      if (visualsIt->first == "default")
+      {
+        sdfdbg << "creating default visual for link [" << _link->name
+               << "]";
+
+        std::string visualPrefix = _link->name;
+
+        if (defaultMeshCount > 0)
+        {
+          // append _[meshCount] to _link name for additional visuals
+          std::ostringstream visualNameStream;
+          visualNameStream << visualPrefix << "_" << defaultMeshCount;
+          visualPrefix = visualNameStream.str();
+        }
+
+        // create a <visual> block
+        CreateVisual(_elem, _link, *visual, visualPrefix);
+
+        // only 1 default mesh
+        ++defaultMeshCount;
+      }
+      else if (visualsIt->first.find(std::string("lump::")) == 0)
+      {
+        // if visual name starts with "lump::", pass through
+        //   original parent link name
+        sdfdbg << "creating lump visual [" << visualsIt->first
+               << "] for link [" << _link->name << "].\n";
+        /// visualPrefix is the original name before lumping
+        std::string visualPrefix = visualsIt->first.substr(6);
+
+        if (lumpMeshCount > 0)
+        {
+          // append _[meshCount] to _link name for additional visuals
+          std::ostringstream visualNameStream;
+          visualNameStream << visualPrefix << "_" << lumpMeshCount;
+          visualPrefix = visualNameStream.str();
+        }
+
+        CreateVisual(_elem, _link, *visual, visualPrefix);
+        ++lumpMeshCount;
+      }
+      else
+      {
+        sdfdbg << "adding visuals from visual group ["
+              << visualsIt->first << "]\n";
+
+        std::string visualPrefix = _link->name + std::string("_") +
+          visualsIt->first;
+
+        if (groupMeshCount > 0)
+        {
+          // append _[meshCount] to _link name for additional visuals
+          std::ostringstream visualNameStream;
+          visualNameStream << visualPrefix << "_" << groupMeshCount;
+          visualPrefix = visualNameStream.str();
+        }
+
+        CreateVisual(_elem, _link, *visual, visualPrefix);
+        ++groupMeshCount;
+      }
+    }
+  }
+#else
+  unsigned int defaultMeshCount = 0;
   for (std::vector<UrdfVisualPtr>::const_iterator
       visual = _link->visual_array.begin();
-      visual != _link->visual_array.end(); ++visual)
+      visual != _link->visual_array.end();
+      ++visual)
   {
     sdfdbg << "creating default visual for link [" << _link->name
            << "]";
 
-    std::string visualPrefix = _link->name + (*visual)->name;
+    std::string visualPrefix = _link->name;
+
+    if (defaultMeshCount > 0)
+    {
+      // append _[meshCount] to _link name for additional visuals
+      std::ostringstream visualNameStream;
+      visualNameStream << visualPrefix << "_" << defaultMeshCount;
+      visualPrefix = visualNameStream.str();
+    }
 
     // create a <visual> block
     CreateVisual(_elem, _link, *visual, visualPrefix);
+
+    // only 1 default mesh
+    ++defaultMeshCount;
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
