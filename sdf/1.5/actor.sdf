@@ -6,9 +6,9 @@
     <description></description>
   </attribute>
 
-  <attribute name="static" type="bool" default="false" required="0">
-    <description></description>
-  </attribute>
+  <element name="static" type="bool" default="false" required="0">
+    <description>If set to true, the actor is immovable. Otherwise the actor is capable of motion.</description>
+  </element>
 
   <element name="pose" type="pose" default="0 0 0 0 0 0" required="0">
     <description>Origin of the actor</description>
