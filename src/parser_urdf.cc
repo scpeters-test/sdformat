@@ -306,7 +306,7 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
     UrdfCollisionPtr _collision)
 {
   boost::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
-#if USE_EXTERNAL_URDF
+#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3)
   if (_link->collision)
   {
     cols.reset(new std::vector<UrdfCollisionPtr>);
@@ -358,7 +358,7 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
     UrdfVisualPtr _visual)
 {
   boost::shared_ptr<std::vector<UrdfVisualPtr> > viss;
-#if USE_EXTERNAL_URDF
+#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3)
   if (_link->visual)
   {
     viss.reset(new std::vector<UrdfVisualPtr>);

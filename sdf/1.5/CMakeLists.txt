@@ -20,12 +20,14 @@ set (sdfs
   joint.sdf
   light.sdf
   link.sdf
+  material.sdf
   mesh_shape.sdf
   model.sdf
   noise.sdf
   physics.sdf
   plane_shape.sdf
   plugin.sdf
+  polyline_shape.sdf
   projector.sdf
   ray.sdf
   rfidtag.sdf
