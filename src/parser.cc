@@ -308,7 +308,15 @@ bool readFile(const std::string &_filename, SDFPtr _sdf)
     return false;
   }
 
-  xmlDoc.LoadFile(filename);
+  // Parse using ERB
+  std::string erbParsed = erbFile(_filename);
+  if (erbParsed.empty())
+  {
+    sdferr << "Failed to ERB parse file [" << _filename << "]\n";
+    return false;
+  }
+
+  xmlDoc.Parse(erbParsed.c_str());
   if (readDoc(&xmlDoc, _sdf, filename))
     return true;
   else
@@ -333,8 +341,16 @@ bool readFile(const std::string &_filename, SDFPtr _sdf)
 //////////////////////////////////////////////////
 bool readString(const std::string &_xmlString, SDFPtr _sdf)
 {
+  // Parse using ERB
+  std::string erbParsed = erbString(_xmlString);
+  if (erbParsed.empty())
+  {
+    sdferr << "Failed to ERB parse string [" << _xmlString << "]\n";
+    return false;
+  }
+
   TiXmlDocument xmlDoc;
-  xmlDoc.Parse(_xmlString.c_str());
+  xmlDoc.Parse(erbParsed.c_str());
   if (readDoc(&xmlDoc, _sdf, "data-string"))
     return true;
   else
@@ -359,8 +375,16 @@ bool readString(const std::string &_xmlString, SDFPtr _sdf)
 //////////////////////////////////////////////////
 bool readString(const std::string &_xmlString, ElementPtr _sdf)
 {
+  // Parse using ERB
+  std::string erbParsed = erbString(_xmlString);
+  if (erbParsed.empty())
+  {
+    sdferr << "Failed to ERB parse string [" << _xmlString << "]\n";
+    return false;
+  }
+
   TiXmlDocument xmlDoc;
-  xmlDoc.Parse(_xmlString.c_str());
+  xmlDoc.Parse(erbParsed.c_str());
   if (readDoc(&xmlDoc, _sdf, "data-string"))
     return true;
   else
