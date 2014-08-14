@@ -20,6 +20,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include "sdf/ruby.hh"
 #include "sdf/Console.hh"
 #include "sdf/Converter.hh"
 #include "sdf/SDFImpl.hh"
@@ -31,6 +32,52 @@
 
 namespace sdf
 {
+//////////////////////////////////////////////////
+std::string erbString(const std::string &_string)
+{
+  std::string result;
+
+  // Initialize ruby
+  ruby_init();
+  ruby_init_loadpath();
+  rb_set_safe_level(0);
+  ruby_script("ruby");
+
+  int status;
+
+  // Create the ruby command
+  std::string cmd = "require 'erb'; ERB.new('" + _string + "').result";
+
+  // Run the ERB parser
+  VALUE ret = rb_eval_string_protect(cmd.c_str(), &status);
+
+  // Convert ruby string to std::string
+  if (RSTRING(ret)->as.heap.ptr != NULL)
+    result.assign(RSTRING(ret)->as.heap.ptr, RSTRING(ret)->as.heap.len);
+  else
+    std::cerr << "Unable to parse string[" << _string << "] using ERB.\n";
+
+  return result;
+}
+
+//////////////////////////////////////////////////
+std::string erbFile(const std::string &_filename)
+{
+  // Make sure the file exists
+  if (!boost::filesystem::exists(boost::filesystem::path(_filename)))
+  {
+    std::cerr << "Error: File doesn't exist[" << _filename << "]\n";
+    return "";
+  }
+
+  // Read file data
+  std::ifstream in(_filename.c_str());
+  std::string data((std::istreambuf_iterator<char>(in)),
+                    std::istreambuf_iterator<char>());
+
+  return erbString(data);
+}
+
 //////////////////////////////////////////////////
 bool init(SDFPtr _sdf)
 {

@@ -6,7 +6,7 @@ link_directories(
 )
 
 if (USE_EXTERNAL_URDF)
-  link_directories(${URDF_LIBRARY_DIRS})
+  link_directories(${URDF_LIBRARY_DIRS} ${ruby_LIBDIR})
 endif()
 
 set (sources
@@ -20,7 +20,7 @@ set (sources
   SDF.cc
 )
 
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS} ${ruby_INCLUDE_DIRS})
 
 if (USE_EXTERNAL_TINYXML)
   include_directories(${tinyxml_INCLUDE_DIRS})
@@ -57,7 +57,7 @@ set (gtest_sources
 sdf_build_tests(${gtest_sources})
 
 sdf_add_library(sdformat ${sources})
-target_link_libraries(sdformat ${Boost_LIBRARIES})
+target_link_libraries(sdformat ${Boost_LIBRARIES} ${ruby_LIBRARIES})
 
 if (USE_EXTERNAL_TINYXML)
   link_directories(${tinyxml_LIBRARY_DIRS})

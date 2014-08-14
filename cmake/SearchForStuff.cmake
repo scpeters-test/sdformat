@@ -81,6 +81,13 @@ if (USE_EXTERNAL_URDF)
   endif()
 endif()
 
+################################################
+# Require ruby-1.9 to parse ERB files
+pkg_check_modules(ruby ruby-1.9)
+if (NOT ruby_FOUND)
+  BUILD_ERROR("Ruby 1.9 is required to parse ERB files.")
+endif()
+
 #################################################
 # Macro to check for visibility capability in compiler
 # Original idea from: https://gitorious.org/ferric-cmake-stuff/ 

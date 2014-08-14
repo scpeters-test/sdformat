@@ -27,6 +27,16 @@
 /// \brief namespace for Simulation Description Format parser
 namespace sdf
 {
+  /// \brief Parse an string using ERB.
+  /// \return ERB parsed string.
+  SDFORMAT_VISIBLE
+  std::string erbString(const std::string &_string);
+
+  /// \brief Parse an string using ERB.
+  /// \return ERB parsed file.
+  SDFORMAT_VISIBLE
+  std::string erbFile(const std::string &_filename);
+
   /// \brief Init based on the installed sdf_format.xml file
   SDFORMAT_VISIBLE
   bool init(SDFPtr _sdf);
