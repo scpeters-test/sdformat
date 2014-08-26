@@ -1,0 +1,6 @@
+<element name="pose" type="pose" default="0 0 0 0 0 0" required="0">
+  <description>A position (x,y,z) and orientation (roll, pitch, yaw) in the specified frame. If no frame is specified, the parent frame is used.</description>
+  <attribute name="frame" type="string" default="parent" required="1">
+    <description>The frame in which the pose is specified. The value must be a fully qualified name, such as "<model_name>::<link_name>", or "parent" to use the parent frame. </description>
+  </attribute>
+</element>

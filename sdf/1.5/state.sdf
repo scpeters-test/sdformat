@@ -38,9 +38,7 @@
       <description>Name of the model</description>
     </attribute>
 
-    <element name="pose" type="pose" default="0 0 0 0 0 0" required="1">
-      <description>Pose of the model</description>
-    </element>
+    <include filename="pose.sdf" required="0"/>
 
     <element name="joint" required="*">
       <description>Joint angle</description>
@@ -66,9 +64,7 @@
         <description>Name of the link</description>
       </attribute>
 
-      <element name="pose" type="pose" default="0 0 0 0 0 0" required="1">
-        <description>Pose of the link relative to the model</description>
-      </element>
+      <include filename="pose.sdf" required="0"/>
 
       <element name="velocity" type="pose" default="0 0 0 0 0 0" required="0">
         <description>Velocity of the link</description>
@@ -90,9 +86,7 @@
           <description>Name of the collision</description>
         </attribute>
 
-        <element name="pose" type="pose" default="0 0 0 0 0 0" required="1">
-          <description>Pose of the link relative to the model</description>
-        </element>
+        <include filename="pose.sdf" required="0"/>
       </element>
 
 

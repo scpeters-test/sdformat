@@ -10,9 +10,7 @@
     <description>Actors should be static, in terms of physics simulation.</description>
   </element>
 
-  <element name="pose" type="pose" default="0 0 0 0 0 0" required="0">
-    <description>Origin of the actor</description>
-  </element>
+  <include filename="pose.sdf" required="0"/>
 
   <element name="skin" required="1">
     <description></description>
@@ -74,6 +72,7 @@
         <element name="time" type="double" default="0.0" required="1">
           <description></description>
         </element>
+
         <element name="pose" type="pose" default="0 0 0 0 0 0" required="1">
           <description></description>
         </element>

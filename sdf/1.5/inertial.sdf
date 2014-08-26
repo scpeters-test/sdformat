@@ -7,7 +7,12 @@
   </element>
 
   <element name="pose" type="pose" default="0 0 0 0 0 0" required="0">
-    <description>This is the pose of the inertial reference frame, relative to the link reference frame. The origin of the inertial reference frame needs to be at the center of gravity. The axes of the inertial reference frame do not need to be aligned with the principal axes of the inertia.</description>
+    <description>This is the pose of the inertial reference frame. The origin of the inertial reference frame needs to be at the center of gravity. The axes of the inertial reference frame do not need to be aligned with the principal axes of the inertia.</description>
+
+    <attribute name="frame" type="string" default="parent" required="1">
+      <description>The frame in which the pose is specified. The value must be a fully qualified name, such as "<model_name>::<link_name>", or "parent" to use the parent frame. </description>
+    </attribute>
+
   </element>
 
   <element name="inertia" required="0">
