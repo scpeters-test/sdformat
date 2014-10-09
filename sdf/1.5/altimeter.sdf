@@ -1,0 +1,4 @@
+<element name="altimeter" required="0">
+  <description>These elements are specific to the Altimeter sensor.</description>
+  <include filename="noise.sdf" required="0"/>
+</element>
