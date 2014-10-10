@@ -866,7 +866,7 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
   // "lump::"+group name+"::'+_link name
   // lump but keep the _link name in(/as) the group name,
   // so we can correlate visuals to visuals somehow.
-#if USE_EXTERNAL_URDF
+#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfVisualPtr> > >::iterator
       visualsIt = _link->visual_groups.begin();
@@ -937,7 +937,7 @@ void ReduceCollisionsToParent(UrdfLinkPtr _link)
   // "lump::"+group name+"::'+_link name
   // lump but keep the _link name in(/as) the group name,
   // so we can correlate visuals to collisions somehow.
-#if USE_EXTERNAL_URDF
+#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::iterator
       collisionsIt = _link->collision_groups.begin();
@@ -1895,7 +1895,7 @@ std::string GetGeometryBoundingBox(
 ////////////////////////////////////////////////////////////////////////////////
 void PrintCollisionGroups(UrdfLinkPtr _link)
 {
-#if USE_EXTERNAL_URDF
+#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
   sdfdbg << "COLLISION LUMPING: link: [" << _link->name << "] contains ["
     << static_cast<int>(_link->collision_groups.size())
     << "] collisions.\n";
@@ -2286,7 +2286,7 @@ void CreateCollisions(TiXmlElement* _elem,
 {
   // loop through all collision groups. as well as additional collision from
   //   lumped meshes (fixed joint reduction)
-#if USE_EXTERNAL_URDF
+#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::const_iterator
       collisionsIt = _link->collision_groups.begin();
@@ -2398,7 +2398,7 @@ void CreateVisuals(TiXmlElement* _elem,
 {
   // loop through all visual groups. as well as additional visuals from
   //   lumped meshes (fixed joint reduction)
-#if USE_EXTERNAL_URDF
+#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfVisualPtr> > >::const_iterator
       visualsIt = _link->visual_groups.begin();
