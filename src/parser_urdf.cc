@@ -382,9 +382,6 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
           << _groupName << "]\n";
   }
 #else
-    // TOD: When previously using the shared pointer definition to viss, we got an
-    // invalid pointer.
-    // viss = boost::shared_ptr<std::vector<UrdfVisualPtr> >(&_link->visual_array);
     std::vector<boost::shared_ptr<urdf::Visual> > viss(_link->visual_array);
 #endif
 
