@@ -298,7 +298,7 @@ std::string Vector32Str(const urdf::Vector3 _vector)
 
 ////////////////////////////////////////////////////////////////////////////////
 void ReduceCollisionToParent(UrdfLinkPtr _link,
-#if USE_EXTERNAL_URDF
+#ifndef URDF_GE_0P3
     const std::string &_groupName,
 #else
     const std::string &/*_groupName*/,
@@ -306,7 +306,7 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
     UrdfCollisionPtr _collision)
 {
   boost::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
-#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3)
+#ifndef URDF_GE_0P3
   if (_link->collision)
   {
     cols.reset(new std::vector<UrdfCollisionPtr>);
@@ -337,7 +337,7 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
   if (colIt != cols->end())
     sdfwarn << "attempted to add collision to link ["
       << _link->name
-#if USE_EXTERNAL_URDF
+#ifndef URDF_GE_0P3
       << "], but it already exists under group ["
       << _groupName << "]\n";
 #else
@@ -350,15 +350,17 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
 
 ////////////////////////////////////////////////////////////////////////////////
 void ReduceVisualToParent(UrdfLinkPtr _link,
-#if USE_EXTERNAL_URDF
+#ifndef URDF_GE_0P3
     const std::string &_groupName,
 #else
     const std::string &/*_groupName*/,
 #endif
     UrdfVisualPtr _visual)
 {
+
+#ifndef URDF_GE_0P3
   boost::shared_ptr<std::vector<UrdfVisualPtr> > viss;
-#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3)
+
   if (_link->visual)
   {
     viss.reset(new std::vector<UrdfVisualPtr>);
@@ -380,24 +382,27 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
           << _groupName << "]\n";
   }
 #else
-  viss = boost::shared_ptr<std::vector<UrdfVisualPtr> >(&_link->visual_array);
+    // TOD: When previously using the shared pointer definition to viss, we got an
+    // invalid pointer.
+    // viss = boost::shared_ptr<std::vector<UrdfVisualPtr> >(&_link->visual_array);
+    std::vector<boost::shared_ptr<urdf::Visual> > viss(_link->visual_array);
 #endif
 
   // group exists, add Visual to the vector in the map if it's not there
   std::vector<UrdfVisualPtr>::iterator visIt
-    = find(viss->begin(), viss->end(), _visual);
+    = find(viss.begin(), viss.end(), _visual);
 
-  if (visIt != viss->end())
+  if (visIt != viss.end())
     sdfwarn << "attempted to add visual to link ["
       << _link->name
-#if USE_EXTERNAL_URDF
+#ifndef URDF_GE_0P3
       << "], but it already exists under group ["
       << _groupName << "]\n";
 #else
       << "], but it already exists in link.\n";
 #endif
   else
-    viss->push_back(_visual);
+    viss.push_back(_visual);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -866,7 +871,7 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
   // "lump::"+group name+"::'+_link name
   // lump but keep the _link name in(/as) the group name,
   // so we can correlate visuals to visuals somehow.
-#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
+#ifndef URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfVisualPtr> > >::iterator
       visualsIt = _link->visual_groups.begin();
@@ -937,7 +942,7 @@ void ReduceCollisionsToParent(UrdfLinkPtr _link)
   // "lump::"+group name+"::'+_link name
   // lump but keep the _link name in(/as) the group name,
   // so we can correlate visuals to collisions somehow.
-#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
+#ifndef URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::iterator
       collisionsIt = _link->collision_groups.begin();
@@ -1895,7 +1900,7 @@ std::string GetGeometryBoundingBox(
 ////////////////////////////////////////////////////////////////////////////////
 void PrintCollisionGroups(UrdfLinkPtr _link)
 {
-#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
+#ifndef URDF_GE_0P3
   sdfdbg << "COLLISION LUMPING: link: [" << _link->name << "] contains ["
     << static_cast<int>(_link->collision_groups.size())
     << "] collisions.\n";
@@ -2286,7 +2291,7 @@ void CreateCollisions(TiXmlElement* _elem,
 {
   // loop through all collision groups. as well as additional collision from
   //   lumped meshes (fixed joint reduction)
-#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
+#ifndef URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::const_iterator
       collisionsIt = _link->collision_groups.begin();
@@ -2398,7 +2403,7 @@ void CreateVisuals(TiXmlElement* _elem,
 {
   // loop through all visual groups. as well as additional visuals from
   //   lumped meshes (fixed joint reduction)
-#if USE_EXTERNAL_URDF && defined(URDF_GE_0P3) && not URDF_GE_0P3
+#ifndef URDF_GE_0P3
   for (std::map<std::string,
       boost::shared_ptr<std::vector<UrdfVisualPtr> > >::const_iterator
       visualsIt = _link->visual_groups.begin();
