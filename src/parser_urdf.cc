@@ -358,38 +358,36 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
     UrdfVisualPtr _visual)
 {
 
+  typedef std::vector<UrdfVisualPtr> UrdfVisualPtrVector;
+
+  // Define viss as the shared pointer which default to a copy of 
+  // visual_array vector
+  boost::shared_ptr<UrdfVisualPtrVector> viss(
+      new UrdfVisualPtrVector(_link->visual_array));
+
 #ifndef URDF_GE_0P3
-  boost::shared_ptr<std::vector<UrdfVisualPtr> > viss;
 
   if (_link->visual)
   {
-    viss.reset(new std::vector<UrdfVisualPtr>);
+    viss.reset(new UrdfVisualPtrVector());
     viss->push_back(_link->visual);
   }
-  else
-  {
-    viss = boost::shared_ptr<std::vector<UrdfVisualPtr> >(&_link->visual_array);
-  }
 
-  if (!viss)
+  if (viss->empty())
   {
-    // group does not exist, create one and add to map
-    viss.reset(new std::vector<UrdfVisualPtr>);
     // new group name, create vector, add vector to map and
-    //   add Visual to the vector
+    // add Visual to the vector
     _link->visual_groups.insert(make_pair(_groupName, viss));
     sdfdbg << "successfully added a new visual group name ["
           << _groupName << "]\n";
   }
-#else
-    std::vector<boost::shared_ptr<urdf::Visual> > viss(_link->visual_array);
 #endif
 
   // group exists, add Visual to the vector in the map if it's not there
-  std::vector<UrdfVisualPtr>::iterator visIt
-    = find(viss.begin(), viss.end(), _visual);
+  UrdfVisualPtrVector::iterator visIt
+    = find(viss->begin(), viss->end(), _visual);
 
-  if (visIt != viss.end())
+  if (visIt != viss->end())
     sdfwarn << "attempted to add visual to link ["
       << _link->name
 #ifndef URDF_GE_0P3
@@ -399,7 +397,7 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
       << "], but it already exists in link.\n";
 #endif
   else
-    viss.push_back(_visual);
+    viss->push_back(_visual);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
