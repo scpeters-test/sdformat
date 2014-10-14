@@ -305,45 +305,44 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
 #endif
     UrdfCollisionPtr _collision)
 {
-  boost::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
+ typedef std::vector<UrdfCollisionPtr> UrdfCollisionPtrVector;
+
+  // Define cols as the shared pointer which default to a copy of 
+  // collision_array vector
+  boost::shared_ptr<UrdfCollisionPtrVector> cols(
+      new UrdfCollisionPtrVector(_link->collision_array));
+
 #ifndef URDF_GE_0P3
+
   if (_link->collision)
   {
-    cols.reset(new std::vector<UrdfCollisionPtr>);
+    cols.reset(new UrdfCollisionPtrVector());
     cols->push_back(_link->collision);
   }
-  else
-  {
-    cols = boost::shared_ptr<std::vector<UrdfCollisionPtr> >(
-            &_link->collision_array);
-  }
 
-  if (!cols)
+  if (cols->empty())
   {
-    // group does not exist, create one and add to map
-    cols.reset(new std::vector<UrdfCollisionPtr>);
-    // new group name, create add vector to map and add Collision to the vector
+    // new group name, create vector, add vector to map and
+    // add Collision to the vector
     _link->collision_groups.insert(make_pair(_groupName, cols));
+    sdfdbg << "successfully added a new collision group name ["
+          << _groupName << "]\n";
   }
-#else
-  cols = boost::shared_ptr<std::vector<UrdfCollisionPtr> >(
-          &_link->collision_array);
 #endif
 
-  // add Collision to the vector of collisions in link
-  std::vector<UrdfCollisionPtr>::iterator colIt =
-    find(cols->begin(), cols->end(), _collision);
+  // group exists, add Collision to the vector in the map if it's not there
+  UrdfCollisionPtrVector::iterator visIt
+    = find(cols->begin(), cols->end(), _collision);
 
-  if (colIt != cols->end())
+  if (visIt != cols->end())
     sdfwarn << "attempted to add collision to link ["
       << _link->name
 #ifndef URDF_GE_0P3
       << "], but it already exists under group ["
       << _groupName << "]\n";
 #else
-      << "], but it already exists in link\n";
+      << "], but it already exists in link.\n";
 #endif
-
   else
     cols->push_back(_collision);
 }
