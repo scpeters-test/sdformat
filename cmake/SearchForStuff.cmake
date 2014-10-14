@@ -73,7 +73,6 @@ if (USE_EXTERNAL_URDF)
     else()
       # urdfdom library found >= 0.3, set flag
       set (URDF_GE_0P3 TRUE)
-      add_definitions(-DURDF_GE_0P3)
     endif()
 
     # what am I doing here? pkg-config and cmake
@@ -83,7 +82,6 @@ if (USE_EXTERNAL_URDF)
 else()
   # the internal copy is currently 0.3.0
   set (URDF_GE_0P3 TRUE)
-  add_definitions(-DURDF_GE_0P3)
 endif()
 
 #################################################
