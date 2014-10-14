@@ -331,10 +331,10 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
 #endif
 
   // group exists, add Collision to the vector in the map if it's not there
-  UrdfCollisionPtrVector::iterator visIt
+  UrdfCollisionPtrVector::iterator colIt
     = find(cols->begin(), cols->end(), _collision);
 
-  if (visIt != cols->end())
+  if (colIt != cols->end())
     sdfwarn << "attempted to add collision to link ["
       << _link->name
 #ifndef URDF_GE_0P3
@@ -1216,7 +1216,7 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       {
         sdf->material = GetKeyValueAsString(childElem);
       }
-      else if (0 && childElem->ValueStr() == "visual")
+      else if (childElem->ValueStr() == "visual")
       {
         // anything inside of visual tags:
         // <gazebo reference="link_name">
