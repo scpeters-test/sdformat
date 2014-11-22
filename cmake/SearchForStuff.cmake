@@ -9,6 +9,8 @@ if (WIN32)
   set(Boost_USE_STATIC_RUNTIME    OFF)
 endif()
 
+# Ensure that we use our own copy of FindBoost.cmake
+set(CMAKE_MODULE_PATH ${sdf_cmake_dir} ${CMAKE_MODULE_PATH})
 include(FindBoost)
 find_package(Boost ${MIN_BOOST_VERSION} REQUIRED system filesystem program_options regex iostreams)
 
