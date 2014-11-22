@@ -118,7 +118,7 @@ if (WIN32)
     # Need for M_PI constant
     add_definitions(-D_USE_MATH_DEFINES) 
     # Use dynamic linking for boost
-    add_definitions(-DBOOST_ALL_DYN_LINK)
+    #add_definitions(-DBOOST_ALL_DYN_LINK)
     if (MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
       # Not need if proper cmake gnerator (-G "...Win64") is passed to cmake
       # Enable as a second measeure to workaround over bug
