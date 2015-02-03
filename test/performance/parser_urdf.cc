@@ -28,6 +28,6 @@ const std::string URDF_TEST_FILE = std::string(PROJECT_SOURCE_PATH) + "/test/per
 TEST(URDFParser, AtlasURDF_5runs_performance)
 {
    sdf::URDF2SDF parser;
-   for (int i = 0; i < 5; i++)
+   for (int i = 0; i < 50; i++)
        TiXmlDocument sdf_result = parser.InitModelFile(URDF_TEST_FILE);
 }
