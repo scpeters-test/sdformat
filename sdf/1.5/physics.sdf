@@ -140,7 +140,7 @@
 
     <element name="constraints" required="1">
       <description>Bullet constraint parameters.</description>
-      <element name="cfm" type="double" default="0" required="1">
+      <element name="cfm" type="double" default="1e-6" required="1">
         <description>Constraint force mixing parameter. See the ODE page for more information.</description>
       </element>
       <element name="erp" type="double" default="0.2" required="1">
