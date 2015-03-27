@@ -75,7 +75,7 @@ public:
         {
           rgba.push_back(boost::lexical_cast<float>(pieces[i].c_str()));
         }
-        catch (boost::bad_lexical_cast e)
+        catch (boost::bad_lexical_cast &)
         {
           return false;
         }
