@@ -66,19 +66,7 @@ namespace sdf
       /// \param[in] _rhs Content to be logged.
       /// \return Reference to myself.
       public: template <class T>
-        ConsoleStream &operator<<(const T &_rhs)
-        {
-          if (this->stream)
-            *this->stream << _rhs;
-
-          if (Console::Instance()->dataPtr->logFileStream.is_open())
-          {
-            Console::Instance()->dataPtr->logFileStream << _rhs;
-            Console::Instance()->dataPtr->logFileStream.flush();
-          }
-
-          return *this;
-        }
+        ConsoleStream &operator<<(const T &_rhs);
 
       /// \brief Print a prefix to both terminal and log file.
       /// \param[in] _lbl Text label
@@ -125,6 +113,8 @@ namespace sdf
     private: ConsolePrivate *dataPtr;
   };
 
+  /// \internal
+  /// \brief Private data for Console
   class ConsolePrivate
   {
     /// \brief Constructor
@@ -139,6 +129,24 @@ namespace sdf
     /// \brief logfile stream
     public: std::ofstream logFileStream;
   };
+
+  ///////////////////////////////////////////////
+  template <class T>
+  Console::ConsoleStream &Console::ConsoleStream::operator<<(const T &_rhs)
+  {
+    if (this->stream)
+      *this->stream << _rhs;
+
+    if (Console::Instance()->dataPtr->logFileStream.is_open())
+    {
+      Console::Instance()->dataPtr->logFileStream << _rhs;
+      Console::Instance()->dataPtr->logFileStream.flush();
+    }
+
+    return *this;
+  }
+
+
   /// \}
 }
 #endif

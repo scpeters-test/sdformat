@@ -117,7 +117,7 @@ void Param::Update()
       boost::apply_visitor(any_set(this->dataPtr->updateFunc()),
       this->dataPtr->value);
     }
-    catch(boost::bad_lexical_cast e)
+    catch(boost::bad_lexical_cast &e)
     {
       sdferr << "Unable to set value using Update for key["
         << this->dataPtr->key << "]\n";
@@ -252,8 +252,8 @@ boost::shared_ptr<Param> Param::Clone() const
 {
   return boost::shared_ptr<Param>(
   new Param(this->dataPtr->key, this->dataPtr->typeName,
-	    this->GetAsString(), this->dataPtr->required,
-	    this->dataPtr->description));
+      this->GetAsString(), this->dataPtr->required,
+      this->dataPtr->description));
 }
 
 //////////////////////////////////////////////////

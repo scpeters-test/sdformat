@@ -26,7 +26,7 @@
 #include "sdf/Param.hh"
 
 #ifdef _WIN32
-// Disable warning C4251 which is triggered by 
+// Disable warning C4251 which is triggered by
 // boost::enable_shared_from_this
 #pragma warning(push)
 #pragma warning(disable: 4251)
@@ -216,37 +216,10 @@ namespace sdf
                 const std::string &_key = "") SDF_DEPRECATED(1.4);
 
     public: template<typename T>
-            T Get(const std::string &_key = "")
-            {
-              T result = T();
-
-              if (_key.empty() && this->dataPtr->value)
-                this->dataPtr->value->Get<T>(result);
-              else if (!_key.empty())
-              {
-                ParamPtr param = this->GetAttribute(_key);
-                if (param)
-                  param->Get(result);
-                else if (this->HasElement(_key))
-                  result = this->GetElementImpl(_key)->Get<T>();
-                else if (this->HasElementDescription(_key))
-                  result = this->GetElementDescription(_key)->Get<T>();
-                else
-                  sdferr << "Unable to find value for key[" << _key << "]\n";
-              }
-              return result;
-            }
+            T Get(const std::string &_key = "");
 
     public: template<typename T>
-            bool Set(const T &_value)
-            {
-              if (this->dataPtr->value)
-              {
-                this->dataPtr->value->Set(_value);
-                return true;
-              }
-              return false;
-            }
+            bool Set(const T &_value);
 
     public: bool HasElement(const std::string &_name) const;
 
@@ -333,6 +306,42 @@ namespace sdf
     /// name of the include file that was used to create this element
     public: std::string includeFilename;
   };
+
+  ///////////////////////////////////////////////
+  template<typename T>
+  T Element::Get(const std::string &_key)
+  {
+    T result = T();
+
+    if (_key.empty() && this->dataPtr->value)
+      this->dataPtr->value->Get<T>(result);
+    else if (!_key.empty())
+    {
+      ParamPtr param = this->GetAttribute(_key);
+      if (param)
+        param->Get(result);
+      else if (this->HasElement(_key))
+        result = this->GetElementImpl(_key)->Get<T>();
+      else if (this->HasElementDescription(_key))
+        result = this->GetElementDescription(_key)->Get<T>();
+      else
+        sdferr << "Unable to find value for key[" << _key << "]\n";
+    }
+    return result;
+  }
+
+  ///////////////////////////////////////////////
+  template<typename T>
+  bool Element::Set(const T &_value)
+  {
+    if (this->dataPtr->value)
+    {
+      this->dataPtr->value->Set(_value);
+      return true;
+    }
+    return false;
+  }
+
 }
 
 #ifdef _WIN32

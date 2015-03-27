@@ -112,8 +112,7 @@ namespace sdf
     /// \brief Set the update function. The updateFunc will be used to
     /// set the parameter's value when Param::Update is called.
     /// \param[in] _updateFunc Function pointer to an update function.
-    public: template<typename T> void SetUpdateFunc(T _updateFunc)
-            {this->dataPtr->updateFunc = _updateFunc;}
+    public: template<typename T> void SetUpdateFunc(T _updateFunc);
 
     /// \brief Set the parameter's value using the updateFunc.
     /// \sa Param::SetUpdateFunc
@@ -126,82 +125,21 @@ namespace sdf
     /// \param[in] _value The value to set the parameter to.
     /// \return True if the value was successfully set.
     public: template<typename T>
-            bool Set(const T &_value)
-            {
-              try
-              {
-                this->SetFromString(boost::lexical_cast<std::string>(_value));
-              }
-              catch(...)
-              {
-                sdferr << "Unable to set parameter["
-		       << this->dataPtr->key << "]."
-                       << "Type type used must have a stream input and output"
-                       << "operator, which allow boost::lexical_cast to"
-                       << "function properly.\n";
-                return false;
-              }
-              return true;
-            }
+            bool Set(const T &_value);
 
     /// \brief Get the value of the parameter.
     /// \param[out] _value The value of the parameter.
     /// \return True if parameter was successfully cast to the value type
     /// passed in.
     public: template<typename T>
-            bool Get(T &_value)
-            {
-              try
-              {
-                if (typeid(T) == typeid(bool) &&
-		    this->dataPtr->typeName == "string")
-                {
-                  std::string strValue =
-                    boost::lexical_cast<std::string>(this->dataPtr->value);
-                  if (strValue == "true" || strValue  == "1")
-                    _value = boost::lexical_cast<T>("1");
-                  else
-                    _value = boost::lexical_cast<T>("0");
-                }
-                else
-                {
-                  _value = boost::lexical_cast<T>(this->dataPtr->value);
-                }
-              }
-              catch(...)
-              {
-                sdferr << "Unable to convert parameter["
-		       << this->dataPtr->key << "] "
-                       << "whose type is["
-		       << this->dataPtr->typeName << "], to "
-                       << "type[" << typeid(T).name() << "]\n";
-                return false;
-              }
-              return true;
-            }
+            bool Get(T &_value);
 
     /// \brief Get the default value of the parameter.
     /// \param[out] _value The default value of the parameter.
     /// \return True if parameter was successfully cast to the value type
     /// passed in.
     public: template<typename T>
-            bool GetDefault(T &_value)
-            {
-              try
-              {
-                _value = boost::lexical_cast<T>(this->dataPtr->defaultValue);
-              }
-              catch(...)
-              {
-                sdferr << "Unable to convert parameter["
-		       << this->dataPtr->key << "] "
-                       << "whose type is["
-		       << this->dataPtr->typeName << "], to "
-                       << "type[" << typeid(T).name() << "]\n";
-                return false;
-              }
-              return true;
-            }
+            bool GetDefault(T &_value);
 
     /// \brief Equal operator. Set's the value and default value from the
     /// provided Param.
@@ -231,31 +169,7 @@ namespace sdf
     /// \brief Initialize the value. This is called from the constructor.
     /// \param[in] _value Value to set the parameter to.
     private: template<typename T>
-            void Init(const std::string &_value)
-            {
-              try
-              {
-                this->dataPtr->value = boost::lexical_cast<T>(_value);
-              }
-              catch(...)
-              {
-                if (this->dataPtr->typeName == "bool")
-                {
-                  std::string strValue = _value;
-                  boost::algorithm::to_lower(strValue);
-                  if (strValue == "true" || strValue == "1")
-                    this->dataPtr->value = true;
-                  else
-                    this->dataPtr->value = false;
-                }
-                else
-                  sdferr << "Unable to init parameter value from string["
-                    << _value << "]\n";
-              }
-
-              this->dataPtr->defaultValue = this->dataPtr->value;
-              this->dataPtr->set = false;
-            }
+             void Init(const std::string &_value);
 
     /// \brief Private data
     private: ParamPrivate *dataPtr;
@@ -296,5 +210,114 @@ namespace sdf
     /// \brief This parameter's default value
     public: ParamVariant defaultValue;
   };
+
+  ///////////////////////////////////////////////
+  template<typename T>
+  void Param::SetUpdateFunc(T _updateFunc)
+  {
+    this->dataPtr->updateFunc = _updateFunc;
+  }
+
+  ///////////////////////////////////////////////
+  template<typename T>
+  bool Param::Set(const T &_value)
+  {
+    try
+    {
+      this->SetFromString(boost::lexical_cast<std::string>(_value));
+    }
+    catch(...)
+    {
+      sdferr << "Unable to set parameter["
+             << this->dataPtr->key << "]."
+             << "Type type used must have a stream input and output"
+             << "operator, which allow boost::lexical_cast to"
+             << "function properly.\n";
+      return false;
+    }
+    return true;
+  }
+
+  ///////////////////////////////////////////////
+  template<typename T>
+  bool Param::Get(T &_value)
+  {
+    try
+    {
+      if (typeid(T) == typeid(bool) &&
+          this->dataPtr->typeName == "string")
+      {
+        std::string strValue =
+          boost::lexical_cast<std::string>(this->dataPtr->value);
+        if (strValue == "true" || strValue  == "1")
+          _value = boost::lexical_cast<T>("1");
+        else
+          _value = boost::lexical_cast<T>("0");
+      }
+      else
+      {
+        _value = boost::lexical_cast<T>(this->dataPtr->value);
+      }
+    }
+    catch(...)
+    {
+      sdferr << "Unable to convert parameter["
+             << this->dataPtr->key << "] "
+             << "whose type is["
+             << this->dataPtr->typeName << "], to "
+             << "type[" << typeid(T).name() << "]\n";
+      return false;
+    }
+    return true;
+  }
+
+  ///////////////////////////////////////////////
+  template<typename T>
+  bool Param::GetDefault(T &_value)
+  {
+    try
+    {
+      _value = boost::lexical_cast<T>(this->dataPtr->defaultValue);
+    }
+    catch(...)
+    {
+      sdferr << "Unable to convert parameter["
+             << this->dataPtr->key << "] "
+             << "whose type is["
+             << this->dataPtr->typeName << "], to "
+             << "type[" << typeid(T).name() << "]\n";
+      return false;
+    }
+    return true;
+  }
+
+  ///////////////////////////////////////////////
+  template<typename T>
+  void Param::Init(const std::string &_value)
+  {
+    try
+    {
+      this->dataPtr->value = boost::lexical_cast<T>(_value);
+    }
+    catch(...)
+    {
+      if (this->dataPtr->typeName == "bool")
+      {
+        std::string strValue = _value;
+        boost::algorithm::to_lower(strValue);
+        if (strValue == "true" || strValue == "1")
+          this->dataPtr->value = true;
+        else
+          this->dataPtr->value = false;
+      }
+      else
+        sdferr << "Unable to init parameter value from string["
+          << _value << "]\n";
+    }
+
+    this->dataPtr->defaultValue = this->dataPtr->value;
+    this->dataPtr->set = false;
+            }
+
 }
 #endif

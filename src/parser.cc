@@ -45,7 +45,12 @@ bool init(SDFPtr _sdf)
   filename = sdf::findFile(fileToFind);
 
   FILE *ftest = NULL;
+#ifndef _WIN32
+  ftest = fopen(filename.c_str(), "r");
+#else
   fopen_s(&ftest, filename.c_str(), "r");
+#endif
+
   if (ftest && initFile(filename, _sdf))
   {
     result = true;
@@ -684,7 +689,7 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
           // world file. This highlights the need to make model inclusion
           // a core feature of SDF, and not a hack that that parser handles
           // includeSDF->GetRoot()->GetFirstElement()->SetInclude(
-	  // elemXml->Attribute("filename"));
+          // elemXml->Attribute("filename"));
         }
 
         continue;
