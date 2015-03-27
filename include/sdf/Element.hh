@@ -14,11 +14,11 @@
  * limitations under the License.
  *
 */
-
 #ifndef _SDF_ELEMENT_HH_
 #define _SDF_ELEMENT_HH_
 
 #include <string>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
@@ -341,7 +341,6 @@ namespace sdf
     }
     return false;
   }
-
 }
 
 #ifdef _WIN32

@@ -98,7 +98,7 @@ namespace sdf
   };
 
   /// \}
- 
+
   /// \internal
   /// \brief Private data for SDF
   class SDFPrivate

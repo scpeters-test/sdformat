@@ -318,6 +318,5 @@ namespace sdf
     this->dataPtr->defaultValue = this->dataPtr->value;
     this->dataPtr->set = false;
             }
-
 }
 #endif

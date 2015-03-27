@@ -17,7 +17,6 @@
 
 #include <math.h>
 #include <locale.h>
-#include "sdf/ParamPrivate.hh"
 #include "sdf/Param.hh"
 
 using namespace sdf;
@@ -181,7 +180,10 @@ bool Param::SetFromString(const std::string &_value)
       if (this->dataPtr->typeName == "int")
         this->dataPtr->value = std::stoi(tmp, NULL, 16);
       else if (this->dataPtr->typeName == "unsigned int")
-        this->dataPtr->value = static_cast<unsigned int>(std::stoul(tmp, NULL, 16));
+      {
+        this->dataPtr->value = static_cast<unsigned int>(
+            std::stoul(tmp, NULL, 16));
+      }
       else
       {
         boost::apply_visitor(string_set(tmp), this->dataPtr->value);
@@ -193,7 +195,10 @@ bool Param::SetFromString(const std::string &_value)
       if (this->dataPtr->typeName == "int")
         this->dataPtr->value = std::stoi(tmp, NULL, 10);
       else if (this->dataPtr->typeName == "unsigned int")
-        this->dataPtr->value = static_cast<unsigned int>(std::stoul(tmp, NULL, 10));
+      {
+        this->dataPtr->value = static_cast<unsigned int>(
+            std::stoul(tmp, NULL, 10));
+      }
       else if (this->dataPtr->typeName == "double")
         this->dataPtr->value = std::stod(tmp);
       else if (this->dataPtr->typeName == "float")
@@ -203,7 +208,7 @@ bool Param::SetFromString(const std::string &_value)
     }
   }
   // Catch invalid argument exception from std::stoi/stoul/stod/stof
-  catch(std::invalid_argument e)
+  catch(std::invalid_argument &)
   {
     sdferr << "Invalid argument. Unable to set value ["
       << str << " ] for key["
@@ -211,7 +216,7 @@ bool Param::SetFromString(const std::string &_value)
     return false;
   }
   // Catch out of range exception from std::stoi/stoul/stod/stof
-  catch(std::out_of_range e)
+  catch(std::out_of_range &)
   {
     sdferr << "Out of range. Unable to set value ["
       << str << " ] for key["
@@ -219,7 +224,7 @@ bool Param::SetFromString(const std::string &_value)
     return false;
   }
   // Catch boost lexical cast exceptions
-  catch(boost::bad_lexical_cast e)
+  catch(boost::bad_lexical_cast &)
   {
     if (str == "inf" || str == "-inf")
     {

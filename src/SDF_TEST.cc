@@ -34,8 +34,8 @@ class RmlUpdate : public testing::Test
 #ifndef _WIN32
                this->origSDFPath = getenv("SDF_PATH");
 #else
-	       this->origSDFPath = const_cast<char*>(
-	         sdf::winGetEnv("SDF_PATH"));
+               this->origSDFPath = const_cast<char*>(
+                   sdf::winGetEnv("SDF_PATH"));
 #endif
 
                setenv("SDF_PATH", path.string().c_str(), 1);

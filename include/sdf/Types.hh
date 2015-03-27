@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 #include "sdf/system_util.hh"
 
@@ -34,9 +36,6 @@
 #define SDF_DEPRECATED(version)
 #define SDF_FORCEINLINE
 #endif
-
-#include <vector>
-#include <boost/shared_ptr.hpp>
 
 namespace sdf
 {

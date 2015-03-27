@@ -16,7 +16,6 @@
  */
 
 #include "sdf/Assert.hh"
-#include "sdf/ElementPrivate.hh"
 #include "sdf/Element.hh"
 
 using namespace sdf;
@@ -114,8 +113,8 @@ void Element::AddValue(const std::string &_type,
     const std::string &_defaultValue, bool _required,
     const std::string &_description)
 {
-  this->dataPtr->value = this->CreateParam(this->dataPtr->name, _type, _defaultValue, _required,
-      _description);
+  this->dataPtr->value = this->CreateParam(this->dataPtr->name,
+      _type, _defaultValue, _required, _description);
 }
 
 /////////////////////////////////////////////////
@@ -540,7 +539,8 @@ ParamPtr Element::GetValue()
 bool Element::HasElement(const std::string &_name) const
 {
   ElementPtr_V::const_iterator iter;
-  for (iter = this->dataPtr->elements.begin(); iter != this->dataPtr->elements.end(); ++iter)
+  for (iter = this->dataPtr->elements.begin();
+       iter != this->dataPtr->elements.end(); ++iter)
   {
     if ((*iter)->GetName() == _name)
       return true;
@@ -553,7 +553,8 @@ bool Element::HasElement(const std::string &_name) const
 ElementPtr Element::GetElementImpl(const std::string &_name) const
 {
   ElementPtr_V::const_iterator iter;
-  for (iter = this->dataPtr->elements.begin(); iter != this->dataPtr->elements.end(); ++iter)
+  for (iter = this->dataPtr->elements.begin();
+       iter != this->dataPtr->elements.end(); ++iter)
   {
     if ((*iter)->GetName() == _name)
       return (*iter);

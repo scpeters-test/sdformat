@@ -256,7 +256,7 @@ urdf::Vector3 ParseVector3(const std::string &_str, double _scale)
         vals.push_back(_scale
             * boost::lexical_cast<double>(pieces[i].c_str()));
       }
-      catch(boost::bad_lexical_cast e)
+      catch(boost::bad_lexical_cast &)
       {
         sdferr << "xml key [" << _str
           << "][" << i << "] value [" << pieces[i]
