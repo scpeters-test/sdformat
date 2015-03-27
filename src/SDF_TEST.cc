@@ -31,7 +31,12 @@ class RmlUpdate : public testing::Test
                  / "sdf" / SDF_VERSION;
 
                // Store original env var.
+#ifndef _WIN32
                this->origSDFPath = getenv("SDF_PATH");
+#else
+	       this->origSDFPath = const_cast<char*>(
+	         sdf::winGetEnv("SDF_PATH"));
+#endif
 
                setenv("SDF_PATH", path.string().c_str(), 1);
              }
@@ -75,8 +80,8 @@ TEST_F(RmlUpdate, UpdateAttribute)
   sdfParsed.SetFromString(stream.str());
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  sdf::ElementPtr modelElem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
+  sdf::ElementPtr modelElem = sdfParsed.GetRoot()->GetElement("model");
 
   // Read name attribute value
   EXPECT_TRUE(modelElem->HasAttribute("name"));
@@ -94,10 +99,10 @@ TEST_F(RmlUpdate, UpdateAttribute)
   for (i = 0; i < 4; i++)
   {
     // Update test class variables
-    fixture.name[0] = 'd' + i;
+    fixture.name[0] = 'd' + static_cast<char>(i);
 
     // Update root sdf element
-    sdfParsed.root->Update();
+    sdfParsed.GetRoot()->Update();
 
     // Expect sdf values to match test class variables
     nameParam->Get(nameCheck);
@@ -121,8 +126,8 @@ TEST_F(RmlUpdate, UpdateElement)
   sdfParsed.SetFromString(stream.str());
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  sdf::ElementPtr modelElem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
+  sdf::ElementPtr modelElem = sdfParsed.GetRoot()->GetElement("model");
 
   // Read static element value
   EXPECT_TRUE(modelElem->HasElement("static"));
@@ -154,7 +159,7 @@ TEST_F(RmlUpdate, UpdateElement)
     fixture.pose.pos.z = -i*i*i;
 
     // Update root sdf element
-    sdfParsed.root->Update();
+    sdfParsed.GetRoot()->Update();
 
     // Expect sdf values to match test class variables
     staticParam->Get(flagCheck);
@@ -190,8 +195,8 @@ TEST_F(RmlUpdate, ElementRemoveFromParent)
   sdf::ElementPtr elem;
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  elem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
+  elem = sdfParsed.GetRoot()->GetElement("model");
 
   // Select the second model named 'model2'
   elem = elem->GetNextElement("model");
@@ -203,7 +208,7 @@ TEST_F(RmlUpdate, ElementRemoveFromParent)
   elem->RemoveFromParent();
 
   // Get first model element again
-  elem = sdfParsed.root->GetElement("model");
+  elem = sdfParsed.GetRoot()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -245,8 +250,8 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   sdf::ElementPtr elem, elem2;
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  elem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
+  elem = sdfParsed.GetRoot()->GetElement("model");
 
   // Select the static element in model1
   elem2 = elem->GetElement("static");
@@ -255,7 +260,7 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   elem->RemoveChild(elem2);
 
   // Get first model element again
-  elem = sdfParsed.root->GetElement("model");
+  elem = sdfParsed.GetRoot()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -267,10 +272,10 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   elem2 = elem->GetNextElement("model");
 
   // Remove model2
-  sdfParsed.root->RemoveChild(elem2);
+  sdfParsed.GetRoot()->RemoveChild(elem2);
 
   // Get first model element again
-  elem = sdfParsed.root->GetElement("model");
+  elem = sdfParsed.GetRoot()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -345,7 +350,7 @@ TEST_F(RmlUpdate, EmptyValues)
   EXPECT_EQ(elem->Get<sdf::Color>(emptyString), sdf::Color());
   elem->AddValue("color", ".1 .2 .3 1.0", "0", "description");
   EXPECT_EQ(elem->Get<sdf::Color>(emptyString),
-            sdf::Color(.1, .2, .3, 1.0));
+            sdf::Color(.1f, .2f, .3f, 1.0f));
 
   elem.reset(new sdf::Element());
   EXPECT_EQ(elem->Get<sdf::Time>(emptyString), sdf::Time());

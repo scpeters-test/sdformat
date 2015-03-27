@@ -64,7 +64,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       double sec = boost::lexical_cast<double>(time_stamp_char);
       ms.time_stamp.set(sec);
     }
-    catch (boost::bad_lexical_cast &e) {
+    catch (boost::bad_lexical_cast e) {
       //logError("Parsing time stamp [%s] failed: %s", time_stamp_char, e.what());
       return false;
     }
@@ -97,7 +97,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->position.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &e) {
+          catch (boost::bad_lexical_cast e) {
             throw ParseError("position element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -116,7 +116,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->velocity.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &e) {
+          catch (boost::bad_lexical_cast e) {
             throw ParseError("velocity element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -135,7 +135,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->effort.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &e) {
+          catch (boost::bad_lexical_cast e) {
             throw ParseError("effort element ("+ pieces[i] +") is not a valid float");
           }
         }

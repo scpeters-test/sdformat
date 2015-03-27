@@ -18,14 +18,15 @@
 #ifndef _SDF_PARAM_HH_
 #define _SDF_PARAM_HH_
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <boost/lexical_cast.hpp>
-# include <boost/bind.hpp>
-# include <boost/algorithm/string.hpp>
-# include <boost/variant.hpp>
-# include <boost/any.hpp>
-# include <boost/function.hpp>
-# include <boost/shared_ptr.hpp>
+// See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#ifndef Q_MOC_RUN
+  #include <boost/lexical_cast.hpp>
+  #include <boost/bind.hpp>
+  #include <boost/algorithm/string.hpp>
+  #include <boost/any.hpp>
+  #include <boost/shared_ptr.hpp>
+  #include <boost/variant.hpp>
+  #include <boost/function.hpp>
 #endif
 
 #include <typeinfo>
@@ -47,6 +48,9 @@ namespace sdf
   /// \def Param_V
   /// \brief vector or boost shared_ptrs to a Param
   typedef std::vector<ParamPtr> Param_V;
+
+  /// \internal
+  class ParamPrivate;
 
   /// \class Param Param.hh sdf/sdf.hh
   /// \brief A parameter class
@@ -83,7 +87,7 @@ namespace sdf
 
     /// \brief Get the key value.
     /// \return The key.
-    public: const std::string &GetKey() const {return this->key;}
+    public: const std::string &GetKey() const;
 
     /// \brief Get the type of the value stored.
     /// \return The std::type_info.
@@ -95,11 +99,11 @@ namespace sdf
 
     /// \brief Return whether the parameter is required.
     /// \return True if the parameter is required.
-    public: bool GetRequired() const {return this->required;}
+    public: bool GetRequired() const;
 
     /// \brief Return true if the parameter has been set.
     /// \return True if the parameter has been set.
-    public: bool GetSet() const {return this->set;}
+    public: bool GetSet() const;
 
     /// \brief Clone the parameter.
     /// \return A new parameter that is the clone of this.
@@ -109,7 +113,7 @@ namespace sdf
     /// set the parameter's value when Param::Update is called.
     /// \param[in] _updateFunc Function pointer to an update function.
     public: template<typename T> void SetUpdateFunc(T _updateFunc)
-            {this->updateFunc = _updateFunc;}
+            {this->dataPtr->updateFunc = _updateFunc;}
 
     /// \brief Set the parameter's value using the updateFunc.
     /// \sa Param::SetUpdateFunc
@@ -130,7 +134,8 @@ namespace sdf
               }
               catch(...)
               {
-                sdferr << "Unable to set parameter[" << this->key << "]."
+                sdferr << "Unable to set parameter["
+		       << this->dataPtr->key << "]."
                        << "Type type used must have a stream input and output"
                        << "operator, which allow boost::lexical_cast to"
                        << "function properly.\n";
@@ -148,10 +153,11 @@ namespace sdf
             {
               try
               {
-                if (typeid(T) == typeid(bool) && this->typeName == "string")
+                if (typeid(T) == typeid(bool) &&
+		    this->dataPtr->typeName == "string")
                 {
                   std::string strValue =
-                    boost::lexical_cast<std::string>(this->value);
+                    boost::lexical_cast<std::string>(this->dataPtr->value);
                   if (strValue == "true" || strValue  == "1")
                     _value = boost::lexical_cast<T>("1");
                   else
@@ -159,13 +165,15 @@ namespace sdf
                 }
                 else
                 {
-                  _value = boost::lexical_cast<T>(this->value);
+                  _value = boost::lexical_cast<T>(this->dataPtr->value);
                 }
               }
               catch(...)
               {
-                sdferr << "Unable to convert parameter[" << this->key << "] "
-                       << "whose type is[" << this->typeName << "], to "
+                sdferr << "Unable to convert parameter["
+		       << this->dataPtr->key << "] "
+                       << "whose type is["
+		       << this->dataPtr->typeName << "], to "
                        << "type[" << typeid(T).name() << "]\n";
                 return false;
               }
@@ -181,12 +189,14 @@ namespace sdf
             {
               try
               {
-                _value = boost::lexical_cast<T>(this->defaultValue);
+                _value = boost::lexical_cast<T>(this->dataPtr->defaultValue);
               }
               catch(...)
               {
-                sdferr << "Unable to convert parameter[" << this->key << "] "
-                       << "whose type is[" << this->typeName << "], to "
+                sdferr << "Unable to convert parameter["
+		       << this->dataPtr->key << "] "
+                       << "whose type is["
+		       << this->dataPtr->typeName << "], to "
                        << "type[" << typeid(T).name() << "]\n";
                 return false;
               }
@@ -197,12 +207,7 @@ namespace sdf
     /// provided Param.
     /// \param[in] _param The parameter to set values from.
     /// \return *This
-    public: Param &operator =(const Param &_param)
-            {
-              this->value = _param.value;
-              this->defaultValue  = _param.defaultValue;
-              return *this;
-            }
+    public: Param &operator=(const Param &_param);
 
     /// \brief Set the description of the parameter.
     /// \param[in] _desc New description for the parameter.
@@ -230,58 +235,66 @@ namespace sdf
             {
               try
               {
-                this->value = boost::lexical_cast<T>(_value);
+                this->dataPtr->value = boost::lexical_cast<T>(_value);
               }
               catch(...)
               {
-                if (this->typeName == "bool")
+                if (this->dataPtr->typeName == "bool")
                 {
                   std::string strValue = _value;
                   boost::algorithm::to_lower(strValue);
                   if (strValue == "true" || strValue == "1")
-                    this->value = true;
+                    this->dataPtr->value = true;
                   else
-                    this->value = false;
+                    this->dataPtr->value = false;
                 }
                 else
                   sdferr << "Unable to init parameter value from string["
                     << _value << "]\n";
               }
 
-              this->defaultValue = this->value;
-              this->set = false;
+              this->dataPtr->defaultValue = this->dataPtr->value;
+              this->dataPtr->set = false;
             }
 
+    /// \brief Private data
+    private: ParamPrivate *dataPtr;
+  };
+
+  /// \internal
+  /// \brief Private data for the param class
+  class ParamPrivate
+  {
     /// \brief Key value
-    private: std::string key;
+    public: std::string key;
 
     /// \brief True if the parameter is required.
-    private: bool required;
+    public: bool required;
 
     /// \brief True if the parameter is set.
-    private: bool set;
+    public: bool set;
 
     //// \brief Name of the type.
-    private: std::string typeName;
+    public: std::string typeName;
 
     /// \brief Description of the parameter.
-    private: std::string description;
+    public: std::string description;
 
     /// \brief Update function pointer.
-    private: boost::function<boost::any ()> updateFunc;
+    public: boost::function<boost::any ()> updateFunc;
 
     /// \def ParamVariant
     /// \briead Variant type def.
-    private: typedef boost::variant<bool, char, std::string, int,
+    public: typedef boost::variant<bool, char, std::string, int,
                unsigned int, double, float, sdf::Vector3, sdf::Vector2i,
                sdf::Vector2d, sdf::Quaternion, sdf::Pose, sdf::Color,
                sdf::Time> ParamVariant;
 
     /// \brief This parameter's value
-    protected: ParamVariant value;
+    public: ParamVariant value;
 
     /// \brief This parameter's default value
-    protected: ParamVariant defaultValue;
+    public: ParamVariant defaultValue;
   };
 }
 #endif

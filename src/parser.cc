@@ -39,12 +39,13 @@ bool init(SDFPtr _sdf)
   std::string filename;
   std::string fileToFind = "root.sdf";
 
-  if (sdf::SDF::version == "1.0" || sdf::SDF::version == "1.2")
+  if (sdf::SDF::GetVersion() == "1.0" || sdf::SDF::GetVersion() == "1.2")
     fileToFind = "gazebo.sdf";
 
   filename = sdf::findFile(fileToFind);
 
-  FILE *ftest = fopen(filename.c_str(), "r");
+  FILE *ftest = NULL;
+  fopen_s(&ftest, filename.c_str(), "r");
   if (ftest && initFile(filename, _sdf))
   {
     result = true;
@@ -111,7 +112,7 @@ bool initDoc(TiXmlDocument *_xmlDoc, SDFPtr _sdf)
     return false;
   }
 
-  return initXml(xml, _sdf->root);
+  return initXml(xml, _sdf->GetRoot());
 }
 
 //////////////////////////////////////////////////
@@ -318,7 +319,7 @@ bool readString(const std::string &_xmlString, ElementPtr _sdf)
     return true;
   else
   {
-    sdferr << "parse as sdf version " << SDF::version << " failed, "
+    sdferr << "parse as sdf version " << SDF::GetVersion() << " failed, "
           << "should try to parse as old deprecated format\n";
     return false;
   }
@@ -340,17 +341,19 @@ bool readDoc(TiXmlDocument *_xmlDoc, SDFPtr _sdf, const std::string &_source)
 
   if (sdfNode && sdfNode->Attribute("version"))
   {
-    if (strcmp(sdfNode->Attribute("version"), SDF::version.c_str()) != 0)
+    if (strcmp(sdfNode->Attribute("version"), SDF::GetVersion().c_str()) != 0)
     {
       sdfdbg << "Converting a deprecated source[" << _source << "].\n";
-      Converter::Convert(_xmlDoc, SDF::version);
+      Converter::Convert(_xmlDoc, SDF::GetVersion());
     }
 
     // parse new sdf xml
-    TiXmlElement *elemXml = _xmlDoc->FirstChildElement(_sdf->root->GetName());
-    if (!readXml(elemXml, _sdf->root))
+    TiXmlElement *elemXml = _xmlDoc->FirstChildElement(
+      _sdf->GetRoot()->GetName());
+    if (!readXml(elemXml, _sdf->GetRoot()))
     {
-      sdferr << "Unable to read element <" << _sdf->root->GetName() << ">\n";
+      sdferr << "Unable to read element <" << _sdf->GetRoot()->GetName()
+             << ">\n";
       return false;
     }
   }
@@ -363,10 +366,10 @@ bool readDoc(TiXmlDocument *_xmlDoc, SDFPtr _sdf, const std::string &_source)
       sdfdbg << "SDF <sdf> element has no version in file["
              << _source << "]\n";
     else if (strcmp(sdfNode->Attribute("version"),
-                    SDF::version.c_str()) != 0)
+                    SDF::GetVersion().c_str()) != 0)
       sdfdbg << "SDF version ["
             << sdfNode->Attribute("version")
-            << "] is not " << SDF::version << "\n";
+            << "] is not " << SDF::GetVersion() << "\n";
     return false;
   }
 
@@ -391,10 +394,10 @@ bool readDoc(TiXmlDocument *_xmlDoc, ElementPtr _sdf,
   if (sdfNode && sdfNode->Attribute("version"))
   {
     if (strcmp(sdfNode->Attribute("version"),
-               SDF::version.c_str()) != 0)
+               SDF::GetVersion().c_str()) != 0)
     {
       sdfwarn << "Converting a deprecated SDF source[" << _source << "].\n";
-      Converter::Convert(_xmlDoc, SDF::version);
+      Converter::Convert(_xmlDoc, SDF::GetVersion());
     }
 
     TiXmlElement* elemXml = sdfNode;
@@ -420,10 +423,10 @@ bool readDoc(TiXmlDocument *_xmlDoc, ElementPtr _sdf,
     else if (!sdfNode->Attribute("version"))
       sdfdbg << "<sdf> element has no version\n";
     else if (strcmp(sdfNode->Attribute("version"),
-                    SDF::version.c_str()) != 0)
+                    SDF::GetVersion().c_str()) != 0)
       sdfdbg << "SDF version ["
             << sdfNode->Attribute("version")
-            << "] is not " << SDF::version << "\n";
+            << "] is not " << SDF::GetVersion() << "\n";
     return false;
   }
 
@@ -623,7 +626,7 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
           init(includeSDFTemplate);
         }
         SDFPtr includeSDF(new SDF);
-        includeSDF->root = includeSDFTemplate->root->Clone();
+        includeSDF->SetRoot(includeSDFTemplate->GetRoot()->Clone());
 
         if (!readFile(filename, includeSDF))
         {
@@ -633,21 +636,21 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
 
         if (elemXml->FirstChildElement("name"))
         {
-          includeSDF->root->GetElement("model")->GetAttribute(
+          includeSDF->GetRoot()->GetElement("model")->GetAttribute(
               "name")->SetFromString(
                 elemXml->FirstChildElement("name")->GetText());
         }
 
         if (elemXml->FirstChildElement("pose"))
         {
-          includeSDF->root->GetElement("model")->GetElement(
+          includeSDF->GetRoot()->GetElement("model")->GetElement(
               "pose")->GetValue()->SetFromString(
                 elemXml->FirstChildElement("pose")->GetText());
         }
 
         if (elemXml->FirstChildElement("static"))
         {
-          includeSDF->root->GetElement("model")->GetElement(
+          includeSDF->GetRoot()->GetElement("model")->GetElement(
               "static")->GetValue()->SetFromString(
                 elemXml->FirstChildElement("static")->GetText());
         }
@@ -658,7 +661,7 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
           if (std::string("plugin") == childElemXml->Value())
           {
             sdf::ElementPtr pluginElem;
-            pluginElem = includeSDF->root->GetElement(
+            pluginElem = includeSDF->GetRoot()->GetElement(
                 "model")->AddElement("plugin");
 
             pluginElem->GetAttribute("filename")->SetFromString(
@@ -670,18 +673,18 @@ bool readXml(TiXmlElement *_xml, ElementPtr _sdf)
 
         if (_sdf->GetName() == "model")
         {
-          addNestedModel(_sdf, includeSDF->root);
+          addNestedModel(_sdf, includeSDF->GetRoot());
         }
         else
         {
-          includeSDF->root->GetFirstElement()->SetParent(_sdf);
-          _sdf->InsertElement(includeSDF->root->GetFirstElement());
+          includeSDF->GetRoot()->GetFirstElement()->SetParent(_sdf);
+          _sdf->InsertElement(includeSDF->GetRoot()->GetFirstElement());
           // TODO: This was used to store the included filename so that when
           // a world is saved, the included model's SDF is not stored in the
           // world file. This highlights the need to make model inclusion
           // a core feature of SDF, and not a hack that that parser handles
-          // includeSDF->root->GetFirstElement()->SetInclude(elemXml->Attribute(
-          //      "filename"));
+          // includeSDF->GetRoot()->GetFirstElement()->SetInclude(
+	  // elemXml->Attribute("filename"));
         }
 
         continue;

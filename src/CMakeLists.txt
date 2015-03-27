@@ -17,11 +17,13 @@ set (sources
   Assert.cc
   Console.cc
   Converter.cc
+  Element.cc
   Exception.cc
   parser.cc
   parser_urdf.cc
   Param.cc
   SDF.cc
+  Types.cc
 )
 
 include_directories(${Boost_INCLUDE_DIRS})

@@ -114,7 +114,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         //logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
       }
     }
-    catch (ParseError &e) {
+    catch (ParseError e) {
       //logDebug("material xml is not initialized correctly");
       material.reset();
       model.reset();
@@ -170,7 +170,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         //logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
       }
     }
-    catch (ParseError &e) {
+    catch (ParseError e) {
       //logDebug("link xml is not initialized correctly");
       model.reset();
       return model;
@@ -221,7 +221,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   {
     model->initTree(parent_link_tree);
   }
-  catch(ParseError &e)
+  catch(ParseError e)
   {
     //logDebug("Failed to build tree: %s", e.what());
     model.reset();
@@ -233,7 +233,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   {
     model->initRoot(parent_link_tree);
   }
-  catch(ParseError &e)
+  catch(ParseError e)
   {
     //logDebug("Failed to find root link: %s", e.what());
     model.reset();
