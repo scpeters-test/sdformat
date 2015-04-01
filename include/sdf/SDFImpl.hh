@@ -93,13 +93,8 @@ namespace sdf
     /// \return The version as a string
     public: static std::string Version();
 
-    /// \brief Deprecated. See Root()
-    /// \sa Root()
-    public: ElementPtr root SDF_DEPRECATED(4.0);
-
-    /// \brief Deprecated. See Version()
-    /// \sa Version()
-    public: static std::string version SDF_DEPRECATED(4.0);
+    /// \brief Data pointer
+    private: SDFPrivate *dataPtr;
   };
   /// \}
 

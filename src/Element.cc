@@ -773,85 +773,6 @@ void Element::RemoveFromParent()
   }
 }
 
-
-/////////////////////////////////////////////////
-bool Element::GetValueBool(const std::string &_key)
-{
-  return this->Get<bool>(_key);
-}
-
-/////////////////////////////////////////////////
-int Element::GetValueInt(const std::string &_key)
-{
-  return this->Get<int>(_key);
-}
-
-/////////////////////////////////////////////////
-float Element::GetValueFloat(const std::string &_key)
-{
-  return this->Get<float>(_key);
-}
-
-/////////////////////////////////////////////////
-double Element::GetValueDouble(const std::string &_key)
-{
-  return this->Get<double>(_key);
-}
-
-/////////////////////////////////////////////////
-unsigned int Element::GetValueUInt(const std::string &_key)
-{
-  return this->Get<unsigned int>(_key);
-}
-
-/////////////////////////////////////////////////
-char Element::GetValueChar(const std::string &_key)
-{
-  return this->Get<char>(_key);
-}
-
-/////////////////////////////////////////////////
-std::string Element::GetValueString(const std::string &_key)
-{
-  return this->Get<std::string>(_key);
-}
-
-/////////////////////////////////////////////////
-sdf::Vector3 Element::GetValueVector3(const std::string &_key)
-{
-  return this->Get<sdf::Vector3>(_key);
-}
-
-/////////////////////////////////////////////////
-sdf::Vector2d Element::GetValueVector2d(const std::string &_key)
-{
-  return this->Get<sdf::Vector2d>(_key);
-}
-
-/////////////////////////////////////////////////
-sdf::Quaternion Element::GetValueQuaternion(const std::string &_key)
-{
-  return this->Get<sdf::Quaternion>(_key);
-}
-
-/////////////////////////////////////////////////
-sdf::Pose Element::GetValuePose(const std::string &_key)
-{
-  return this->Get<sdf::Pose>(_key);
-}
-
-/////////////////////////////////////////////////
-sdf::Color Element::GetValueColor(const std::string &_key)
-{
-  return this->Get<sdf::Color>(_key);
-}
-
-/////////////////////////////////////////////////
-sdf::Time Element::GetValueTime(const std::string &_key)
-{
-  return this->Get<sdf::Time>(_key);
-}
-
 /////////////////////////////////////////////////
 void Element::RemoveChild(ElementPtr _child)
 {
@@ -866,4 +787,34 @@ void Element::RemoveChild(ElementPtr _child)
     _child->SetParent(ElementPtr());
     this->dataPtr->elements.erase(iter);
   }
+}
+
+/////////////////////////////////////////////////
+boost::any Element::GetAny(const std::string &_key)
+{
+  boost::any result;
+  if (_key.empty() && this->dataPtr->value)
+  {
+    if (!this->dataPtr->value->GetAny(result))
+    {
+      sdferr << "Couldn't get element [" << this->GetName()
+             << "] as boost::any\n";
+    }
+  }
+  else if (!_key.empty())
+  {
+    ParamPtr param = this->GetAttribute(_key);
+    if (param)
+    {
+      if (!this->GetAttribute(_key)->GetAny(result))
+        sdferr << "Couldn't get attribute [" << _key << "] as boost::any\n";
+    }
+    else if (this->HasElement(_key))
+      result = this->GetElementImpl(_key)->GetAny();
+    else if (this->HasElementDescription(_key))
+      result = this->GetElementDescription(_key)->GetAny();
+    else
+      sdferr << "Unable to find value for key [" << _key << "]\n";
+  }
+  return result;
 }

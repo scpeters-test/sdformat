@@ -26,16 +26,6 @@
 
 using namespace sdf;
 
-/// \todo Remove this pragma when SDF::version is removed
-#ifndef _WIN32
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-std::string SDF::version = SDF_VERSION;
-#ifndef _WIN32
-#pragma GCC diagnostic pop
-#endif
-
 typedef std::list<boost::filesystem::path> PathList;
 typedef std::map<std::string, PathList> URIPathMap;
 
