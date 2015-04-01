@@ -18,8 +18,6 @@
   #include <Windows.h>
 #endif
 
-#include <regex>
-
 #include "sdf/Types.hh"
 
 /////////////////////////////////////////////////
