@@ -26,6 +26,16 @@
 
 using namespace sdf;
 
+/// \todo Remove this pragma when SDF::version is removed
+#ifndef _WIN32
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+std::string SDF::version = SDF_VERSION;
+#ifndef _WIN32
+#pragma GCC diagnostic pop
+#endif
+
 typedef std::list<boost::filesystem::path> PathList;
 typedef std::map<std::string, PathList> URIPathMap;
 
@@ -75,7 +85,7 @@ std::string sdf::findFile(const std::string &_filename, bool _searchLocalPath,
 
   // Next check the versioned install path.
   path = boost::filesystem::path(SDF_SHARE_PATH) / "sdformat" /
-    sdf::SDF::GetVersion() / _filename;
+    sdf::SDF::Version() / _filename;
   if (boost::filesystem::exists(path))
     return path.string();
 
@@ -83,7 +93,7 @@ std::string sdf::findFile(const std::string &_filename, bool _searchLocalPath,
 #ifndef _WIN32
   char *pathCStr = getenv("SDF_PATH");
 #else
-  const char *pathCStr = sdf::winGetEnv("HOMEPATH");
+  const char *pathCStr = sdf::winGetEnv("SDF_PATH");
 #endif
 
   if (pathCStr)
@@ -160,7 +170,6 @@ SDF::SDF()
   this->dataPtr->root.reset(new Element);
 }
 
-
 /////////////////////////////////////////////////
 SDF::~SDF()
 {
@@ -233,7 +242,7 @@ void SDF::PrintDoc()
   << "</head>\n<body>\n";
 
   std::cout << "<div style='padding:4px'>\n"
-            << "<h1>SDF " << SDF::GetVersion() << "</h1>\n";
+            << "<h1>SDF " << SDF::Version() << "</h1>\n";
 
   std::cout << "<p>The Robot Modeling Language (SDF) is an XML file "
             << "format used to describe all the elements in a simulation "
@@ -317,7 +326,7 @@ std::string SDF::ToString() const
 
   stream << "<?xml version='1.0'?>\n";
   if (this->dataPtr->root->GetName() != "sdf")
-    stream << "<sdf version='" << SDF::GetVersion() << "'>\n";
+    stream << "<sdf version='" << SDF::Version() << "'>\n";
 
   stream << this->dataPtr->root->ToString("");
 
@@ -338,19 +347,19 @@ void SDF::SetFromString(const std::string &_sdfData)
 }
 
 /////////////////////////////////////////////////
-ElementPtr SDF::GetRoot() const
+ElementPtr SDF::Root() const
 {
   return this->dataPtr->root;
 }
 
 /////////////////////////////////////////////////
-void SDF::SetRoot(const ElementPtr _root)
+void SDF::Root(const ElementPtr _root)
 {
   this->dataPtr->root = _root;
 }
 
 /////////////////////////////////////////////////
-std::string SDF::GetVersion()
+std::string SDF::Version()
 {
   return SDF_VERSION;
 }

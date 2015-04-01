@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
+#include <boost/any.hpp>
 #include "test_config.h"
 #include "sdf/sdf.hh"
 
@@ -80,8 +81,8 @@ TEST_F(RmlUpdate, UpdateAttribute)
   sdfParsed.SetFromString(stream.str());
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
-  sdf::ElementPtr modelElem = sdfParsed.GetRoot()->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  sdf::ElementPtr modelElem = sdfParsed.Root()->GetElement("model");
 
   // Read name attribute value
   EXPECT_TRUE(modelElem->HasAttribute("name"));
@@ -102,7 +103,7 @@ TEST_F(RmlUpdate, UpdateAttribute)
     fixture.name[0] = 'd' + static_cast<char>(i);
 
     // Update root sdf element
-    sdfParsed.GetRoot()->Update();
+    sdfParsed.Root()->Update();
 
     // Expect sdf values to match test class variables
     nameParam->Get(nameCheck);
@@ -126,8 +127,8 @@ TEST_F(RmlUpdate, UpdateElement)
   sdfParsed.SetFromString(stream.str());
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
-  sdf::ElementPtr modelElem = sdfParsed.GetRoot()->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  sdf::ElementPtr modelElem = sdfParsed.Root()->GetElement("model");
 
   // Read static element value
   EXPECT_TRUE(modelElem->HasElement("static"));
@@ -159,7 +160,7 @@ TEST_F(RmlUpdate, UpdateElement)
     fixture.pose.pos.z = -i*i*i;
 
     // Update root sdf element
-    sdfParsed.GetRoot()->Update();
+    sdfParsed.Root()->Update();
 
     // Expect sdf values to match test class variables
     staticParam->Get(flagCheck);
@@ -195,8 +196,8 @@ TEST_F(RmlUpdate, ElementRemoveFromParent)
   sdf::ElementPtr elem;
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
-  elem = sdfParsed.GetRoot()->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  elem = sdfParsed.Root()->GetElement("model");
 
   // Select the second model named 'model2'
   elem = elem->GetNextElement("model");
@@ -208,7 +209,7 @@ TEST_F(RmlUpdate, ElementRemoveFromParent)
   elem->RemoveFromParent();
 
   // Get first model element again
-  elem = sdfParsed.GetRoot()->GetElement("model");
+  elem = sdfParsed.Root()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -250,8 +251,8 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   sdf::ElementPtr elem, elem2;
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.GetRoot()->HasElement("model"));
-  elem = sdfParsed.GetRoot()->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  elem = sdfParsed.Root()->GetElement("model");
 
   // Select the static element in model1
   elem2 = elem->GetElement("static");
@@ -260,7 +261,7 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   elem->RemoveChild(elem2);
 
   // Get first model element again
-  elem = sdfParsed.GetRoot()->GetElement("model");
+  elem = sdfParsed.Root()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -272,10 +273,10 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   elem2 = elem->GetNextElement("model");
 
   // Remove model2
-  sdfParsed.GetRoot()->RemoveChild(elem2);
+  sdfParsed.Root()->RemoveChild(elem2);
 
   // Get first model element again
-  elem = sdfParsed.GetRoot()->GetElement("model");
+  elem = sdfParsed.Root()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -366,6 +367,158 @@ TEST_F(RmlUpdate, EmptyValues)
   EXPECT_NEAR(elem->Get<double>(emptyString), 0.0, 1e-6);
   elem->AddValue("double", "12.34", "0", "description");
   EXPECT_NEAR(elem->Get<double>(emptyString), 12.34, 1e-6);
+}
+
+/////////////////////////////////////////////////
+TEST_F(RmlUpdate, GetAny)
+{
+  std::ostringstream stream;
+  // Test types double, bool, string, int, vector3, color, pose
+  stream << "<sdf version='1.5'>"
+         << "<world name='test'>"
+         << "   <physics type='ode'>"
+         << "     <gravity> 0 0 -7.1 </gravity>"
+         << "     <max_contacts>8</max_contacts>"
+         << "     <max_step_size>0.002</max_step_size>"
+         << "   </physics>"
+         << "   <model name='test_model'>"
+         << "     <pose>0 1 2 0 0 0</pose>"
+         << "     <static>true</static>"
+         << "     <link name='link1'>"
+         << "       <visual name='visual'>"
+         << "         <material>"
+         << "           <ambient>0.1 0.1 0.1 1</ambient>"
+         << "         </material>"
+         << "       </visual>"
+         << "     </link>"
+         << "   </model>"
+         << "</world>"
+         << "</sdf>";
+  sdf::SDF sdfParsed;
+  sdfParsed.SetFromString(stream.str());
+
+  // Verify correct parsing
+  EXPECT_TRUE(sdfParsed.root->HasElement("world"));
+  sdf::ElementPtr worldElem = sdfParsed.root->GetElement("world");
+
+  EXPECT_TRUE(worldElem->HasElement("model"));
+  sdf::ElementPtr modelElem = worldElem->GetElement("model");
+  EXPECT_TRUE(worldElem->HasElement("physics"));
+  sdf::ElementPtr physicsElem = worldElem->GetElement("physics");
+
+  {
+    boost::any anyValue = modelElem->GetAny("name");
+    try
+    {
+      EXPECT_EQ(boost::any_cast<std::string>(anyValue), "test_model");
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(modelElem->HasElement("pose"));
+    sdf::ElementPtr poseElem = modelElem->GetElement("pose");
+    boost::any anyValue = poseElem->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<sdf::Pose>(anyValue),
+          sdf::Pose(0, 1, 2, 0, 0, 0));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("gravity"));
+    boost::any anyValue = physicsElem->GetElement("gravity")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<sdf::Vector3>(anyValue),
+          sdf::Vector3(0, 0, -7.1));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("max_step_size"));
+    boost::any anyValue = physicsElem->GetElement("max_step_size")->GetAny();
+    try
+    {
+      EXPECT_NEAR(boost::any_cast<double>(anyValue), 0.002, 1e-6);
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("max_contacts"));
+    boost::any anyValue = physicsElem->GetElement("max_contacts")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<int>(anyValue), 8);
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("gravity"));
+    boost::any anyValue = physicsElem->GetElement("gravity")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<sdf::Vector3>(anyValue),
+          sdf::Vector3(0, 0, -7.1));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(modelElem->HasElement("static"));
+    boost::any anyValue = modelElem->GetElement("static")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<bool>(anyValue), true);
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(modelElem->HasElement("link"));
+    EXPECT_TRUE(modelElem->GetElement("link")->HasElement("visual"));
+    EXPECT_TRUE(modelElem->GetElement("link")->GetElement("visual")->
+        HasElement("material"));
+    sdf::ElementPtr materialElem = modelElem->GetElement("link")->
+        GetElement("visual")->GetElement("material");
+    EXPECT_TRUE(materialElem->HasElement("ambient"));
+    boost::any anyValue = materialElem->GetElement("ambient")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<sdf::Color>(anyValue),
+          sdf::Color(0.1, 0.1, 0.1, 1));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
 }
 
 /////////////////////////////////////////////////

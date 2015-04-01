@@ -83,20 +83,24 @@ namespace sdf
 
     /// \brief Get a pointer to the root element
     /// \return Pointer to the root element
-    public: ElementPtr GetRoot() const;
+    public: ElementPtr Root() const;
 
     /// \brief Set the root pointer
     /// \param[in] _root Root element
-    public: void SetRoot(const ElementPtr _root);
+    public: void Root(const ElementPtr _root);
 
     /// \brief Get the version
     /// \return The version as a string
-    public: static std::string GetVersion();
+    public: static std::string Version();
 
-    /// \brief Private data
-    private: SDFPrivate *dataPtr;
+    /// \brief Deprecated. See Root()
+    /// \sa Root()
+    public: ElementPtr root SDF_DEPRECATED(4.0);
+
+    /// \brief Deprecated. See Version()
+    /// \sa Version()
+    public: static std::string version SDF_DEPRECATED(4.0);
   };
-
   /// \}
 
   /// \internal
