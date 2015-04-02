@@ -93,6 +93,10 @@ namespace sdf
     /// \return The version as a string
     public: static std::string Version();
 
+    /// \brief Get the version
+    /// \return The version as a string
+    public: static void Version(const std::string &_version);
+
     /// \brief Data pointer
     private: SDFPrivate *dataPtr;
   };
@@ -102,6 +106,7 @@ namespace sdf
   /// \brief Private data for SDF
   class SDFPrivate
   {
+    /// \brief Root pointer
     public: ElementPtr root;
   };
 }
