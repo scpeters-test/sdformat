@@ -17,6 +17,7 @@
 
 #include <math.h>
 #include <locale.h>
+#include <typeinfo>
 #include "sdf/Param.hh"
 
 using namespace sdf;
@@ -98,6 +99,7 @@ Param::Param(const std::string &_key, const std::string &_typeName,
            this->typeName == "pose" || this->typeName == "Pose")
   {
     this->Init<ignition::math::Pose3d>(_default);
+    std::cout << "Param.cc: " << std::hex << typeid(ignition::math::Pose3d).hash_code() << std::endl;
   }
   else if (this->typeName == "ignition::math::Quaterniond" ||
            this->typeName == "quaternion")

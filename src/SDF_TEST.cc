@@ -19,6 +19,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/any.hpp>
 #include <ignition/math.hh>
+#include <typeinfo>
 #include "test_config.h"
 #include "sdf/sdf.hh"
 
@@ -135,6 +136,12 @@ TEST_F(SDFUpdate, UpdateElement)
   EXPECT_TRUE(modelElem->HasElement("pose"));
   sdf::ParamPtr poseParam = modelElem->GetElement("pose")->GetValue();
   EXPECT_EQ(poseParam->GetType(), typeid(ignition::math::Pose3d));
+
+  std::cout << "SDF_TEST: " << std::hex << typeid(ignition::math::Pose3d).hash_code() << std::endl;
+  std::cout << "SDF_TEST: " << std::hex << typeid(ignition::math::Pose3d).hash_code() << std::endl;
+  std::cout << "SDF_TEST: " << std::hex << typeid(ignition::math::Pose3d).hash_code() << std::endl;
+  std::cout << "SDF_TEST: " << std::hex << typeid(ignition::math::Pose3d).hash_code() << std::endl;
+  std::cout << "SDF_TEST: " << std::hex << typeid(ignition::math::Pose3d).hash_code() << std::endl;
 
   // Set test class variables based on sdf values
   // Set parameter update functions to test class accessors
