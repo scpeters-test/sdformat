@@ -39,8 +39,6 @@ std::string SDF::version = SDF_VERSION;
 typedef std::list<boost::filesystem::path> PathList;
 typedef std::map<std::string, PathList> URIPathMap;
 
-static std::string g_version = SDF_VERSION;
-
 URIPathMap g_uriPathMap;
 
 boost::function<std::string (const std::string &)> g_findFileCB;
