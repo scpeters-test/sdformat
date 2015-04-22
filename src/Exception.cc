@@ -29,6 +29,7 @@ Exception::Exception()
 
 //////////////////////////////////////////////////
 Exception::Exception(const char *_file, int64_t _line, std::string _msg)
+  : dataPtr(new ExceptionPrivate)
 {
   this->dataPtr->file = _file;
   this->dataPtr->line = _line;

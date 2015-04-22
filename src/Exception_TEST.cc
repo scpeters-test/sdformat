@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */
+*/
 
-#ifndef _SDF_EXCEPTION_PRIVATE_HH_
-#define _SDF_EXCEPTION_PRIVATE_HH_
+#include <gtest/gtest.h>
+#include "sdf/Exception.hh"
 
-#include <string>
-#include <stdint.h>
-
-namespace sdf
+////////////////////////////////////////////////////
+/// Test exception throwing
+TEST(Exception, Throwing)
 {
-  /// \internal
-  /// \brief Private data for Exception
-  class ExceptionPrivate
-  {
-    /// \brief The error function
-    public: std::string file;
-
-    /// \brief Line the error occured on
-    public: int64_t line;
-
-    /// \brief The error string
-    public: std::string str;
-  };
+  EXPECT_ANY_THROW(sdfthrow("throw message"));
+  EXPECT_THROW(sdfthrow("throw message"), sdf::Exception);
 }
-#endif
+
+/////////////////////////////////////////////////
+/// Main
+int main(int argc, char **argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

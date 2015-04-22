@@ -18,6 +18,7 @@
 #define _SDFIMPL_HH_
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #include "sdf/Types.hh"
 #include "sdf/Param.hh"
@@ -31,9 +32,8 @@ namespace sdf
   class SDFORMAT_VISIBLE SDF;
 
   /// \def SDFPtr
-  /// \bried boost shared pointer to SDF
+  /// \brief boost shared pointer to SDF
   typedef boost::shared_ptr<SDF> SDFPtr;
-
 
   /// \addtogroup sdf
   /// \{
@@ -63,8 +63,6 @@ namespace sdf
   SDFORMAT_VISIBLE
   void setFindCallback(boost::function<std::string (const std::string &)> _cb);
 
-  class SDFPrivate;
-
   /// \brief Base SDF class
   class SDFORMAT_VISIBLE SDF
   {
@@ -93,21 +91,30 @@ namespace sdf
     /// \return The version as a string
     public: static std::string Version();
 
-    /// \brief Get the version
-    /// \return The version as a string
+    /// \brief Set the version string
+    /// \param[in] _version SDF version string.
     public: static void Version(const std::string &_version);
 
-    /// \brief Data pointer
-    private: SDFPrivate *dataPtr;
+// \todo Remove this warning push/pop after sdformat 4.0
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4251)
+#endif
+
+    /// \brief Deprecated.
+    /// \sa ElementPtr Root()
+    /// \sa void Root(const ElementPtr _root)
+    public: ElementPtr root SDF_DEPRECATED(4.0);
+
+    /// \brief Deprecated.
+    /// \sa std::string Version()
+    /// \sa Version(const std::string &_version)
+    public: static std::string version SDF_DEPRECATED(4.0);
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
   };
   /// \}
-
-  /// \internal
-  /// \brief Private data for SDF
-  class SDFPrivate
-  {
-    /// \brief Root pointer
-    public: ElementPtr root;
-  };
 }
 #endif
