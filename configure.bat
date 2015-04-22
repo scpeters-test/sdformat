@@ -7,6 +7,6 @@ cmake -G "NMake Makefiles"^
       -DCMAKE_INSTALL_PREFIX=install/%build_type% ^
       -DIGNITION-MATH_INCLUDE_DIRS:PATH=..\..\ign-math\build\install\%build_type%\include ^
       -DIGNITION-MATH_LIBRARY_DIRS:PATH=..\..\ign-math\build\install\%build_type%\lib ^
-      -DIGNITION-MATH_LIBRARIES=ignition-math2 ^
+      -DIGNITION-MATH_LIBRARIES=ignition-math ^
       -DCMAKE_BUILD_TYPE=%build_type% ^
       ..
