@@ -5,8 +5,8 @@ cmake -G "NMake Makefiles"^
       -DBOOST_ROOT:PATH=..\boost_1_56_0 ^
       -DBOOST_LIBRARYDIR:PATH=..\boost_1_56_0\lib64-msvc-12.0 ^
       -DCMAKE_INSTALL_PREFIX=install/%build_type% ^
-      -DIGNITION-MATH_INCLUDE_DIRS:PATH=..\..\ign-math\build\install\%build_type%\include ^
+      -DIGNITION-MATH_INCLUDE_DIRS:PATH=..\..\ign-math\build\install\%build_type%\include\ignition\math2 ^
       -DIGNITION-MATH_LIBRARY_DIRS:PATH=..\..\ign-math\build\install\%build_type%\lib ^
-      -DIGNITION-MATH_LIBRARIES=ignition-math ^
+      -DIGNITION-MATH_LIBRARIES=ignition-math2 ^
       -DCMAKE_BUILD_TYPE=%build_type% ^
       ..
