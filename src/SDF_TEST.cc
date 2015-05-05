@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Open Source Robotics Foundation
+ * Copyright 2012-2015 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@
 
 ////////////////////////////////////////////////////
 // Testing fixture
-class RmlUpdate : public testing::Test
+class SDFUpdate : public testing::Test
 {
-  protected: RmlUpdate()
+  protected: SDFUpdate()
              {
                boost::filesystem::path path =
                  boost::filesystem::path(PROJECT_SOURCE_PATH)
@@ -37,7 +37,7 @@ class RmlUpdate : public testing::Test
                setenv("SDF_PATH", path.string().c_str(), 1);
              }
 
-  protected: virtual ~RmlUpdate()
+  protected: virtual ~SDFUpdate()
              {
                // Restore original env var.
                // osx segfaults unless this check is in place
@@ -50,7 +50,7 @@ class RmlUpdate : public testing::Test
   private: char *origSDFPath;
 };
 
-class RmlUpdateFixture
+class SDFUpdateFixture
 {
   public:  std::string GetName() const {return this->name;}
   public:  bool GetFlag() const {return this->flag;}
@@ -62,7 +62,7 @@ class RmlUpdateFixture
 
 ////////////////////////////////////////////////////
 /// Ensure that SDF::Update is working for attributes
-TEST_F(RmlUpdate, UpdateAttribute)
+TEST_F(SDFUpdate, UpdateAttribute)
 {
   // Set up a simple sdf model file
   std::ostringstream stream;
@@ -76,8 +76,8 @@ TEST_F(RmlUpdate, UpdateAttribute)
   sdfParsed.SetFromString(stream.str());
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  sdf::ElementPtr modelElem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  sdf::ElementPtr modelElem = sdfParsed.Root()->GetElement("model");
 
   // Read name attribute value
   EXPECT_TRUE(modelElem->HasAttribute("name"));
@@ -86,9 +86,9 @@ TEST_F(RmlUpdate, UpdateAttribute)
 
   // Set test class variables based on sdf values
   // Set parameter update functions to test class accessors
-  RmlUpdateFixture fixture;
+  SDFUpdateFixture fixture;
   nameParam->Get(fixture.name);
-  nameParam->SetUpdateFunc(boost::bind(&RmlUpdateFixture::GetName, &fixture));
+  nameParam->SetUpdateFunc(boost::bind(&SDFUpdateFixture::GetName, &fixture));
 
   std::string nameCheck;
   int i;
@@ -98,7 +98,7 @@ TEST_F(RmlUpdate, UpdateAttribute)
     fixture.name[0] = 'd' + i;
 
     // Update root sdf element
-    sdfParsed.root->Update();
+    sdfParsed.Root()->Update();
 
     // Expect sdf values to match test class variables
     nameParam->Get(nameCheck);
@@ -108,7 +108,7 @@ TEST_F(RmlUpdate, UpdateAttribute)
 
 ////////////////////////////////////////////////////
 /// Ensure that SDF::Update is working for elements
-TEST_F(RmlUpdate, UpdateElement)
+TEST_F(SDFUpdate, UpdateElement)
 {
   // Set up a simple sdf model file
   std::ostringstream stream;
@@ -122,8 +122,8 @@ TEST_F(RmlUpdate, UpdateElement)
   sdfParsed.SetFromString(stream.str());
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  sdf::ElementPtr modelElem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  sdf::ElementPtr modelElem = sdfParsed.Root()->GetElement("model");
 
   // Read static element value
   EXPECT_TRUE(modelElem->HasElement("static"));
@@ -137,11 +137,11 @@ TEST_F(RmlUpdate, UpdateElement)
 
   // Set test class variables based on sdf values
   // Set parameter update functions to test class accessors
-  RmlUpdateFixture fixture;
+  SDFUpdateFixture fixture;
   staticParam->Get(fixture.flag);
-  staticParam->SetUpdateFunc(boost::bind(&RmlUpdateFixture::GetFlag, &fixture));
+  staticParam->SetUpdateFunc(boost::bind(&SDFUpdateFixture::GetFlag, &fixture));
   poseParam->Get(fixture.pose);
-  poseParam->SetUpdateFunc(boost::bind(&RmlUpdateFixture::GetPose, &fixture));
+  poseParam->SetUpdateFunc(boost::bind(&SDFUpdateFixture::GetPose, &fixture));
 
   bool flagCheck;
   sdf::Pose poseCheck;
@@ -155,7 +155,7 @@ TEST_F(RmlUpdate, UpdateElement)
     fixture.pose.pos.z = -i*i*i;
 
     // Update root sdf element
-    sdfParsed.root->Update();
+    sdfParsed.Root()->Update();
 
     // Expect sdf values to match test class variables
     staticParam->Get(flagCheck);
@@ -167,7 +167,7 @@ TEST_F(RmlUpdate, UpdateElement)
 
 ////////////////////////////////////////////////////
 /// Ensure that SDF::Element::RemoveFromParent is working
-TEST_F(RmlUpdate, ElementRemoveFromParent)
+TEST_F(SDFUpdate, ElementRemoveFromParent)
 {
   // Set up a simple sdf model file
   std::ostringstream stream;
@@ -191,8 +191,8 @@ TEST_F(RmlUpdate, ElementRemoveFromParent)
   sdf::ElementPtr elem;
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  elem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  elem = sdfParsed.Root()->GetElement("model");
 
   // Select the second model named 'model2'
   elem = elem->GetNextElement("model");
@@ -204,7 +204,7 @@ TEST_F(RmlUpdate, ElementRemoveFromParent)
   elem->RemoveFromParent();
 
   // Get first model element again
-  elem = sdfParsed.root->GetElement("model");
+  elem = sdfParsed.Root()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -222,7 +222,7 @@ TEST_F(RmlUpdate, ElementRemoveFromParent)
 
 ////////////////////////////////////////////////////
 /// Ensure that SDF::Element::RemoveChild is working
-TEST_F(RmlUpdate, ElementRemoveChild)
+TEST_F(SDFUpdate, ElementRemoveChild)
 {
   // Set up a simple sdf model file
   std::ostringstream stream;
@@ -246,8 +246,8 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   sdf::ElementPtr elem, elem2;
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("model"));
-  elem = sdfParsed.root->GetElement("model");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
+  elem = sdfParsed.Root()->GetElement("model");
 
   // Select the static element in model1
   elem2 = elem->GetElement("static");
@@ -256,7 +256,7 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   elem->RemoveChild(elem2);
 
   // Get first model element again
-  elem = sdfParsed.root->GetElement("model");
+  elem = sdfParsed.Root()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -268,10 +268,10 @@ TEST_F(RmlUpdate, ElementRemoveChild)
   elem2 = elem->GetNextElement("model");
 
   // Remove model2
-  sdfParsed.root->RemoveChild(elem2);
+  sdfParsed.Root()->RemoveChild(elem2);
 
   // Get first model element again
-  elem = sdfParsed.root->GetElement("model");
+  elem = sdfParsed.Root()->GetElement("model");
   // Check name == model1
   EXPECT_TRUE(elem->HasAttribute("name"));
   EXPECT_EQ(elem->Get<std::string>("name"), "model1");
@@ -289,7 +289,7 @@ TEST_F(RmlUpdate, ElementRemoveChild)
 
 ////////////////////////////////////////////////////
 /// Ensure that getting empty values with empty keys returns correct values.
-TEST_F(RmlUpdate, EmptyValues)
+TEST_F(SDFUpdate, EmptyValues)
 {
   std::string emptyString;
   sdf::ElementPtr elem;
@@ -365,7 +365,7 @@ TEST_F(RmlUpdate, EmptyValues)
 }
 
 /////////////////////////////////////////////////
-TEST_F(RmlUpdate, GetAny)
+TEST_F(SDFUpdate, GetAny)
 {
   std::ostringstream stream;
   // Test types double, bool, string, int, vector3, color, pose
@@ -393,8 +393,8 @@ TEST_F(RmlUpdate, GetAny)
   sdfParsed.SetFromString(stream.str());
 
   // Verify correct parsing
-  EXPECT_TRUE(sdfParsed.root->HasElement("world"));
-  sdf::ElementPtr worldElem = sdfParsed.root->GetElement("world");
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("world"));
+  sdf::ElementPtr worldElem = sdfParsed.Root()->GetElement("world");
 
   EXPECT_TRUE(worldElem->HasElement("model"));
   sdf::ElementPtr modelElem = worldElem->GetElement("model");
@@ -507,13 +507,22 @@ TEST_F(RmlUpdate, GetAny)
     try
     {
       EXPECT_EQ(boost::any_cast<sdf::Color>(anyValue),
-          sdf::Color(0.1, 0.1, 0.1, 1));
+          sdf::Color(0.1f, 0.1f, 0.1f, 1.0f));
     }
     catch(boost::bad_any_cast &/*_e*/)
     {
       FAIL();
     }
   }
+}
+
+/////////////////////////////////////////////////
+TEST_F(SDFUpdate, Version)
+{
+  EXPECT_STREQ(SDF_VERSION, sdf::SDF::Version().c_str());
+
+  sdf::SDF::Version("0.2.3");
+  EXPECT_STREQ("0.2.3", sdf::SDF::Version().c_str());
 }
 
 /////////////////////////////////////////////////
