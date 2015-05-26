@@ -35,7 +35,7 @@ set (SDF_VERSION ${SDF_MAJOR_VERSION}.${SDF_MINOR_VERSION})
 set (SDF_VERSION_FULL ${SDF_MAJOR_VERSION}.${SDF_MINOR_VERSION}.${SDF_PATCH_VERSION})
 
 # Not installed in the system, used for internal tools and scripts
-file(WRITE ${PROJECT_BINARY_DIR}/VERSION ${PROJECT_VERSION_FULL})
+file(WRITE ${PROJECT_BINARY_DIR}/VERSION ${SDF_VERSION_FULL})
 
 set (project_cmake_dir ${PROJECT_SOURCE_DIR}/cmake
   CACHE PATH "Location of CMake scripts")
