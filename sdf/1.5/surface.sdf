@@ -67,6 +67,12 @@
       <element name="soft_erp" type="double" default="0.2" required="0">
         <description>Soft error reduction parameter</description>
       </element>
+      <element name="elastic_modulus" type="double" default="0" required="0">
+        <description>Young's Modulus in SI derived unit Pascal. Defaults to zero, contact using elastic modulus is disabled.</description>
+      </element>
+      <element name="elastic_modulus_reference_length" type="double" default="0" required="0">
+        <description>Reference length fo Young's Modulus.</description>
+      </element>
       <element name="kp" type="double" default="1000000000000.0" required="0">
         <description>dynamically "stiffness"-equivalent coefficient for contact joints</description>
       </element>
