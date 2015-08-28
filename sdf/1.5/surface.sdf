@@ -103,7 +103,7 @@
       </description>
     </element>
     <element name="elastic_modulus_reference_length" type="double" default="1.0" required="0">
-      <description>Reference length fo Young's Modulus.</description>
+      <description>Reference length for Young's Modulus.</description>
     </element>
 
     <element name="ode" required="0">
