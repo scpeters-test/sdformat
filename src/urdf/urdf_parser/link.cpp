@@ -39,7 +39,7 @@
 #include <urdf_model/link.h>
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
+#include "sdf/Util.hh"
 #include <algorithm>
 #include <tinyxml.h>
 //#include <console_bridge/console.h>
@@ -117,7 +117,7 @@ bool parseSphere(Sphere &s, TiXmlElement *c)
 
   try
   {
-    s.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+    s.radius = sdf::lexicalCast<double>(c->Attribute("radius"));
   }
   catch (boost::bad_lexical_cast &e)
   {
@@ -167,7 +167,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
 
   try
   {
-    y.length = boost::lexical_cast<double>(c->Attribute("length"));
+    y.length = sdf::lexicalCast<double>(c->Attribute("length"));
   }
   catch (boost::bad_lexical_cast &/*e*/)
   {
@@ -179,7 +179,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
 
   try
   {
-    y.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+    y.radius = sdf::lexicalCast<double>(c->Attribute("radius"));
   }
   catch (boost::bad_lexical_cast &/*e*/)
   {
@@ -298,7 +298,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
 
   try
   {
-    i.mass = boost::lexical_cast<double>(mass_xml->Attribute("value"));
+    i.mass = sdf::lexicalCast<double>(mass_xml->Attribute("value"));
   }
   catch (boost::bad_lexical_cast &/*e*/)
   {
@@ -324,12 +324,12 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
   }
   try
   {
-    i.ixx  = boost::lexical_cast<double>(inertia_xml->Attribute("ixx"));
-    i.ixy  = boost::lexical_cast<double>(inertia_xml->Attribute("ixy"));
-    i.ixz  = boost::lexical_cast<double>(inertia_xml->Attribute("ixz"));
-    i.iyy  = boost::lexical_cast<double>(inertia_xml->Attribute("iyy"));
-    i.iyz  = boost::lexical_cast<double>(inertia_xml->Attribute("iyz"));
-    i.izz  = boost::lexical_cast<double>(inertia_xml->Attribute("izz"));
+    i.ixx  = sdf::lexicalCast<double>(inertia_xml->Attribute("ixx"));
+    i.ixy  = sdf::lexicalCast<double>(inertia_xml->Attribute("ixy"));
+    i.ixz  = sdf::lexicalCast<double>(inertia_xml->Attribute("ixz"));
+    i.iyy  = sdf::lexicalCast<double>(inertia_xml->Attribute("iyy"));
+    i.iyz  = sdf::lexicalCast<double>(inertia_xml->Attribute("iyz"));
+    i.izz  = sdf::lexicalCast<double>(inertia_xml->Attribute("izz"));
   }
   catch (boost::bad_lexical_cast &/*e*/)
   {

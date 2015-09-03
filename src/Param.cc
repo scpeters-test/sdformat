@@ -29,7 +29,7 @@ class string_set : public boost::static_visitor<>
   public: template <typename T>
           void operator()(T & _operand) const
           {
-            _operand = boost::lexical_cast<T>(this->value);
+            _operand = sdf::lexicalCast<T>(this->value);
           }
   public: std::string value;
 };
@@ -351,13 +351,13 @@ void Param::Update()
 //////////////////////////////////////////////////
 std::string Param::GetAsString() const
 {
-  return boost::lexical_cast<std::string>(this->dataPtr->value);
+  return sdf::lexicalCast<std::string>(this->dataPtr->value);
 }
 
 //////////////////////////////////////////////////
 std::string Param::GetDefaultAsString() const
 {
-  return boost::lexical_cast<std::string>(this->dataPtr->defaultValue);
+  return sdf::lexicalCast<std::string>(this->dataPtr->defaultValue);
 }
 
 //////////////////////////////////////////////////

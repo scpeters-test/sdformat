@@ -24,7 +24,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-#include "sdf/Types.hh"
+#include "sdf/Util.hh"
 #ifndef _WIN32
 #pragma GCC diagnostic pop
 #endif

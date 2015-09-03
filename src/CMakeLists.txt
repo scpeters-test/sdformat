@@ -30,7 +30,7 @@ set (sources
   Param.cc
   SDF.cc
   SDFExtension.cc
-  Types.cc
+  Util.cc
 )
 
 include_directories(${Boost_INCLUDE_DIRS})

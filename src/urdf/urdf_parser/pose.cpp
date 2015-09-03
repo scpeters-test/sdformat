@@ -38,7 +38,7 @@
 #include <urdf_model/pose.h>
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
+#include "sdf/Util.hh"
 #include <algorithm>
 //#include <console_bridge/console.h>
 #include <tinyxml.h>

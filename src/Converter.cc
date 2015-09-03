@@ -19,9 +19,9 @@
 #include <set>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
+#include "sdf/Util.hh"
 #include "sdf/SDFImpl.hh"
 #include "sdf/Assert.hh"
 #include "sdf/Console.hh"
@@ -36,7 +36,7 @@ bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
   TiXmlElement *elem = _doc->FirstChildElement("gazebo");
 
   // Replace <gazebo> with <sdf>
-  if (elem && boost::lexical_cast<double>(_toVersion) >= 1.3)
+  if (elem && sdf::lexicalCast<double>(_toVersion) >= 1.3)
   {
     elem->SetValue("sdf");
   }

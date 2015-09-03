@@ -260,7 +260,7 @@ urdf::Vector3 ParseVector3(const std::string &_str, double _scale)
       try
       {
         vals.push_back(_scale
-            * boost::lexical_cast<double>(pieces[i].c_str()));
+            * sdf::lexicalCast<double>(pieces[i].c_str()));
       }
       catch(boost::bad_lexical_cast &)
       {
@@ -1259,31 +1259,31 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       else if (childElem->ValueStr() == "dampingFactor")
       {
         sdf->isDampingFactor = true;
-        sdf->dampingFactor = boost::lexical_cast<double>(
+        sdf->dampingFactor = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "maxVel")
       {
         sdf->isMaxVel = true;
-        sdf->maxVel = boost::lexical_cast<double>(
+        sdf->maxVel = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "minDepth")
       {
         sdf->isMinDepth = true;
-        sdf->minDepth = boost::lexical_cast<double>(
+        sdf->minDepth = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "mu1")
       {
         sdf->isMu1 = true;
-        sdf->mu1 = boost::lexical_cast<double>(
+        sdf->mu1 = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "mu2")
       {
         sdf->isMu2 = true;
-        sdf->mu2 = boost::lexical_cast<double>(
+        sdf->mu2 = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "fdir1")
@@ -1293,13 +1293,13 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       else if (childElem->ValueStr() == "kp")
       {
         sdf->isKp = true;
-        sdf->kp = boost::lexical_cast<double>(
+        sdf->kp = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "kd")
       {
         sdf->isKd = true;
-        sdf->kd = boost::lexical_cast<double>(
+        sdf->kd = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "selfCollide")
@@ -1316,49 +1316,49 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       else if (childElem->ValueStr() == "maxContacts")
       {
         sdf->isMaxContacts = true;
-        sdf->maxContacts = boost::lexical_cast<int>(
+        sdf->maxContacts = sdf::lexicalCast<int>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "laserRetro")
       {
         sdf->isLaserRetro = true;
-        sdf->laserRetro = boost::lexical_cast<double>(
+        sdf->laserRetro = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopCfm")
       {
         sdf->isStopCfm = true;
-        sdf->stopCfm = boost::lexical_cast<double>(
+        sdf->stopCfm = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopErp")
       {
         sdf->isStopErp = true;
-        sdf->stopErp = boost::lexical_cast<double>(
+        sdf->stopErp = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopKp")
       {
         sdf->isStopKp = true;
-        sdf->stopKp = boost::lexical_cast<double>(
+        sdf->stopKp = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopKd")
       {
         sdf->isStopKd = true;
-        sdf->stopKd = boost::lexical_cast<double>(
+        sdf->stopKd = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "initialJointPosition")
       {
         sdf->isInitialJointPosition = true;
-        sdf->initialJointPosition = boost::lexical_cast<double>(
+        sdf->initialJointPosition = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "fudgeFactor")
       {
         sdf->isFudgeFactor = true;
-        sdf->fudgeFactor = boost::lexical_cast<double>(
+        sdf->fudgeFactor = sdf::lexicalCast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "provideFeedback")
@@ -1473,7 +1473,7 @@ void InsertSDFExtensionCollision(TiXmlElement *_elem,
               Values2str(1, &(*ge)->laserRetro));
         if ((*ge)->isMaxContacts)
           AddKeyValue(_elem, "max_contacts",
-              boost::lexical_cast<std::string>((*ge)->maxContacts));
+              sdf::lexicalCast<std::string>((*ge)->maxContacts));
 
         contact->LinkEndChild(contactOde);
         surface->LinkEndChild(contact);

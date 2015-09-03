@@ -20,8 +20,6 @@
 
 // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
-  #include <boost/lexical_cast.hpp>
-  #include <boost/bind.hpp>
   #include <boost/algorithm/string.hpp>
   #include <boost/any.hpp>
   #include <boost/shared_ptr.hpp>
@@ -43,6 +41,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 #include "sdf/Types.hh"
+#include "sdf/Util.hh"
 #ifndef _WIN32
 #pragma GCC diagnostic pop
 #endif
@@ -139,7 +138,7 @@ namespace sdf
 
     /// \brief Set the parameter's value.
     ///
-    /// The passed in value must conform to the boost::lexical_cast spec.
+    /// The passed in value must conform to the sdf::lexicalCast spec.
     /// This means the value must have an input and output stream operator.
     /// \param[in] _value The value to set the parameter to.
     /// \return True if the value was successfully set.
@@ -219,7 +218,7 @@ namespace sdf
     public: std::string description;
 
     /// \brief Update function pointer.
-    public: boost::function<boost::any ()> updateFunc;
+    public: std::function<boost::any ()> updateFunc;
 
 /// \todo Remove this diagnositic push/pop in version 5
 #ifndef _WIN32
@@ -259,14 +258,14 @@ namespace sdf
   {
     try
     {
-      this->SetFromString(boost::lexical_cast<std::string>(_value));
+      this->SetFromString(sdf::lexicalCast<std::string>(_value));
     }
     catch(...)
     {
       sdferr << "Unable to set parameter["
              << this->dataPtr->key << "]."
              << "Type type used must have a stream input and output"
-             << "operator, which allow boost::lexical_cast to"
+             << "operator, which allow sdf::lexicalCast to"
              << "function properly.\n";
       return false;
     }
@@ -283,15 +282,15 @@ namespace sdf
           this->dataPtr->typeName == "string")
       {
         std::string strValue =
-          boost::lexical_cast<std::string>(this->dataPtr->value);
+          sdf::lexicalCast<std::string>(this->dataPtr->value);
         if (strValue == "true" || strValue  == "1")
-          _value = boost::lexical_cast<T>("1");
+          _value = sdf::lexicalCast<T>("1");
         else
-          _value = boost::lexical_cast<T>("0");
+          _value = sdf::lexicalCast<T>("0");
       }
       else
       {
-        _value = boost::lexical_cast<T>(this->dataPtr->value);
+        _value = sdf::lexicalCast<T>(this->dataPtr->value);
       }
     }
     catch(...)
@@ -312,7 +311,7 @@ namespace sdf
   {
     try
     {
-      _value = boost::lexical_cast<T>(this->dataPtr->defaultValue);
+      _value = sdf::lexicalCast<T>(this->dataPtr->defaultValue);
     }
     catch(...)
     {
@@ -332,7 +331,7 @@ namespace sdf
   {
     try
     {
-      this->dataPtr->value = boost::lexical_cast<T>(_value);
+      this->dataPtr->value = sdf::lexicalCast<T>(_value);
     }
     catch(...)
     {

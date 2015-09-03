@@ -10,6 +10,7 @@ set (headers
   parser.hh
   SDFImpl.hh
   Types.hh
+  Util.hh
   system_util.hh
 )
 

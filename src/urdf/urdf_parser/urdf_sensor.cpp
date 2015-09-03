@@ -38,7 +38,7 @@
 #include <urdf_sensor/sensor.h>
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
+#include "sdf/Util.hh"
 #include <algorithm>
 #include <tinyxml.h>
 //#include <console_bridge/console.h>
@@ -60,7 +60,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.width = boost::lexical_cast<unsigned int>(width_char);
+        camera.width = sdf::lexicalCast<unsigned int>(width_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -79,7 +79,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.height = boost::lexical_cast<unsigned int>(height_char);
+        camera.height = sdf::lexicalCast<unsigned int>(height_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -107,7 +107,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.hfov = boost::lexical_cast<double>(hfov_char);
+        camera.hfov = sdf::lexicalCast<double>(hfov_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -126,7 +126,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.near = boost::lexical_cast<double>(near_char);
+        camera.near = sdf::lexicalCast<double>(near_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -145,7 +145,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.far = boost::lexical_cast<double>(far_char);
+        camera.far = sdf::lexicalCast<double>(far_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -182,7 +182,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       try
       {
         ray.horizontal_samples =
-          boost::lexical_cast<unsigned int>(samples_char);
+          sdf::lexicalCast<unsigned int>(samples_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -197,7 +197,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       try
       {
         ray.horizontal_resolution =
-          boost::lexical_cast<double>(resolution_char);
+          sdf::lexicalCast<double>(resolution_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -212,7 +212,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_min_angle = boost::lexical_cast<double>(min_angle_char);
+        ray.horizontal_min_angle = sdf::lexicalCast<double>(min_angle_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -227,7 +227,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_max_angle = boost::lexical_cast<double>(max_angle_char);
+        ray.horizontal_max_angle = sdf::lexicalCast<double>(max_angle_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -246,7 +246,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_samples = boost::lexical_cast<unsigned int>(samples_char);
+        ray.vertical_samples = sdf::lexicalCast<unsigned int>(samples_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -261,7 +261,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_resolution = boost::lexical_cast<double>(resolution_char);
+        ray.vertical_resolution = sdf::lexicalCast<double>(resolution_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -276,7 +276,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_min_angle = boost::lexical_cast<double>(min_angle_char);
+        ray.vertical_min_angle = sdf::lexicalCast<double>(min_angle_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {
@@ -291,7 +291,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_max_angle = boost::lexical_cast<double>(max_angle_char);
+        ray.vertical_max_angle = sdf::lexicalCast<double>(max_angle_char);
       }
       catch (boost::bad_lexical_cast &/*e*/)
       {

@@ -40,13 +40,6 @@
 
 namespace sdf
 {
-  /// \brief Windows equivalent of getEnv.
-  /// Should only be called when using windows.
-  /// \param[in] _name Name of the environment variable to get.
-  /// \return Environment variable contents, or NULL on error.
-  SDFORMAT_VISIBLE
-  const char *winGetEnv(const char *_name);
-
   /// \brief check if two values are equal, within a tolerance
   /// \param[in] _a the first value
   /// \param[in] _b the second value
