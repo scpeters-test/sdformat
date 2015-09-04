@@ -95,6 +95,9 @@ TEST(SDFParser, CFMDampingSDFTest)
       ASSERT_TRUE(physics->HasElement("ode"));
       ASSERT_TRUE(physics->GetElement("ode")->HasElement(
             "implicit_spring_damper"));
+      sdf::ElementPtr ptr = physics->GetElement("ode")->GetElement(
+          "implicit_spring_damper");
+      ptr->PrintValues("  ");
       EXPECT_TRUE(physics->GetElement("ode")->Get<bool>(
             "implicit_spring_damper"));
     }

@@ -75,7 +75,7 @@ public:
         {
           rgba.push_back(sdf::lexicalCast<float>(pieces[i].c_str()));
         }
-        catch (boost::bad_lexical_cast &)
+        catch (std::runtime_error &)
         {
           return false;
         }

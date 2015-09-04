@@ -67,12 +67,15 @@ public:
     std::vector<std::string> pieces;
     std::vector<double> xyz;
     boost::split( pieces, vector_str, boost::is_any_of(" "));
-    for (unsigned int i = 0; i < pieces.size(); ++i){
-      if (pieces[i] != ""){
-        try {
+    for (unsigned int i = 0; i < pieces.size(); ++i)
+    {
+      if (pieces[i] != "")
+      {
+        try
+        {
           xyz.push_back(sdf::lexicalCast<double>(pieces[i].c_str()));
         }
-        catch (boost::bad_lexical_cast &) {
+        catch(std::runtime_error &) {
           throw ParseError("Unable to parse component [" + pieces[i]
               + "] to a double (while parsing a vector value)");
         }

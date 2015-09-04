@@ -25,9 +25,9 @@ set (sources
   Converter.cc
   Element.cc
   Exception.cc
+  Param.cc
   parser.cc
   parser_urdf.cc
-  Param.cc
   SDF.cc
   SDFExtension.cc
   Util.cc

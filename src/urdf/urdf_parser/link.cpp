@@ -119,10 +119,11 @@ bool parseSphere(Sphere &s, TiXmlElement *c)
   {
     s.radius = sdf::lexicalCast<double>(c->Attribute("radius"));
   }
-  catch (boost::bad_lexical_cast &e)
+  catch (std::runtime_error &e)
   {
     std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is not a valid float: " << e.what();
+    stm << "radius [" << c->Attribute("radius")
+      << "] is not a valid float: " << e.what();
     //logError(stm.str().c_str());
     return false;
   }
@@ -169,7 +170,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
   {
     y.length = sdf::lexicalCast<double>(c->Attribute("length"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::runtime_error &/*e*/)
   {
     std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
@@ -181,7 +182,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
   {
     y.radius = sdf::lexicalCast<double>(c->Attribute("radius"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::runtime_error &/*e*/)
   {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
@@ -222,9 +223,9 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
   return true;
 }
 
-boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
+std::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
 {
-  boost::shared_ptr<Geometry> geom;
+  std::shared_ptr<Geometry> geom;
   if (!g) return geom;
 
   TiXmlElement *shape = g->FirstChildElement();
@@ -269,7 +270,7 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
     return geom;
   }
 
-  return boost::shared_ptr<Geometry>();
+  return std::shared_ptr<Geometry>();
 }
 
 bool parseInertial(Inertial &i, TiXmlElement *config)
@@ -300,7 +301,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
   {
     i.mass = sdf::lexicalCast<double>(mass_xml->Attribute("value"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::runtime_error &/*e*/)
   {
     std::stringstream stm;
     stm << "Inertial: mass [" << mass_xml->Attribute("value")
@@ -331,7 +332,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
     i.iyz  = sdf::lexicalCast<double>(inertia_xml->Attribute("iyz"));
     i.izz  = sdf::lexicalCast<double>(inertia_xml->Attribute("izz"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::runtime_error &/*e*/)
   {
     std::stringstream stm;
     stm << "Inertial: one of the inertia elements is not a valid double:"
@@ -442,7 +443,7 @@ bool parseLink(Link &link, TiXmlElement* config)
   for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
   {
 
-    boost::shared_ptr<Visual> vis;
+    std::shared_ptr<Visual> vis;
     vis.reset(new Visual());
     if (parseVisual(*vis, vis_xml))
     {
@@ -464,7 +465,7 @@ bool parseLink(Link &link, TiXmlElement* config)
   // Multiple Collisions (optional)
   for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
-    boost::shared_ptr<Collision> col;
+    std::shared_ptr<Collision> col;
     col.reset(new Collision());
     if (parseCollision(*col, col_xml))
     {
@@ -545,24 +546,24 @@ bool exportMesh(Mesh &m, TiXmlElement *xml)
   return true;
 }
 
-bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
+bool exportGeometry(std::shared_ptr<Geometry> &geom, TiXmlElement *xml)
 {
   TiXmlElement *geometry_xml = new TiXmlElement("geometry");
-  if (boost::dynamic_pointer_cast<Sphere>(geom))
+  if (std::dynamic_pointer_cast<Sphere>(geom))
   {
-    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+    exportSphere((*(std::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
   }
-  else if (boost::dynamic_pointer_cast<Box>(geom))
+  else if (std::dynamic_pointer_cast<Box>(geom))
   {
-    exportBox((*(boost::dynamic_pointer_cast<Box>(geom).get())), geometry_xml);
+    exportBox((*(std::dynamic_pointer_cast<Box>(geom).get())), geometry_xml);
   }
-  else if (boost::dynamic_pointer_cast<Cylinder>(geom))
+  else if (std::dynamic_pointer_cast<Cylinder>(geom))
   {
-    exportCylinder((*(boost::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
+    exportCylinder((*(std::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
   }
-  else if (boost::dynamic_pointer_cast<Mesh>(geom))
+  else if (std::dynamic_pointer_cast<Mesh>(geom))
   {
-    exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+    exportMesh((*(std::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
   }
   else
   {
@@ -570,7 +571,7 @@ bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
     Sphere *s = new Sphere();
     s->radius = 0.03;
     geom.reset(s);
-    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+    exportSphere((*(std::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
   }
 
   xml->LinkEndChild(geometry_xml);

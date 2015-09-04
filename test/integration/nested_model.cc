@@ -95,6 +95,7 @@ TEST(NestedModel, NestedModel)
   sdf::ElementPtr axisElem = jointElem->GetElement("axis");
 
   EXPECT_TRUE(axisElem->HasElement("xyz"));
+  axisElem->PrintValues("  ");
   EXPECT_EQ(axisElem->Get<ignition::math::Vector3d>("xyz"),
       ignition::math::Vector3d(1, 0, 0));
 }

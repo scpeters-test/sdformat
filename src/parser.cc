@@ -19,6 +19,7 @@
 #include <map>
 
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "sdf/Console.hh"
 #include "sdf/Converter.hh"
@@ -217,7 +218,7 @@ bool initXml(TiXmlElement *_xml, ElementPtr _sdf)
       return false;
     }
     std::string requiredStr = requiredString;
-    boost::trim(requiredStr);
+    // PUT BACK IN boost::trim(requiredStr);
     bool required = requiredStr == "1" ? true : false;
     std::string description;
 

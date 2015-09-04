@@ -64,7 +64,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       double sec = sdf::lexicalCast<double>(time_stamp_char);
       ms.time_stamp.set(sec);
     }
-    catch (boost::bad_lexical_cast &/*e*/) {
+    catch (std::runtime_error &/*e*/) {
       //logError("Parsing time stamp [%s] failed: %s", time_stamp_char, e.what());
       return false;
     }
@@ -73,7 +73,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   TiXmlElement *joint_state_elem = config->FirstChildElement("joint_state");
   if (joint_state_elem)
   {
-    boost::shared_ptr<JointState> joint_state;
+    std::shared_ptr<JointState> joint_state;
     joint_state.reset(new JointState());
 
     const char *joint_char = joint_state_elem->Attribute("joint");
@@ -97,7 +97,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->position.push_back(sdf::lexicalCast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &/*e*/) {
+          catch (std::runtime_error &/*e*/) {
             throw ParseError("position element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -116,7 +116,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->velocity.push_back(sdf::lexicalCast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &/*e*/) {
+          catch (std::runtime_error &/*e*/) {
             throw ParseError("velocity element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -135,8 +135,9 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->effort.push_back(sdf::lexicalCast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &/*e*/) {
-            throw ParseError("effort element ("+ pieces[i] +") is not a valid float");
+          catch (std::runtime_error &/*e*/) {
+            throw ParseError("effort element ("+ pieces[i]
+                +") is not a valid float");
           }
         }
       }

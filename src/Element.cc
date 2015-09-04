@@ -131,12 +131,12 @@ void Element::AddValue(const std::string &_type,
 }
 
 /////////////////////////////////////////////////
-boost::shared_ptr<Param> Element::CreateParam(const std::string &_key,
+ParamPtr Element::CreateParam(const std::string &_key,
     const std::string &_type, const std::string &_defaultValue, bool _required,
     const std::string &_description)
 {
-  return boost::shared_ptr<Param>(
-        new Param(_key, _type, _defaultValue, _required, _description));
+  return ParamPtr(
+      new Param(_key, _type, _defaultValue, _required, _description));
 }
 
 /////////////////////////////////////////////////
@@ -816,7 +816,7 @@ void Element::RemoveChild(ElementPtr _child)
 }
 
 /////////////////////////////////////////////////
-boost::any Element::GetAny(const std::string &_key)
+/*boost::any Element::GetAny(const std::string &_key)
 {
   boost::any result;
   if (_key.empty() && this->dataPtr->value)
@@ -843,4 +843,4 @@ boost::any Element::GetAny(const std::string &_key)
       sdferr << "Unable to find value for key [" << _key << "]\n";
   }
   return result;
-}
+}*/

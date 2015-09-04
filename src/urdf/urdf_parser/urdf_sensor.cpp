@@ -62,7 +62,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       {
         camera.width = sdf::lexicalCast<unsigned int>(width_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         //logError("Camera image width [%s] is not a valid int: %s", width_char, e.what());
         return false;
@@ -81,7 +81,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       {
         camera.height = sdf::lexicalCast<unsigned int>(height_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         //logError("Camera image height [%s] is not a valid int: %s", height_char, e.what());
         return false;
@@ -109,7 +109,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       {
         camera.hfov = sdf::lexicalCast<double>(hfov_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         //logError("Camera image hfov [%s] is not a valid float: %s", hfov_char, e.what());
         return false;
@@ -128,7 +128,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       {
         camera.near = sdf::lexicalCast<double>(near_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         //logError("Camera image near [%s] is not a valid float: %s", near_char, e.what());
         return false;
@@ -147,7 +147,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       {
         camera.far = sdf::lexicalCast<double>(far_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         //logError("Camera image far [%s] is not a valid float: %s", far_char, e.what());
         return false;
@@ -184,7 +184,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
         ray.horizontal_samples =
           sdf::lexicalCast<unsigned int>(samples_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         //logError("Ray horizontal samples [%s] is not a valid float: %s", samples_char, e.what());
         return false;
@@ -199,7 +199,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
         ray.horizontal_resolution =
           sdf::lexicalCast<double>(resolution_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         // logError("Ray horizontal resolution [%s]
         // is not a valid float: %s", resolution_char, e.what());
@@ -214,7 +214,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       {
         ray.horizontal_min_angle = sdf::lexicalCast<double>(min_angle_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         // logError("Ray horizontal min_angle[%s]
         // is not a valid float: %s", min_angle_char, e.what());
@@ -229,7 +229,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       {
         ray.horizontal_max_angle = sdf::lexicalCast<double>(max_angle_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         // logError("Ray horizontal max_angle [%s]
         // is not a valid float: %s", max_angle_char, e.what());
@@ -248,7 +248,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       {
         ray.vertical_samples = sdf::lexicalCast<unsigned int>(samples_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         // logError("Ray vertical samples [%s]
         // is not a valid float: %s", samples_char, e.what());
@@ -263,7 +263,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       {
         ray.vertical_resolution = sdf::lexicalCast<double>(resolution_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         // logError("Ray vertical resolution [%s]
         // is not a valid float: %s", resolution_char, e.what());
@@ -278,7 +278,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       {
         ray.vertical_min_angle = sdf::lexicalCast<double>(min_angle_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         // logError("Ray vertical min_angle [%s]
         // is not a valid float: %s", min_angle_char, e.what());
@@ -293,7 +293,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       {
         ray.vertical_max_angle = sdf::lexicalCast<double>(max_angle_char);
       }
-      catch (boost::bad_lexical_cast &/*e*/)
+      catch (std::runtime_error &/*e*/)
       {
         // logError("Ray vertical max_angle [%s]
         // is not a valid float: %s", max_angle_char, e.what());
@@ -304,9 +304,9 @@ bool parseRay(Ray &ray, TiXmlElement* config)
   return false;
 }
 
-boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
+std::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
 {
-  boost::shared_ptr<VisualSensor> visual_sensor;
+  std::shared_ptr<VisualSensor> visual_sensor;
 
   // get sensor type
   TiXmlElement *sensor_xml;
