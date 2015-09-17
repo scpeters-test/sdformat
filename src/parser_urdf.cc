@@ -1536,12 +1536,12 @@ void InsertSDFExtensionCollision(TiXmlElement *_elem,
                 {
                   _elem->LinkEndChild((*blob)->Clone());
                   surface = _elem->LastChild("surface");
-                  printf("surface created %d\n", surface);
+                  printf("surface created %p\n", (void*)surface);
 
                   // print for debug
-                  std::ostringstream origStream;
-                  origStream << *(*blob)->Clone();
-                  std::cout << "collision extension [" << origStream.str() << "]\n";
+                  std::ostringstream oStream;
+                  oStream << *(*blob)->Clone();
+                  std::cout << "collision extension [" << oStream.str() << "]\n";
 
                 }
                 else
