@@ -31,34 +31,8 @@ Element::Element()
 /////////////////////////////////////////////////
 Element::~Element()
 {
-  this->dataPtr->parent.reset();
-  for (Param_V::iterator iter = this->dataPtr->attributes.begin();
-      iter != this->dataPtr->attributes.end(); ++iter)
-  {
-    (*iter).reset();
-  }
-  this->dataPtr->attributes.clear();
-
-  for (ElementPtr_V::iterator iter = this->dataPtr->elements.begin();
-      iter != this->dataPtr->elements.end(); ++iter)
-  {
-    (*iter).reset();
-  }
-
-  for (ElementPtr_V::iterator iter = this->dataPtr->elementDescriptions.begin();
-      iter != this->dataPtr->elementDescriptions.end(); ++iter)
-  {
-    (*iter).reset();
-  }
-  this->dataPtr->elements.clear();
-  this->dataPtr->elementDescriptions.clear();
-
-  this->dataPtr->value.reset();
-
   delete this->dataPtr;
   this->dataPtr = NULL;
-
-  // this->Reset();
 }
 
 /////////////////////////////////////////////////
