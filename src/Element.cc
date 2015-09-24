@@ -64,7 +64,7 @@ Element::~Element()
 /////////////////////////////////////////////////
 ElementPtr Element::GetParent() const
 {
-  return this->dataPtr->parent;
+  return this->dataPtr->parent.lock();
 }
 
 /////////////////////////////////////////////////
@@ -602,25 +602,26 @@ ElementPtr Element::GetFirstElement() const
 /////////////////////////////////////////////////
 ElementPtr Element::GetNextElement(const std::string &_name) const
 {
-  if (this->dataPtr->parent)
+  auto parent = this->dataPtr->parent.lock();
+  if (parent)
   {
     ElementPtr_V::const_iterator iter;
-    iter = std::find(this->dataPtr->parent->dataPtr->elements.begin(),
-        this->dataPtr->parent->dataPtr->elements.end(), shared_from_this());
+    iter = std::find(parent->dataPtr->elements.begin(),
+        parent->dataPtr->elements.end(), shared_from_this());
 
-    if (iter == this->dataPtr->parent->dataPtr->elements.end())
+    if (iter == parent->dataPtr->elements.end())
     {
       return ElementPtr();
     }
 
     ++iter;
-    if (iter == this->dataPtr->parent->dataPtr->elements.end())
+    if (iter == parent->dataPtr->elements.end())
       return ElementPtr();
     else if (_name.empty())
       return *(iter);
     else
     {
-      for (; iter != this->dataPtr->parent->dataPtr->elements.end(); ++iter)
+      for (; iter != parent->dataPtr->elements.end(); ++iter)
       {
         if ((*iter)->GetName() == _name)
           return (*iter);
@@ -785,16 +786,17 @@ void Element::SetDescription(const std::string &_desc)
 /////////////////////////////////////////////////
 void Element::RemoveFromParent()
 {
-  if (this->dataPtr->parent)
+  auto parent = this->dataPtr->parent.lock();
+  if (parent)
   {
     ElementPtr_V::iterator iter;
-    iter = std::find(this->dataPtr->parent->dataPtr->elements.begin(),
-        this->dataPtr->parent->dataPtr->elements.end(), shared_from_this());
+    iter = std::find(parent->dataPtr->elements.begin(),
+        parent->dataPtr->elements.end(), shared_from_this());
 
-    if (iter != this->dataPtr->parent->dataPtr->elements.end())
+    if (iter != parent->dataPtr->elements.end())
     {
-      this->dataPtr->parent->dataPtr->elements.erase(iter);
-      this->dataPtr->parent.reset();
+      parent->dataPtr->elements.erase(iter);
+      parent.reset();
     }
   }
 }
