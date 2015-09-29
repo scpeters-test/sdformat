@@ -31,12 +31,12 @@
 
 using namespace sdf;
 
-typedef std::shared_ptr<urdf::Collision> UrdfCollisionPtr;
-typedef std::shared_ptr<urdf::Visual> UrdfVisualPtr;
-typedef std::shared_ptr<urdf::Link> UrdfLinkPtr;
-typedef std::shared_ptr<const urdf::Link> ConstUrdfLinkPtr;
-typedef std::shared_ptr<TiXmlElement> TiXmlElementPtr;
-typedef std::shared_ptr<SDFExtension> SDFExtensionPtr;
+typedef boost::shared_ptr<urdf::Collision> UrdfCollisionPtr;
+typedef boost::shared_ptr<urdf::Visual> UrdfVisualPtr;
+typedef boost::shared_ptr<urdf::Link> UrdfLinkPtr;
+typedef boost::shared_ptr<const urdf::Link> ConstUrdfLinkPtr;
+typedef boost::shared_ptr<TiXmlElement> TiXmlElementPtr;
+typedef boost::shared_ptr<SDFExtension> SDFExtensionPtr;
 typedef std::map<std::string, std::vector<SDFExtensionPtr> >
   StringSDFExtensionPtrMap;
 
@@ -76,7 +76,7 @@ void InsertSDFExtensionJoint(TiXmlElement *_elem,
 /// reduced fixed joints:  check if a fixed joint should be lumped
 ///   checking both the joint type and if disabledFixedJointLumping
 ///   option is set
-bool FixedJointShouldBeReduced(std::shared_ptr<urdf::Joint> _jnt);
+bool FixedJointShouldBeReduced(boost::shared_ptr<urdf::Joint> _jnt);
 
 /// reduced fixed joints:  apply transform reduction for ray sensors
 ///   in extensions when doing fixed joint reduction
@@ -215,9 +215,9 @@ std::string Values2str(unsigned int _count, const double *_values);
 
 
 void CreateGeometry(TiXmlElement* _elem,
-    std::shared_ptr<urdf::Geometry> _geometry);
+    boost::shared_ptr<urdf::Geometry> _geometry);
 
-std::string GetGeometryBoundingBox(std::shared_ptr<urdf::Geometry> _geometry,
+std::string GetGeometryBoundingBox(boost::shared_ptr<urdf::Geometry> _geometry,
     double *_sizeVals);
 
 ignition::math::Pose3d inverseTransformToParentFrame(
@@ -260,9 +260,9 @@ urdf::Vector3 ParseVector3(const std::string &_str, double _scale)
       try
       {
         vals.push_back(_scale
-            * sdf::lexicalCast<double>(pieces[i].c_str()));
+            * boost::lexical_cast<double>(pieces[i].c_str()));
       }
-      catch(std::runtime_error &)
+      catch(boost::bad_lexical_cast &)
       {
         sdferr << "xml key [" << _str
           << "][" << i << "] value [" << pieces[i]
@@ -318,8 +318,8 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
 #endif
     UrdfCollisionPtr _collision)
 {
+  boost::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
 #ifndef URDF_GE_0P3
-  std::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
   cols = _link->getCollisions(_groupName);
 
   if (!cols)
@@ -354,8 +354,8 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
 #endif
     UrdfVisualPtr _visual)
 {
+  boost::shared_ptr<std::vector<UrdfVisualPtr> > viss;
 #ifndef URDF_GE_0P3
-  std::shared_ptr<std::vector<UrdfVisualPtr> > viss;
   viss = _link->getVisuals(_groupName);
 
   if (!viss)
@@ -679,7 +679,7 @@ void PrintMass(const std::string &_linkName, const dMass &_mass)
 
 /////////////////////////////////////////////////
 /// print mass for link for debugging
-void PrintMass(const UrdfLinkPtr &_link)
+void PrintMass(const UrdfLinkPtr _link)
 {
   sdfdbg << "LINK NAME: [" << _link->name << "] from dMass\n";
   sdfdbg << "     MASS: [" << _link->inertial->mass << "]\n";
@@ -852,7 +852,7 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
   // so we can correlate visuals to visuals somehow.
 #ifndef URDF_GE_0P3
   for (std::map<std::string,
-      std::shared_ptr<std::vector<UrdfVisualPtr> > >::iterator
+      boost::shared_ptr<std::vector<UrdfVisualPtr> > >::iterator
       visualsIt = _link->visual_groups.begin();
       visualsIt != _link->visual_groups.end(); ++visualsIt)
   {
@@ -923,7 +923,7 @@ void ReduceCollisionsToParent(UrdfLinkPtr _link)
   // so we can correlate visuals to collisions somehow.
 #ifndef URDF_GE_0P3
   for (std::map<std::string,
-      std::shared_ptr<std::vector<UrdfCollisionPtr> > >::iterator
+      boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::iterator
       collisionsIt = _link->collision_groups.begin();
       collisionsIt != _link->collision_groups.end(); ++collisionsIt)
   {
@@ -1001,7 +1001,7 @@ void ReduceJointsToParent(UrdfLinkPtr _link)
   // a parent link up stream that does not have a fixed parentJoint
   for (unsigned int i = 0 ; i < _link->child_links.size() ; ++i)
   {
-    std::shared_ptr<urdf::Joint> parentJoint =
+    boost::shared_ptr<urdf::Joint> parentJoint =
       _link->child_links[i]->parent_joint;
     if (!FixedJointShouldBeReduced(parentJoint))
     {
@@ -1259,31 +1259,31 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       else if (childElem->ValueStr() == "dampingFactor")
       {
         sdf->isDampingFactor = true;
-        sdf->dampingFactor = sdf::lexicalCast<double>(
+        sdf->dampingFactor = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "maxVel")
       {
         sdf->isMaxVel = true;
-        sdf->maxVel = sdf::lexicalCast<double>(
+        sdf->maxVel = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "minDepth")
       {
         sdf->isMinDepth = true;
-        sdf->minDepth = sdf::lexicalCast<double>(
+        sdf->minDepth = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "mu1")
       {
         sdf->isMu1 = true;
-        sdf->mu1 = sdf::lexicalCast<double>(
+        sdf->mu1 = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "mu2")
       {
         sdf->isMu2 = true;
-        sdf->mu2 = sdf::lexicalCast<double>(
+        sdf->mu2 = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "fdir1")
@@ -1293,13 +1293,13 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       else if (childElem->ValueStr() == "kp")
       {
         sdf->isKp = true;
-        sdf->kp = sdf::lexicalCast<double>(
+        sdf->kp = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "kd")
       {
         sdf->isKd = true;
-        sdf->kd = sdf::lexicalCast<double>(
+        sdf->kd = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "selfCollide")
@@ -1316,49 +1316,49 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       else if (childElem->ValueStr() == "maxContacts")
       {
         sdf->isMaxContacts = true;
-        sdf->maxContacts = sdf::lexicalCast<int>(
+        sdf->maxContacts = boost::lexical_cast<int>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "laserRetro")
       {
         sdf->isLaserRetro = true;
-        sdf->laserRetro = sdf::lexicalCast<double>(
+        sdf->laserRetro = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopCfm")
       {
         sdf->isStopCfm = true;
-        sdf->stopCfm = sdf::lexicalCast<double>(
+        sdf->stopCfm = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopErp")
       {
         sdf->isStopErp = true;
-        sdf->stopErp = sdf::lexicalCast<double>(
+        sdf->stopErp = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopKp")
       {
         sdf->isStopKp = true;
-        sdf->stopKp = sdf::lexicalCast<double>(
+        sdf->stopKp = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "stopKd")
       {
         sdf->isStopKd = true;
-        sdf->stopKd = sdf::lexicalCast<double>(
+        sdf->stopKd = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "initialJointPosition")
       {
         sdf->isInitialJointPosition = true;
-        sdf->initialJointPosition = sdf::lexicalCast<double>(
+        sdf->initialJointPosition = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "fudgeFactor")
       {
         sdf->isFudgeFactor = true;
-        sdf->fudgeFactor = sdf::lexicalCast<double>(
+        sdf->fudgeFactor = boost::lexical_cast<double>(
             GetKeyValueAsString(childElem).c_str());
       }
       else if (childElem->ValueStr() == "provideFeedback")
@@ -1473,7 +1473,7 @@ void InsertSDFExtensionCollision(TiXmlElement *_elem,
               Values2str(1, &(*ge)->laserRetro));
         if ((*ge)->isMaxContacts)
           AddKeyValue(_elem, "max_contacts",
-              sdf::lexicalCast<std::string>((*ge)->maxContacts));
+              boost::lexical_cast<std::string>((*ge)->maxContacts));
 
         contact->LinkEndChild(contactOde);
         surface->LinkEndChild(contact);
@@ -1728,7 +1728,7 @@ void InsertSDFExtensionRobot(TiXmlElement *_elem)
 
 ////////////////////////////////////////////////////////////////////////////////
 void CreateGeometry(TiXmlElement* _elem,
-    std::shared_ptr<urdf::Geometry> _geom)
+    boost::shared_ptr<urdf::Geometry> _geom)
 {
   TiXmlElement *sdfGeometry = new TiXmlElement("geometry");
 
@@ -1740,8 +1740,8 @@ void CreateGeometry(TiXmlElement* _elem,
     case urdf::Geometry::BOX:
       type = "box";
       {
-        std::shared_ptr<const urdf::Box> box;
-        box = std::dynamic_pointer_cast< const urdf::Box >(_geom);
+        boost::shared_ptr<const urdf::Box> box;
+        box = boost::dynamic_pointer_cast< const urdf::Box >(_geom);
         int sizeCount = 3;
         double sizeVals[3];
         sizeVals[0] = box->dim.x;
@@ -1755,8 +1755,8 @@ void CreateGeometry(TiXmlElement* _elem,
     case urdf::Geometry::CYLINDER:
       type = "cylinder";
       {
-        std::shared_ptr<const urdf::Cylinder> cylinder;
-        cylinder = std::dynamic_pointer_cast<const urdf::Cylinder >(_geom);
+        boost::shared_ptr<const urdf::Cylinder> cylinder;
+        cylinder = boost::dynamic_pointer_cast<const urdf::Cylinder >(_geom);
         geometryType = new TiXmlElement(type);
         AddKeyValue(geometryType, "length",
             Values2str(1, &cylinder->length));
@@ -1767,8 +1767,8 @@ void CreateGeometry(TiXmlElement* _elem,
     case urdf::Geometry::SPHERE:
       type = "sphere";
       {
-        std::shared_ptr<const urdf::Sphere> sphere;
-        sphere = std::dynamic_pointer_cast<const urdf::Sphere >(_geom);
+        boost::shared_ptr<const urdf::Sphere> sphere;
+        sphere = boost::dynamic_pointer_cast<const urdf::Sphere >(_geom);
         geometryType = new TiXmlElement(type);
         AddKeyValue(geometryType, "radius",
             Values2str(1, &sphere->radius));
@@ -1777,8 +1777,8 @@ void CreateGeometry(TiXmlElement* _elem,
     case urdf::Geometry::MESH:
       type = "mesh";
       {
-        std::shared_ptr<const urdf::Mesh> mesh;
-        mesh = std::dynamic_pointer_cast<const urdf::Mesh >(_geom);
+        boost::shared_ptr<const urdf::Mesh> mesh;
+        mesh = boost::dynamic_pointer_cast<const urdf::Mesh >(_geom);
         geometryType = new TiXmlElement(type);
         AddKeyValue(geometryType, "scale", Vector32Str(mesh->scale));
         // do something more to meshes
@@ -1840,7 +1840,7 @@ void CreateGeometry(TiXmlElement* _elem,
 
 ////////////////////////////////////////////////////////////////////////////////
 std::string GetGeometryBoundingBox(
-    std::shared_ptr<urdf::Geometry> _geom, double *_sizeVals)
+    boost::shared_ptr<urdf::Geometry> _geom, double *_sizeVals)
 {
   std::string type;
 
@@ -1849,8 +1849,8 @@ std::string GetGeometryBoundingBox(
     case urdf::Geometry::BOX:
       type = "box";
       {
-        std::shared_ptr<const urdf::Box> box;
-        box = std::dynamic_pointer_cast<const urdf::Box >(_geom);
+        boost::shared_ptr<const urdf::Box> box;
+        box = boost::dynamic_pointer_cast<const urdf::Box >(_geom);
         _sizeVals[0] = box->dim.x;
         _sizeVals[1] = box->dim.y;
         _sizeVals[2] = box->dim.z;
@@ -1859,8 +1859,8 @@ std::string GetGeometryBoundingBox(
     case urdf::Geometry::CYLINDER:
       type = "cylinder";
       {
-        std::shared_ptr<const urdf::Cylinder> cylinder;
-        cylinder = std::dynamic_pointer_cast<const urdf::Cylinder >(_geom);
+        boost::shared_ptr<const urdf::Cylinder> cylinder;
+        cylinder = boost::dynamic_pointer_cast<const urdf::Cylinder >(_geom);
         _sizeVals[0] = cylinder->radius * 2;
         _sizeVals[1] = cylinder->radius * 2;
         _sizeVals[2] = cylinder->length;
@@ -1869,16 +1869,16 @@ std::string GetGeometryBoundingBox(
     case urdf::Geometry::SPHERE:
       type = "sphere";
       {
-        std::shared_ptr<const urdf::Sphere> sphere;
-        sphere = std::dynamic_pointer_cast<const urdf::Sphere >(_geom);
+        boost::shared_ptr<const urdf::Sphere> sphere;
+        sphere = boost::dynamic_pointer_cast<const urdf::Sphere >(_geom);
         _sizeVals[0] = _sizeVals[1] = _sizeVals[2] = sphere->radius * 2;
       }
       break;
     case urdf::Geometry::MESH:
       type = "trimesh";
       {
-        std::shared_ptr<const urdf::Mesh> mesh;
-        mesh = std::dynamic_pointer_cast<const urdf::Mesh >(_geom);
+        boost::shared_ptr<const urdf::Mesh> mesh;
+        mesh = boost::dynamic_pointer_cast<const urdf::Mesh >(_geom);
         _sizeVals[0] = mesh->scale.x;
         _sizeVals[1] = mesh->scale.y;
         _sizeVals[2] = mesh->scale.z;
@@ -1902,7 +1902,7 @@ void PrintCollisionGroups(UrdfLinkPtr _link)
     << static_cast<int>(_link->collision_groups.size())
     << "] collisions.\n";
   for (std::map<std::string,
-      std::shared_ptr<std::vector<UrdfCollisionPtr > > >::iterator
+      boost::shared_ptr<std::vector<UrdfCollisionPtr > > >::iterator
       colsIt = _link->collision_groups.begin();
       colsIt != _link->collision_groups.end(); ++colsIt)
   {
@@ -2291,7 +2291,7 @@ void CreateCollisions(TiXmlElement* _elem,
   //   lumped meshes (fixed joint reduction)
 #ifndef URDF_GE_0P3
   for (std::map<std::string,
-      std::shared_ptr<std::vector<UrdfCollisionPtr> > >::const_iterator
+      boost::shared_ptr<std::vector<UrdfCollisionPtr> > >::const_iterator
       collisionsIt = _link->collision_groups.begin();
       collisionsIt != _link->collision_groups.end(); ++collisionsIt)
   {
@@ -2403,7 +2403,7 @@ void CreateVisuals(TiXmlElement* _elem,
   //   lumped meshes (fixed joint reduction)
 #ifndef URDF_GE_0P3
   for (std::map<std::string,
-      std::shared_ptr<std::vector<UrdfVisualPtr> > >::const_iterator
+      boost::shared_ptr<std::vector<UrdfVisualPtr> > >::const_iterator
       visualsIt = _link->visual_groups.begin();
       visualsIt != _link->visual_groups.end(); ++visualsIt)
   {
@@ -2764,7 +2764,7 @@ TiXmlDocument URDF2SDF::InitModelString(const std::string &_urdfStr,
   g_enforceLimits = _enforceLimits;
 
   /* Create a RobotModel from string */
-  std::shared_ptr<urdf::ModelInterface> robotModel =
+  boost::shared_ptr<urdf::ModelInterface> robotModel =
     urdf::parseURDF(_urdfStr.c_str());
 
   // an xml object to hold the xml result
@@ -2805,10 +2805,8 @@ TiXmlDocument URDF2SDF::InitModelString(const std::string &_urdfStr,
   /* using the disabledFixedJointLumping option is possible to disable
      fixed joint lumping only for selected joints */
   if (g_reduceFixedJoints)
-  {
     ReduceFixedJoints(robot,
-        (std::const_pointer_cast<urdf::Link>(rootLink)));
-  }
+        (boost::const_pointer_cast< urdf::Link >(rootLink)));
 
   if (rootLink->name == "world")
   {
@@ -2869,7 +2867,7 @@ TiXmlDocument URDF2SDF::InitModelFile(const std::string &_filename)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool FixedJointShouldBeReduced(std::shared_ptr<urdf::Joint> _jnt)
+bool FixedJointShouldBeReduced(boost::shared_ptr<urdf::Joint> _jnt)
 {
     // A joint should be lumped only if its type is fixed and
     // the disabledFixedJointLumping joint option is not set
