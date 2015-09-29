@@ -215,8 +215,8 @@ namespace sdf
     /// the element. Defaults to empty.
     /// \return The element as a boost::any.
     /// \deprecated Use T Get(const std::string &_key = "");
-    // public: boost::any GetAny(const std::string &_key = "")
-    //        SDF_DEPRECATED(4.0);
+    public: boost::any GetAny(const std::string &_key = "")
+            SDF_DEPRECATED(4.0);
 
     public: template<typename T>
             T Get(const std::string &_key = "");

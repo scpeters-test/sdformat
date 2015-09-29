@@ -65,18 +65,25 @@ TEST(Param, Bool)
   strParam.Get<bool>(value);
   EXPECT_FALSE(value);
 
-  // boolParam.Set(true);
-  // boost::any anyValue;
-  // EXPECT_TRUE(boolParam.GetAny(anyValue));
-  // try
-  // {
-  //   value = boost::any_cast<bool>(anyValue);
-  // }
-  // catch(boost::bad_any_cast &/*_e*/)
-  // {
-  //   FAIL();
-  // }
-  // EXPECT_TRUE(value);
+#ifndef _WIN32
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  boolParam.Set(true);
+  boost::any anyValue;
+  EXPECT_TRUE(boolParam.GetAny(anyValue));
+  try
+  {
+    value = boost::any_cast<bool>(anyValue);
+  }
+  catch(boost::bad_any_cast &/*_e*/)
+  {
+    FAIL();
+  }
+  EXPECT_TRUE(value);
+#ifndef _WIN32
+#pragma GCC diagnostic pop
+#endif
 }
 
 ////////////////////////////////////////////////////

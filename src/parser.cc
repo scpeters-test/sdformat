@@ -217,7 +217,7 @@ bool initXml(TiXmlElement *_xml, ElementPtr _sdf)
       return false;
     }
     std::string requiredStr = requiredString;
-    // PUT BACK IN boost::trim(requiredStr);
+    sdf::trim(requiredStr);
     bool required = requiredStr == "1" ? true : false;
     std::string description;
 

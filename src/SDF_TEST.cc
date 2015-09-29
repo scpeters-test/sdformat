@@ -358,156 +358,164 @@ TEST_F(SDFUpdate, EmptyValues)
 }
 
 /////////////////////////////////////////////////
-// TEST_F(SDFUpdate, GetAny)
-// {
-//   std::ostringstream stream;
-//   // Test types double, bool, string, int, vector3, color, pose
-//   stream << "<sdf version='1.5'>"
-//          << "<world name='test'>"
-//          << "   <physics type='ode'>"
-//          << "     <gravity> 0 0 -7.1 </gravity>"
-//          << "     <max_contacts>8</max_contacts>"
-//          << "     <max_step_size>0.002</max_step_size>"
-//          << "   </physics>"
-//          << "   <model name='test_model'>"
-//          << "     <pose>0 1 2 0 0 0</pose>"
-//          << "     <static>true</static>"
-//          << "     <link name='link1'>"
-//          << "       <visual name='visual'>"
-//          << "         <material>"
-//          << "           <ambient>0.1 0.1 0.1 1</ambient>"
-//          << "         </material>"
-//          << "       </visual>"
-//          << "     </link>"
-//          << "   </model>"
-//          << "</world>"
-//          << "</sdf>";
-//   sdf::SDF sdfParsed;
-//   sdfParsed.SetFromString(stream.str());
-//
-//   // Verify correct parsing
-//   EXPECT_TRUE(sdfParsed.Root()->HasElement("world"));
-//   sdf::ElementPtr worldElem = sdfParsed.Root()->GetElement("world");
-//
-//   EXPECT_TRUE(worldElem->HasElement("model"));
-//   sdf::ElementPtr modelElem = worldElem->GetElement("model");
-//   EXPECT_TRUE(worldElem->HasElement("physics"));
-//   sdf::ElementPtr physicsElem = worldElem->GetElement("physics");
-//
-//   {
-//     boost::any anyValue = modelElem->GetAny("name");
-//     try
-//     {
-//       EXPECT_EQ(boost::any_cast<std::string>(anyValue), "test_model");
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-//
-//   {
-//     EXPECT_TRUE(modelElem->HasElement("pose"));
-//     sdf::ElementPtr poseElem = modelElem->GetElement("pose");
-//     boost::any anyValue = poseElem->GetAny();
-//     try
-//     {
-//       EXPECT_EQ(boost::any_cast<ignition::math::Pose3d>(anyValue),
-//           ignition::math::Pose3d(0, 1, 2, 0, 0, 0));
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-//
-//   {
-//     EXPECT_TRUE(physicsElem->HasElement("gravity"));
-//     boost::any anyValue = physicsElem->GetElement("gravity")->GetAny();
-//     try
-//     {
-//       EXPECT_EQ(boost::any_cast<ignition::math::Vector3d>(anyValue),
-//           ignition::math::Vector3d(0, 0, -7.1));
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-//
-//   {
-//     EXPECT_TRUE(physicsElem->HasElement("max_step_size"));
-//     boost::any anyValue = physicsElem->GetElement("max_step_size")->GetAny();
-//     try
-//     {
-//       EXPECT_NEAR(boost::any_cast<double>(anyValue), 0.002, 1e-6);
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-//
-//   {
-//     EXPECT_TRUE(physicsElem->HasElement("max_contacts"));
-//     boost::any anyValue = physicsElem->GetElement("max_contacts")->GetAny();
-//     try
-//     {
-//       EXPECT_EQ(boost::any_cast<int>(anyValue), 8);
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-//
-//   {
-//     EXPECT_TRUE(physicsElem->HasElement("gravity"));
-//     boost::any anyValue = physicsElem->GetElement("gravity")->GetAny();
-//     try
-//     {
-//       EXPECT_EQ(boost::any_cast<ignition::math::Vector3d>(anyValue),
-//           ignition::math::Vector3d(0, 0, -7.1));
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-//
-//   {
-//     EXPECT_TRUE(modelElem->HasElement("static"));
-//     boost::any anyValue = modelElem->GetElement("static")->GetAny();
-//     try
-//     {
-//       EXPECT_EQ(boost::any_cast<bool>(anyValue), true);
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-//
-//   {
-//     EXPECT_TRUE(modelElem->HasElement("link"));
-//     EXPECT_TRUE(modelElem->GetElement("link")->HasElement("visual"));
-//     EXPECT_TRUE(modelElem->GetElement("link")->GetElement("visual")->
-//         HasElement("material"));
-//     sdf::ElementPtr materialElem = modelElem->GetElement("link")->
-//         GetElement("visual")->GetElement("material");
-//     EXPECT_TRUE(materialElem->HasElement("ambient"));
-//     boost::any anyValue = materialElem->GetElement("ambient")->GetAny();
-//     try
-//     {
-//       EXPECT_EQ(boost::any_cast<sdf::Color>(anyValue),
-//           sdf::Color(0.1f, 0.1f, 0.1f, 1.0f));
-//     }
-//     catch(boost::bad_any_cast &/*_e*/)
-//     {
-//       FAIL();
-//     }
-//   }
-// }
+TEST_F(SDFUpdate, GetAny)
+{
+#ifndef _WIN32
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+  std::ostringstream stream;
+  // Test types double, bool, string, int, vector3, color, pose
+  stream << "<sdf version='1.5'>"
+         << "<world name='test'>"
+         << "   <physics type='ode'>"
+         << "     <gravity> 0 0 -7.1 </gravity>"
+         << "     <max_contacts>8</max_contacts>"
+         << "     <max_step_size>0.002</max_step_size>"
+         << "   </physics>"
+         << "   <model name='test_model'>"
+         << "     <pose>0 1 2 0 0 0</pose>"
+         << "     <static>true</static>"
+         << "     <link name='link1'>"
+         << "       <visual name='visual'>"
+         << "         <material>"
+         << "           <ambient>0.1 0.1 0.1 1</ambient>"
+         << "         </material>"
+         << "       </visual>"
+         << "     </link>"
+         << "   </model>"
+         << "</world>"
+         << "</sdf>";
+  sdf::SDF sdfParsed;
+  sdfParsed.SetFromString(stream.str());
+
+  // Verify correct parsing
+  EXPECT_TRUE(sdfParsed.Root()->HasElement("world"));
+  sdf::ElementPtr worldElem = sdfParsed.Root()->GetElement("world");
+
+  EXPECT_TRUE(worldElem->HasElement("model"));
+  sdf::ElementPtr modelElem = worldElem->GetElement("model");
+  EXPECT_TRUE(worldElem->HasElement("physics"));
+  sdf::ElementPtr physicsElem = worldElem->GetElement("physics");
+
+  {
+    boost::any anyValue = modelElem->GetAny("name");
+    try
+    {
+      EXPECT_EQ(boost::any_cast<std::string>(anyValue), "test_model");
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(modelElem->HasElement("pose"));
+    sdf::ElementPtr poseElem = modelElem->GetElement("pose");
+    boost::any anyValue = poseElem->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<ignition::math::Pose3d>(anyValue),
+          ignition::math::Pose3d(0, 1, 2, 0, 0, 0));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("gravity"));
+    boost::any anyValue = physicsElem->GetElement("gravity")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<ignition::math::Vector3d>(anyValue),
+          ignition::math::Vector3d(0, 0, -7.1));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("max_step_size"));
+    boost::any anyValue = physicsElem->GetElement("max_step_size")->GetAny();
+    try
+    {
+      EXPECT_NEAR(boost::any_cast<double>(anyValue), 0.002, 1e-6);
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("max_contacts"));
+    boost::any anyValue = physicsElem->GetElement("max_contacts")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<int>(anyValue), 8);
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(physicsElem->HasElement("gravity"));
+    boost::any anyValue = physicsElem->GetElement("gravity")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<ignition::math::Vector3d>(anyValue),
+          ignition::math::Vector3d(0, 0, -7.1));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(modelElem->HasElement("static"));
+    boost::any anyValue = modelElem->GetElement("static")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<bool>(anyValue), true);
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+
+  {
+    EXPECT_TRUE(modelElem->HasElement("link"));
+    EXPECT_TRUE(modelElem->GetElement("link")->HasElement("visual"));
+    EXPECT_TRUE(modelElem->GetElement("link")->GetElement("visual")->
+        HasElement("material"));
+    sdf::ElementPtr materialElem = modelElem->GetElement("link")->
+        GetElement("visual")->GetElement("material");
+    EXPECT_TRUE(materialElem->HasElement("ambient"));
+    boost::any anyValue = materialElem->GetElement("ambient")->GetAny();
+    try
+    {
+      EXPECT_EQ(boost::any_cast<sdf::Color>(anyValue),
+          sdf::Color(0.1f, 0.1f, 0.1f, 1.0f));
+    }
+    catch(boost::bad_any_cast &/*_e*/)
+    {
+      FAIL();
+    }
+  }
+#ifndef _WIN32
+#pragma GCC diagnostic pop
+#endif
+}
 
 /////////////////////////////////////////////////
 TEST_F(SDFUpdate, Version)
