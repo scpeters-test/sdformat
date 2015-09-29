@@ -214,7 +214,9 @@ namespace sdf
     /// \param[in] _key The key of the attribute. If empty, get the value of
     /// the element. Defaults to empty.
     /// \return The element as a boost::any.
-    // public: boost::any GetAny(const std::string &_key = "");
+    /// \deprecated Use T Get(const std::string &_key = "");
+    // public: boost::any GetAny(const std::string &_key = "")
+    //        SDF_DEPRECATED(4.0);
 
     public: template<typename T>
             T Get(const std::string &_key = "");

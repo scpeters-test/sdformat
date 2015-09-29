@@ -18,6 +18,11 @@
 #ifndef _SDF_PARAM_HH_
 #define _SDF_PARAM_HH_
 
+// See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#ifndef Q_MOC_RUN
+#include <boost/any.hpp>
+#endif
+
 #include <memory>
 #include <functional>
 #include <algorithm>
@@ -137,6 +142,12 @@ namespace sdf
     /// \return True if the value was successfully set.
     public: template<typename T>
             bool Set(const T &_value);
+
+    /// \brief Get the value of the parameter as a boost::any.
+    /// \param[out] _anyVal The boost::any object to set.
+    /// \return True if successfully set _anyVal, false otherwise.
+    /// \deprecated Use bool Get(T &_value) const;
+    public: bool GetAny(boost::any &_anyVal) const SDF_DEPRECATED(4.0);
 
     /// \brief Get the value of the parameter.
     /// \param[out] _value The value of the parameter.

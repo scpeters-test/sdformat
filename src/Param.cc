@@ -143,6 +143,171 @@ Param::~Param()
 }
 
 //////////////////////////////////////////////////
+bool Param::GetAny(boost::any &_anyVal) const
+{
+  if (this->IsType<int>())
+  {
+    int ret = 0;
+    if (!this->Get<int>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<uint64_t>())
+  {
+    uint64_t ret = 0;
+    if (!this->Get<uint64_t>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<double>())
+  {
+    double ret = 0;
+    if (!this->Get<double>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<float>())
+  {
+    float ret = 0;
+    if (!this->Get<float>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<bool>())
+  {
+    bool ret = false;
+    if (!this->Get<bool>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<std::string>())
+  {
+    std::string ret;
+    if (!this->Get<std::string>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<unsigned int>())
+  {
+    unsigned int ret = 0;
+    if (!this->Get<unsigned int>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<char>())
+  {
+    char ret = 0;
+    if (!this->Get<char>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<sdf::Time>())
+  {
+    sdf::Time ret;
+    if (!this->Get<sdf::Time>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<sdf::Color>())
+  {
+    sdf::Color ret;
+    if (!this->Get<sdf::Color>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<ignition::math::Vector3d>())
+  {
+    ignition::math::Vector3d ret;
+    if (!this->Get<ignition::math::Vector3d>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<ignition::math::Vector2i>())
+  {
+    ignition::math::Vector2i ret;
+    if (!this->Get<ignition::math::Vector2i>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<ignition::math::Vector2d>())
+  {
+    ignition::math::Vector2d ret;
+    if (!this->Get<ignition::math::Vector2d>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<ignition::math::Pose3d>())
+  {
+    ignition::math::Pose3d ret;
+    if (!this->Get<ignition::math::Pose3d>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<ignition::math::Quaterniond>())
+  {
+    ignition::math::Quaterniond ret;
+    if (!this->Get<ignition::math::Quaterniond>(ret))
+      return false;
+    _anyVal = ret;
+#ifndef _WIN32
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  }
+  /// \deprecated The follow sdf Types are deprecated
+  else if (this->IsType<sdf::Vector3>())
+  {
+    sdferr << "sdf::Vector3 is deprecated. Use ignition::math::Vector3d\n";
+    sdf::Vector3 ret;
+    if (!this->Get<sdf::Vector3>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<sdf::Vector2i>())
+  {
+    sdferr << "sdf::Vector2i is deprecated. Use ignition::math::Vector2i\n";
+    sdf::Vector2i ret;
+    if (!this->Get<sdf::Vector2i>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<sdf::Vector2d>())
+  {
+    sdferr << "sdf::Vector2d is deprecated. Use ignition::math::Vector2d\n";
+    sdf::Vector2d ret;
+    if (!this->Get<sdf::Vector2d>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<sdf::Pose>())
+  {
+    sdferr << "sdf::Pose is deprecated. Use ignition::math::Pose3d\n";
+    sdf::Pose ret;
+    if (!this->Get<sdf::Pose>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (this->IsType<sdf::Quaternion>())
+  {
+    sdferr << "sdf::Quaternion is deprecated. "
+           << "Use ignition::math::Quaterniond\n";
+    sdf::Quaternion ret;
+    if (!this->Get<sdf::Quaternion>(ret))
+      return false;
+    _anyVal = ret;
+#ifndef _WIN32
+#pragma GCC diagnostic pop
+#endif
+  }
+  else
+  {
+    sdferr << "Type of parameter not known: [" << this->GetTypeName() << "]\n";
+    return false;
+  }
+  return true;
+}
+
+//////////////////////////////////////////////////
 void Param::Update()
 {
   if (this->updateFunc)
