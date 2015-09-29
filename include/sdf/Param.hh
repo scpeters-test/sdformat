@@ -57,7 +57,7 @@ namespace sdf
 
   /// \class Param Param.hh sdf/sdf.hh
   /// \brief A parameter class
-  class Param
+  class SDFORMAT_VISIBLE Param
   {
     /// \brief Constructor.
     /// \param[in] _key Key for the parameter.
@@ -91,6 +91,12 @@ namespace sdf
     /// \brief Get the key value.
     /// \return The key.
     public: const std::string &GetKey() const;
+
+    /// \brief Get the type of the value stored.
+    /// \return The std::type_info.
+    /// \deprecated GetType is unstable. Use IsType().
+    /// \sa IsType
+    public: const std::type_info &GetType() const SDF_DEPRECATED(4.0);
 
     /// \brief Return true if the param is a particular type
     /// \return True if the type held by this Param matches the Type
@@ -126,7 +132,6 @@ namespace sdf
 
     /// \brief Set the parameter's value.
     ///
-    /// The passed in value must conform to the sdf::lexicalCast spec.
     /// This means the value must have an input and output stream operator.
     /// \param[in] _value The value to set the parameter to.
     /// \return True if the value was successfully set.

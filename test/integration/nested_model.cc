@@ -16,7 +16,6 @@
 */
 
 #include <gtest/gtest.h>
-#include <boost/filesystem.hpp>
 #include <string>
 #include "sdf/sdf.hh"
 
@@ -45,14 +44,16 @@ TEST(NestedModel, NestedModel)
     << "  </joint>"
     << "</model>"
     << "</sdf>";
-  sdf::SDF sdfParsed;
-  sdfParsed.SetFromString(stream.str());
+
+  sdf::SDFPtr sdfParsed(new sdf::SDF());
+  sdf::init(sdfParsed);
+  ASSERT_TRUE(sdf::readString(stream.str(), sdfParsed));
 
   // Verify correct parsing
 
   // top level model
-  EXPECT_TRUE(sdfParsed.Root()->HasElement("model"));
-  sdf::ElementPtr modelElem = sdfParsed.Root()->GetElement("model");
+  EXPECT_TRUE(sdfParsed->Root()->HasElement("model"));
+  sdf::ElementPtr modelElem = sdfParsed->Root()->GetElement("model");
   EXPECT_TRUE(modelElem->HasAttribute("name"));
   EXPECT_EQ(modelElem->Get<std::string>("name"), "top_level_model");
 
