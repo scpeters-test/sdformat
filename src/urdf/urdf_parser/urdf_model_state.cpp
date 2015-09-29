@@ -38,7 +38,7 @@
 #include <urdf_model_state/model_state.h>
 #include <fstream>
 #include <sstream>
-#include "sdf/Util.hh"
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
 //#include <console_bridge/console.h>
@@ -61,10 +61,10 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   if (time_stamp_char)
   {
     try {
-      double sec = sdf::lexicalCast<double>(time_stamp_char);
+      double sec = boost::lexical_cast<double>(time_stamp_char);
       ms.time_stamp.set(sec);
     }
-    catch (std::runtime_error &/*e*/) {
+    catch (boost::bad_lexical_cast &/*e*/) {
       //logError("Parsing time stamp [%s] failed: %s", time_stamp_char, e.what());
       return false;
     }
@@ -73,7 +73,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   TiXmlElement *joint_state_elem = config->FirstChildElement("joint_state");
   if (joint_state_elem)
   {
-    std::shared_ptr<JointState> joint_state;
+    boost::shared_ptr<JointState> joint_state;
     joint_state.reset(new JointState());
 
     const char *joint_char = joint_state_elem->Attribute("joint");
@@ -95,9 +95,9 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->position.push_back(sdf::lexicalCast<double>(pieces[i].c_str()));
+            joint_state->position.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (std::runtime_error &/*e*/) {
+          catch (boost::bad_lexical_cast &/*e*/) {
             throw ParseError("position element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -114,9 +114,9 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->velocity.push_back(sdf::lexicalCast<double>(pieces[i].c_str()));
+            joint_state->velocity.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (std::runtime_error &/*e*/) {
+          catch (boost::bad_lexical_cast &/*e*/) {
             throw ParseError("velocity element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -133,11 +133,10 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->effort.push_back(sdf::lexicalCast<double>(pieces[i].c_str()));
+            joint_state->effort.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (std::runtime_error &/*e*/) {
-            throw ParseError("effort element ("+ pieces[i]
-                +") is not a valid float");
+          catch (boost::bad_lexical_cast &/*e*/) {
+            throw ParseError("effort element ("+ pieces[i] +") is not a valid float");
           }
         }
       }

@@ -38,7 +38,7 @@
 #include <urdf_model/twist.h>
 #include <fstream>
 #include <sstream>
-#include "sdf/Util.hh"
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
 //#include <console_bridge/console.h>

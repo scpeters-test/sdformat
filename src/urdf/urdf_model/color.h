@@ -42,7 +42,7 @@
 #include <vector>
 #include <math.h>
 #include <boost/algorithm/string.hpp>
-#include "sdf/Util.hh"
+#include <boost/lexical_cast.hpp>
 
 namespace urdf
 {
@@ -73,9 +73,9 @@ public:
       {
         try
         {
-          rgba.push_back(sdf::lexicalCast<float>(pieces[i].c_str()));
+          rgba.push_back(boost::lexical_cast<float>(pieces[i].c_str()));
         }
-        catch (std::runtime_error &)
+        catch (boost::bad_lexical_cast &)
         {
           return false;
         }

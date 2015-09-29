@@ -36,7 +36,7 @@
 
 #include <sstream>
 #include <urdf_model/joint.h>
-#include "sdf/Util.hh"
+#include <boost/lexical_cast.hpp>
 //#include <console_bridge/console.h>
 #include <tinyxml.h>
 #include <urdf_parser/urdf_parser.h>
@@ -59,9 +59,9 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   {
     try
     {
-      jd.damping = sdf::lexicalCast<double>(damping_str);
+      jd.damping = boost::lexical_cast<double>(damping_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("damping value (%s) is not a float: %s",damping_str, e.what());
       return false;
@@ -78,9 +78,9 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   {
     try
     {
-      jd.friction = sdf::lexicalCast<double>(friction_str);
+      jd.friction = boost::lexical_cast<double>(friction_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("friction value (%s) is not a float: %s",friction_str, e.what());
       return false;
@@ -112,9 +112,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.lower = sdf::lexicalCast<double>(lower_str);
+      jl.lower = boost::lexical_cast<double>(lower_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("lower value (%s) is not a float: %s", lower_str, e.what());
       return false;
@@ -131,9 +131,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.upper = sdf::lexicalCast<double>(upper_str);
+      jl.upper = boost::lexical_cast<double>(upper_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("upper value (%s) is not a float: %s",upper_str, e.what());
       return false;
@@ -150,9 +150,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.effort = sdf::lexicalCast<double>(effort_str);
+      jl.effort = boost::lexical_cast<double>(effort_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("effort value (%s) is not a float: %s",effort_str, e.what());
       return false;
@@ -169,9 +169,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.velocity = sdf::lexicalCast<double>(velocity_str);
+      jl.velocity = boost::lexical_cast<double>(velocity_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("velocity value (%s) is not a float: %s",velocity_str, e.what());
       return false;
@@ -196,9 +196,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.soft_lower_limit = sdf::lexicalCast<double>(soft_lower_limit_str);
+      js.soft_lower_limit = boost::lexical_cast<double>(soft_lower_limit_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("soft_lower_limit value (%s) is not a float: %s",soft_lower_limit_str, e.what());
       return false;
@@ -216,9 +216,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.soft_upper_limit = sdf::lexicalCast<double>(soft_upper_limit_str);
+      js.soft_upper_limit = boost::lexical_cast<double>(soft_upper_limit_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("soft_upper_limit value (%s) is not a float: %s",soft_upper_limit_str, e.what());
       return false;
@@ -236,9 +236,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.k_position = sdf::lexicalCast<double>(k_position_str);
+      js.k_position = boost::lexical_cast<double>(k_position_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("k_position value (%s) is not a float: %s",k_position_str, e.what());
       return false;
@@ -255,9 +255,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.k_velocity = sdf::lexicalCast<double>(k_velocity_str);
+      js.k_velocity = boost::lexical_cast<double>(k_velocity_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("k_velocity value (%s) is not a float: %s",k_velocity_str, e.what());
       return false;
@@ -282,9 +282,9 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   {
     try
     {
-      jc.rising.reset(new double(sdf::lexicalCast<double>(rising_position_str)));
+      jc.rising.reset(new double(boost::lexical_cast<double>(rising_position_str)));
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("risingvalue (%s) is not a float: %s",rising_position_str, e.what());
       return false;
@@ -302,9 +302,9 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   {
     try
     {
-      jc.falling.reset(new double(sdf::lexicalCast<double>(falling_position_str)));
+      jc.falling.reset(new double(boost::lexical_cast<double>(falling_position_str)));
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("fallingvalue (%s) is not a float: %s",falling_position_str, e.what());
       return false;
@@ -341,9 +341,9 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
   {
     try
     {
-      jm.multiplier = sdf::lexicalCast<double>(multiplier_str);
+      jm.multiplier = boost::lexical_cast<double>(multiplier_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("multiplier value (%s) is not a float: %s",multiplier_str, e.what());
       return false;
@@ -362,9 +362,9 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
   {
     try
     {
-      jm.offset = sdf::lexicalCast<double>(offset_str);
+      jm.offset = boost::lexical_cast<double>(offset_str);
     }
-    catch (std::runtime_error &/*e*/)
+    catch (boost::bad_lexical_cast &/*e*/)
     {
       //logError("offset value (%s) is not a float: %s",offset_str, e.what());
       return false;
