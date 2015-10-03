@@ -25,6 +25,7 @@ Element::Element()
   : dataPtr(new ElementPrivate)
 {
   this->dataPtr->copyChildren = false;
+  this->dataPtr->referenceSDF = "";
 }
 
 /////////////////////////////////////////////////
@@ -109,6 +110,18 @@ bool Element::GetCopyChildren() const
 }
 
 /////////////////////////////////////////////////
+void Element::SetReferenceSDF(const std::string &_value)
+{
+  this->dataPtr->referenceSDF = _value;
+}
+
+/////////////////////////////////////////////////
+std::string Element::ReferenceSDF() const
+{
+  return this->dataPtr->referenceSDF;
+}
+
+/////////////////////////////////////////////////
 void Element::AddValue(const std::string &_type,
     const std::string &_defaultValue, bool _required,
     const std::string &_description)
@@ -145,6 +158,7 @@ ElementPtr Element::Clone() const
   // clone->parent = this->dataPtr->parent;
   clone->dataPtr->copyChildren = this->dataPtr->copyChildren;
   clone->dataPtr->includeFilename = this->dataPtr->includeFilename;
+  clone->dataPtr->referenceSDF = this->dataPtr->referenceSDF;
 
   Param_V::const_iterator aiter;
   for (aiter = this->dataPtr->attributes.begin();
@@ -181,6 +195,7 @@ void Element::Copy(const ElementPtr _elem)
   this->dataPtr->required = _elem->GetRequired();
   this->dataPtr->copyChildren = _elem->GetCopyChildren();
   this->dataPtr->includeFilename = _elem->dataPtr->includeFilename;
+  this->dataPtr->referenceSDF = _elem->ReferenceSDF();
 
   for (Param_V::iterator iter = _elem->dataPtr->attributes.begin();
        iter != _elem->dataPtr->attributes.end(); ++iter)
@@ -242,6 +257,13 @@ void Element::PrintDescription(const std::string &_prefix)
 
   if (this->GetCopyChildren())
     std::cout << _prefix << "  <element copy_data ='true' required ='*'/>\n";
+
+  std::string refSDF = this->ReferenceSDF();
+  if (!refSDF.empty())
+  {
+    std::cout << _prefix << "  <element ref ='" << refSDF <<
+        "' required ='*'/>\n";
+  }
 
   ElementPtr_V::iterator eiter;
   for (eiter = this->dataPtr->elementDescriptions.begin();
@@ -644,6 +666,20 @@ bool Element::HasElementDescription(const std::string &_name)
 /////////////////////////////////////////////////
 ElementPtr Element::AddElement(const std::string &_name)
 {
+  // if this element is a reference sdf and does not have any element
+  // descriptions then get them from its parent
+  if (!this->dataPtr->referenceSDF.empty() &&
+      this->dataPtr->elementDescriptions.empty() && this->dataPtr->parent &&
+      this->dataPtr->parent->GetName() == this->dataPtr->name)
+  {
+    for (unsigned int i = 0;
+        i < this->dataPtr->parent->GetElementDescriptionCount(); ++i)
+    {
+      this->dataPtr->elementDescriptions.push_back(
+          this->dataPtr->parent->GetElementDescription(i)->Clone());
+    }
+  }
+
   ElementPtr_V::const_iterator iter, iter2;
   for (iter = this->dataPtr->elementDescriptions.begin();
       iter != this->dataPtr->elementDescriptions.end(); ++iter)
@@ -668,6 +704,7 @@ ElementPtr Element::AddElement(const std::string &_name)
       return this->dataPtr->elements.back();
     }
   }
+
   sdferr << "Missing element description for [" << _name << "]\n";
   return ElementPtr();
 }
