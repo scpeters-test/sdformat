@@ -58,7 +58,7 @@ namespace sdf
     public: std::string material;
 
     /// \brief blobs of xml to be copied into the visual sdf element
-    public: std::vector<std	::shared_ptr<TiXmlElement> > visual_blobs;
+    public: std::vector<std::shared_ptr<TiXmlElement> > visual_blobs;
 
     /// \brief blobs of xml to be copied into the collision sdf element
     /// An example might be:
