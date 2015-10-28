@@ -53,8 +53,10 @@ namespace sdf
     public: std::string oldLinkName;
     public: ignition::math::Pose3d reductionTransform;
 
-    // visual
+    // visual material
     public: std::string material;
+
+    /// \brief blobs of xml to be copied into the visual sdf element
     public: std::vector<boost::shared_ptr<TiXmlElement> > visual_blobs;
 
     // body, default off
