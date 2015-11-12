@@ -913,10 +913,11 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
       visualsIt = _link->visual_groups.begin();
       visualsIt != _link->visual_groups.end(); ++visualsIt)
   {
+    std::string newVisualGroupName;
     if (visualsIt->first.find(std::string("lump::")) == 0)
     {
       // it's a previously lumped mesh, re-lump under same _groupName
-      std::string newVisualGroupName = visualsIt->first;
+      newVisualGroupName = visualsIt->first;
       sdfdbg << "re-lumping group name [" << newVisualGroupName
              << "] to link [" << _link->getParent()->name << "]\n";
       for (std::vector<UrdfVisualPtr>::iterator
@@ -935,7 +936,8 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
     else
     {
       // default and any other groups meshes
-      std::string newVisualGroupName = std::string("lump::")+_link->name;
+      newVisualGroupName =
+        std::string("lump::")+_link->name;
       sdfdbg << "adding modified lump group name [" << newVisualGroupName
              << "] to link [" << _link->getParent()->name << "].\n";
       for (std::vector<UrdfVisualPtr>::iterator
@@ -960,7 +962,8 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
   {
     // transform visual origin from _link frame to
     // parent link frame before adding to parent
-    (*visualIt)->origin = TransformToParentFrame((*visualIt)->origin,
+    (*visualIt)->origin = TransformToParentFrame(
+        (*visualIt)->origin,
         _link->parent_joint->parent_to_joint_origin_transform);
 
     // add the modified visual to parent
@@ -993,10 +996,11 @@ void ReduceCollisionsToParent(UrdfLinkPtr _link)
       collisionsIt = _link->collision_groups.begin();
       collisionsIt != _link->collision_groups.end(); ++collisionsIt)
   {
+    std::string newCollisionGroupName;
     if (collisionsIt->first.find(std::string("lump::")) == 0)
     {
       // if it's a previously lumped mesh, relump under same _groupName
-      std::string newCollisionGroupName = collisionsIt->first;
+      newCollisionGroupName = collisionsIt->first;
       sdfdbg << "re-lumping collision [" << collisionsIt->first
              << "] for link [" << _link->name
              << "] to parent [" << _link->getParent()->name
@@ -1018,7 +1022,8 @@ void ReduceCollisionsToParent(UrdfLinkPtr _link)
     else
     {
       // default and any other group meshes
-      std::string newCollisionGroupName = std::string("lump::")+_link->name;
+      newCollisionGroupName =
+         std::string("lump::")+_link->name;
       sdfdbg << "lumping collision [" << collisionsIt->first
              << "] for link [" << _link->name
              << "] to parent [" << _link->getParent()->name
@@ -1267,19 +1272,27 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
       {
         sdf->material = GetKeyValueAsString(childElem);
       }
-      else if (childElem->ValueStr() == "visual")
+      else if (childElem->ValueStr() == "collision"
+            || childElem->ValueStr() == "visual")
       {
-        // anything inside of visual tags:
+        // anything inside of collision or visual tags:
         // <gazebo reference="link_name">
+        //   <collision>
+        //     <collision_extention_stuff_here/>
+        //   </collision>
         //   <visual>
-        //     <extention_stuff_here/>
+        //     <visual_extention_stuff_here/>
         //   </visual>
         // </gazebl>
         // are treated as blobs that gets inserted
-        // into all visuals for the link
+        // into all collisions and visuals for the link
+        // <collision name="link_name[anything here]">
+        //   <stuff_from_urdf_link_collisions/>
+        //   <collision_extention_stuff_here/>
+        // </collision>
         // <visual name="link_name[anything here]">
         //   <stuff_from_urdf_link_visuals/>
-        //   <extention_stuff_here/>
+        //   <visual_extention_stuff_here/>
         // </visual>
 
         // a place to store converted doc
@@ -1290,14 +1303,19 @@ void URDF2SDF::ParseSDFExtension(TiXmlDocument &_urdfXml)
 
           std::ostringstream origStream;
           origStream << *e;
-          sdfdbg << "visual extension [" << origStream.str() << "] not " <<
-                   "converted from URDF, probably already in SDF format.";
           xmlNewDoc.Parse(origStream.str().c_str());
 
           // save all unknown stuff in a vector of blobs
           TiXmlElementPtr blob(
             new TiXmlElement(*xmlNewDoc.FirstChildElement()));
-          sdf->visual_blobs.push_back(blob);
+          if (childElem->ValueStr() == "collision")
+          {
+            sdf->collision_blobs.push_back(blob);
+          }
+          else
+          {
+            sdf->visual_blobs.push_back(blob);
+          }
         }
       }
       else if (childElem->ValueStr() == "static")
