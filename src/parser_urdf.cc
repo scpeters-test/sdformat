@@ -1211,7 +1211,7 @@ void InsertRobotOrigin(TiXmlElement *_elem)
 {
   if (g_initialRobotPoseValid)
   {
-    /* set transform */
+    // set transform
     double pose[6];
     pose[0] = g_initialRobotPose.position.x;
     pose[1] = g_initialRobotPose.position.y;
@@ -1725,11 +1725,9 @@ void InsertSDFExtensionJoint(TiXmlElement *_elem,
         {
           AddKeyValue(limit, "erp", Values2str(1, &(*ge)->stopErp));
         }
-        /* gone
-        if ((*ge)->isInitialJointPosition)
-           AddKeyValue(_elem, "initialJointPosition",
-             Values2str(1, &(*ge)->initialJointPosition));
-         */
+        // if ((*ge)->isInitialJointPosition)
+        //    AddKeyValue(_elem, "initialJointPosition",
+        //      Values2str(1, &(*ge)->initialJointPosition));
 
         // insert provideFeedback
         if ((*ge)->isProvideFeedback)
@@ -1877,7 +1875,7 @@ void CreateGeometry(TiXmlElement* _elem,
         AddKeyValue(geometryType, "scale", Vector32Str(mesh->scale));
         // do something more to meshes
         {
-          /* set mesh file */
+          // set mesh file
           if (mesh->filename.empty())
           {
             sdferr << "urdf2sdf: mesh geometry with no filename given.\n";
@@ -2291,7 +2289,7 @@ void CreateSDF(TiXmlElement *_root,
     return;
   }
 
-  /* create <body:...> block for non fixed joint attached bodies */
+  // create <body:...> block for non fixed joint attached bodies
   if ((_link->getParent() && _link->getParent()->name == "world") ||
       !g_reduceFixedJoints ||
       (!_link->parent_joint ||
@@ -2336,13 +2334,13 @@ void CreateLink(TiXmlElement *_root,
     ConstUrdfLinkPtr _link,
     ignition::math::Pose3d &_currentTransform)
 {
-  /* create new body */
+  // create new body
   TiXmlElement *elem     = new TiXmlElement("link");
 
-  /* set body name */
+  // set body name
   elem->SetAttribute("name", _link->name);
 
-  /* compute global transform */
+  // compute global transform
   ignition::math::Pose3d localTransform;
   // this is the transform from parent link to current _link
   // this transform does not exist for the root link
@@ -2358,22 +2356,22 @@ void CreateLink(TiXmlElement *_root,
   // create origin tag for this element
   AddTransform(elem, _currentTransform);
 
-  /* create new inerial block */
+  // create new inerial block
   CreateInertial(elem, _link);
 
-  /* create new collision block */
+  // create new collision block
   CreateCollisions(elem, _link);
 
-  /* create new visual block */
+  // create new visual block
   CreateVisuals(elem, _link);
 
-  /* copy sdf extensions data */
+  // copy sdf extensions data
   InsertSDFExtensionLink(elem, _link->name);
 
-  /* add body to document */
+  // add body to document
   _root->LinkEndChild(elem);
 
-  /* make a <joint:...> block */
+  // make a <joint:...> block
   CreateJoint(_root, _link, _currentTransform);
 }
 
@@ -2384,8 +2382,8 @@ void CreateCollisions(TiXmlElement* _elem,
   // loop through all collisions in
   //   collision_array (urdf 0.3.x)
   //   collision_groups (urdf 0.2.x)
-  // and create collision sdf blocks,
-  // as well as additional collision from
+  // and create collision sdf blocks.
+  // Note, well as additional collision from
   //   lumped meshes (fixed joint reduction)
 #ifndef URDF_GE_0P3
   for (std::map<std::string,
@@ -3050,19 +3048,18 @@ void ReduceSDFExtensionProjectorTransformReduction(
   // overwrite <pose> (xyz/rpy) if it exists
   if ((*_blobIt)->ValueStr() == "projector")
   {
-    /*
     // parse it and add/replace the reduction transform
     // find first instance of xyz and rpy, replace with reduction transform
-    for (TiXmlNode* elIt = (*_blobIt)->FirstChild();
-    elIt; elIt = elIt->NextSibling())
-    {
-    std::ostringstream streamIn;
-    streamIn << *elIt;
-    sdfdbg << "    " << streamIn << "\n";
-    }
-    */
+    //
+    // for (TiXmlNode* elIt = (*_blobIt)->FirstChild();
+    // elIt; elIt = elIt->NextSibling())
+    // {
+    //   std::ostringstream streamIn;
+    //   streamIn << *elIt;
+    //   sdfdbg << "    " << streamIn << "\n";
+    // }
 
-    /* should read <pose>...</pose> and agregate reductionTransform */
+    // should read <pose>...</pose> and agregate reductionTransform
     TiXmlNode* poseKey = (*_blobIt)->FirstChild("pose");
     // read pose and save it
 
