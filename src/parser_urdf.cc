@@ -312,26 +312,47 @@ std::string Vector32Str(const urdf::Vector3 _vector)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief Check and add collision to parent link
-/// \param[in] _collision move this collision to _parent_link
 /// \param[in] _parent_link destination for _collision
-void ReduceCollisionToParent(UrdfLinkPtr _link,
-#ifndef URDF_GE_0P3
-    const std::string &_groupName,
-#else
-    const std::string &/*_groupName*/,
-#endif
+/// \param[in] _name urdfdom 0.3+: urdf collision group name with lumped
+///            collision info (see ReduceCollisionsToParent).
+///            urdfdom 0.2: collision name with lumped
+///            collision info (see ReduceCollisionsToParent).
+/// \param[in] _collision move this collision to _parent_link
+////////////////////////////////////////////////////////////////
+// IMPORTANT NOTE: URDF_GE_OP3
+// IMPORTANT NOTE: on change from urdfdom_headers 0.2.x to 0.3.x
+////////////////////////////////////////////////////////////////
+// In urdfdom_headers 0.2.x, there are group names for
+// visuals and collisions in Link class:
+//   std::map<std::string,
+//     boost::shared_ptr<std::vector<boost::shared_ptr<Visual> > > 
+//     > visual_groups;
+//   std::map<std::string,
+//     boost::shared_ptr<std::vector<boost::shared_ptr<Collision> > > 
+//     > collision_groups; 
+// and we have Visual::group_name and
+//             Collision::group_name
+// In urdfdom_headers 0.3.x,
+//   - Link::visual_groups and Link::collision_groups are removed
+//   - method Link::getVisuals(group_name) has been removed
+//   - method Link::getCollisions(group_name) has been removed
+//   - Visual::group_name renamed to Visual::name
+//   - Collision::group_name renamed to Collision::name
+////////////////////////////////////////////////////////////////
+void ReduceCollisionToParent(UrdfLinkPtr _parent_link,
+    const std::string &_name,
     UrdfCollisionPtr _collision)
 {
   boost::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
 #ifndef URDF_GE_0P3
-  cols = _link->getCollisions(_groupName);
+  cols = _parent_link->getCollisions(_name);
 
   if (!cols)
   {
     // group does not exist, create one and add to map
     cols.reset(new std::vector<UrdfCollisionPtr>);
     // new group name, create add vector to map and add Collision to the vector
-    _link->collision_groups.insert(make_pair(_groupName, cols));
+    _parent_link->collision_groups.insert(make_pair(_name, cols));
   }
 
   // group exists, add Collision to the vector in the map
@@ -339,31 +360,52 @@ void ReduceCollisionToParent(UrdfLinkPtr _link,
     find(cols->begin(), cols->end(), _collision);
   if (colIt != cols->end())
     sdfwarn << "attempted to add collision to link ["
-      << _link->name
+      << _parent_link->name
       << "], but it already exists under group ["
-      << _groupName << "]\n";
+      << _name << "]\n";
   else
     cols->push_back(_collision);
 #else
-  _link->collision_array.push_back(_collision);
+  _parent_link->collision_array.push_back(_collision);
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief Check and add visual to parent link
-/// \param[in] _visual move this visual to _parent_link
 /// \param[in] _parent_link destination for _visual
-void ReduceVisualToParent(UrdfLinkPtr _link,
-#ifndef URDF_GE_0P3
-    const std::string &_groupName,
-#else
-    const std::string &/*_groupName*/,
-#endif
+/// \param[in] _name urdfdom 0.3+: urdf visual group name with lumped
+///            visual info (see ReduceVisualsToParent).
+///            urdfdom 0.2: visual name with lumped
+///            visual info (see ReduceVisualsToParent).
+/// \param[in] _visual move this visual to _parent_link
+////////////////////////////////////////////////////////////////
+// IMPORTANT NOTE: URDF_GE_OP3
+// IMPORTANT NOTE: on change from urdfdom_headers 0.2.x to 0.3.x
+////////////////////////////////////////////////////////////////
+// In urdfdom_headers 0.2.x, there are group names for
+// visuals and collisions in Link class:
+//   std::map<std::string,
+//     boost::shared_ptr<std::vector<boost::shared_ptr<Visual> > > 
+//     > visual_groups;
+//   std::map<std::string,
+//     boost::shared_ptr<std::vector<boost::shared_ptr<Collision> > > 
+//     > collision_groups; 
+// and we have Visual::group_name and
+//             Collision::group_name
+// In urdfdom_headers 0.3.x,
+//   - Link::visual_groups and Link::collision_groups are removed
+//   - method Link::getVisuals(group_name) has been removed
+//   - method Link::getCollisions(group_name) has been removed
+//   - Visual::group_name renamed to Visual::name
+//   - Collision::group_name renamed to Collision::name
+////////////////////////////////////////////////////////////////
+void ReduceVisualToParent(UrdfLinkPtr _parent_link,
+    const std::string &_name,
     UrdfVisualPtr _visual)
 {
   boost::shared_ptr<std::vector<UrdfVisualPtr> > viss;
 #ifndef URDF_GE_0P3
-  viss = _link->getVisuals(_groupName);
+  viss = _parent_link->getVisuals(_name);
 
   if (!viss)
   {
@@ -371,9 +413,9 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
     viss.reset(new std::vector<UrdfVisualPtr>);
     // new group name, create vector, add vector to map and
     //   add Visual to the vector
-    _link->visual_groups.insert(make_pair(_groupName, viss));
+    _parent_link->visual_groups.insert(make_pair(_name, viss));
     sdfdbg << "successfully added a new visual group name ["
-          << _groupName << "]\n";
+          << _name << "]\n";
   }
 
   // group exists, add Visual to the vector in the map if it's not there
@@ -381,13 +423,13 @@ void ReduceVisualToParent(UrdfLinkPtr _link,
     = find(viss->begin(), viss->end(), _visual);
   if (visIt != viss->end())
     sdfwarn << "attempted to add visual to link ["
-      << _link->name
+      << _parent_link->name
       << "], but it already exists under group ["
-      << _groupName << "]\n";
+      << _name << "]\n";
   else
     viss->push_back(_visual);
 #else
-  _link->visual_array.push_back(_visual);
+  _parent_link->visual_array.push_back(_visual);
 #endif
 }
 
