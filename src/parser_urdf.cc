@@ -343,28 +343,28 @@ void ReduceCollisionToParent(UrdfLinkPtr _parent_link,
     const std::string &_name,
     UrdfCollisionPtr _collision)
 {
-  boost::shared_ptr<std::vector<UrdfCollisionPtr> > cols;
+  boost::shared_ptr<std::vector<UrdfCollisionPtr> > collisions;
 #ifndef URDF_GE_0P3
-  cols = _parent_link->getCollisions(_name);
-
-  if (!cols)
+  collisions = _parent_link->getCollisions(_name);
+  if (!collisions)
   {
     // group does not exist, create one and add to map
-    cols.reset(new std::vector<UrdfCollisionPtr>);
+    collisions.reset(new std::vector<UrdfCollisionPtr>);
     // new group name, create add vector to map and add Collision to the vector
-    _parent_link->collision_groups.insert(make_pair(_name, cols));
+    _parent_link->collision_groups.insert(
+      make_pair(_name, collisions));
   }
 
   // group exists, add Collision to the vector in the map
-  std::vector<UrdfCollisionPtr>::iterator colIt =
-    find(cols->begin(), cols->end(), _collision);
-  if (colIt != cols->end())
+  std::vector<UrdfCollisionPtr>::iterator collisionIt =
+    find(collisions->begin(), collisions->end(), _collision);
+  if (collisionIt != collisions->end())
     sdfwarn << "attempted to add collision to link ["
       << _parent_link->name
       << "], but it already exists under group ["
       << _name << "]\n";
   else
-    cols->push_back(_collision);
+    collisions->push_back(_collision);
 #else
   _parent_link->collision_array.push_back(_collision);
 #endif
@@ -403,31 +403,31 @@ void ReduceVisualToParent(UrdfLinkPtr _parent_link,
     const std::string &_name,
     UrdfVisualPtr _visual)
 {
-  boost::shared_ptr<std::vector<UrdfVisualPtr> > viss;
+  boost::shared_ptr<std::vector<UrdfVisualPtr> > visuals;
 #ifndef URDF_GE_0P3
-  viss = _parent_link->getVisuals(_name);
-
-  if (!viss)
+  visuals = _parent_link->getVisuals(_name);
+  if (!visuals)
   {
     // group does not exist, create one and add to map
-    viss.reset(new std::vector<UrdfVisualPtr>);
+    visuals.reset(new std::vector<UrdfVisualPtr>);
     // new group name, create vector, add vector to map and
     //   add Visual to the vector
-    _parent_link->visual_groups.insert(make_pair(_name, viss));
+    _parent_link->visual_groups.insert(
+      make_pair(_name, visuals));
     sdfdbg << "successfully added a new visual group name ["
           << _name << "]\n";
   }
 
   // group exists, add Visual to the vector in the map if it's not there
-  std::vector<UrdfVisualPtr>::iterator visIt
-    = find(viss->begin(), viss->end(), _visual);
-  if (visIt != viss->end())
+  std::vector<UrdfVisualPtr>::iterator visualIt =
+    find(visuals->begin(), visuals->end(), _visual);
+  if (visualIt != visuals->end())
     sdfwarn << "attempted to add visual to link ["
       << _parent_link->name
       << "], but it already exists under group ["
       << _name << "]\n";
   else
-    viss->push_back(_visual);
+    visuals->push_back(_visual);
 #else
   _parent_link->visual_array.push_back(_visual);
 #endif
