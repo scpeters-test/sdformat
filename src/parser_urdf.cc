@@ -2409,18 +2409,18 @@ void CreateCollisions(TiXmlElement* _elem,
         sdfdbg << "creating default collision for link [" << _link->name
                << "]";
 
-        std::string collisionPrefix = _link->name;
+        std::string collisionName = _link->name;
 
         if (defaultMeshCount > 0)
         {
           // append _[meshCount] to link name for additional collisions
           std::ostringstream collisionNameStream;
-          collisionNameStream << collisionPrefix << "_" << defaultMeshCount;
-          collisionPrefix = collisionNameStream.str();
+          collisionNameStream << collisionName << "_" << defaultMeshCount;
+          collisionName = collisionNameStream.str();
         }
 
         /* make a <collision> block */
-        CreateCollision(_elem, _link, *collision, collisionPrefix);
+        CreateCollision(_elem, _link, *collision, collisionName);
 
         // only 1 default mesh
         ++defaultMeshCount;
@@ -2431,18 +2431,18 @@ void CreateCollisions(TiXmlElement* _elem,
         //   original parent link name
         sdfdbg << "creating lump collision [" << collisionsIt->first
                << "] for link [" << _link->name << "].\n";
-        /// collisionPrefix is the original name before lumping
-        std::string collisionPrefix = collisionsIt->first.substr(6);
+        /// collisionName is the original name before lumping
+        std::string collisionName = collisionsIt->first.substr(6);
 
         if (lumpMeshCount > 0)
         {
           // append _[meshCount] to link name for additional collisions
           std::ostringstream collisionNameStream;
-          collisionNameStream << collisionPrefix << "_" << lumpMeshCount;
-          collisionPrefix = collisionNameStream.str();
+          collisionNameStream << collisionName << "_" << lumpMeshCount;
+          collisionName = collisionNameStream.str();
         }
 
-        CreateCollision(_elem, _link, *collision, collisionPrefix);
+        CreateCollision(_elem, _link, *collision, collisionName);
         ++lumpMeshCount;
       }
       else
@@ -2450,18 +2450,18 @@ void CreateCollisions(TiXmlElement* _elem,
         sdfdbg << "adding collisions from collision group ["
               << collisionsIt->first << "]\n";
 
-        std::string collisionPrefix = _link->name + std::string("_") +
+        std::string collisionName = _link->name + std::string("_") +
           collisionsIt->first;
 
         if (groupMeshCount > 0)
         {
           // append _[meshCount] to _link name for additional collisions
           std::ostringstream collisionNameStream;
-          collisionNameStream << collisionPrefix << "_" << groupMeshCount;
-          collisionPrefix = collisionNameStream.str();
+          collisionNameStream << collisionName << "_" << groupMeshCount;
+          collisionName = collisionNameStream.str();
         }
 
-        CreateCollision(_elem, _link, *collision, collisionPrefix);
+        CreateCollision(_elem, _link, *collision, collisionName);
         ++groupMeshCount;
       }
     }
@@ -2476,18 +2476,18 @@ void CreateCollisions(TiXmlElement* _elem,
     sdfdbg << "creating default collision for link [" << _link->name
            << "]";
 
-    std::string collisionPrefix = _link->name;
+    std::string collisionName = _link->name;
 
     if (defaultMeshCount > 0)
     {
       // append _[meshCount] to link name for additional collisions
       std::ostringstream collisionNameStream;
-      collisionNameStream << collisionPrefix << "_" << defaultMeshCount;
-      collisionPrefix = collisionNameStream.str();
+      collisionNameStream << collisionName << "_" << defaultMeshCount;
+      collisionName = collisionNameStream.str();
     }
 
     /* make a <collision> block */
-    CreateCollision(_elem, _link, *collision, collisionPrefix);
+    CreateCollision(_elem, _link, *collision, collisionName);
 
     // only 1 default mesh
     ++defaultMeshCount;
@@ -2527,18 +2527,18 @@ void CreateVisuals(TiXmlElement* _elem,
         sdfdbg << "creating default visual for link [" << _link->name
                << "]";
 
-        std::string visualPrefix = _link->name;
+        std::string visualName = _link->name;
 
         if (defaultMeshCount > 0)
         {
           // append _[meshCount] to _link name for additional visuals
           std::ostringstream visualNameStream;
-          visualNameStream << visualPrefix << "_" << defaultMeshCount;
-          visualPrefix = visualNameStream.str();
+          visualNameStream << visualName << "_" << defaultMeshCount;
+          visualName = visualNameStream.str();
         }
 
         // create a <visual> block
-        CreateVisual(_elem, _link, *visual, visualPrefix);
+        CreateVisual(_elem, _link, *visual, visualName);
 
         // only 1 default mesh
         ++defaultMeshCount;
@@ -2549,18 +2549,18 @@ void CreateVisuals(TiXmlElement* _elem,
         //   original parent link name
         sdfdbg << "creating lump visual [" << visualsIt->first
                << "] for link [" << _link->name << "].\n";
-        /// visualPrefix is the original name before lumping
-        std::string visualPrefix = visualsIt->first.substr(6);
+        /// visualName is the original name before lumping
+        std::string visualName = visualsIt->first.substr(6);
 
         if (lumpMeshCount > 0)
         {
           // append _[meshCount] to _link name for additional visuals
           std::ostringstream visualNameStream;
-          visualNameStream << visualPrefix << "_" << lumpMeshCount;
-          visualPrefix = visualNameStream.str();
+          visualNameStream << visualName << "_" << lumpMeshCount;
+          visualName = visualNameStream.str();
         }
 
-        CreateVisual(_elem, _link, *visual, visualPrefix);
+        CreateVisual(_elem, _link, *visual, visualName);
         ++lumpMeshCount;
       }
       else
@@ -2568,18 +2568,18 @@ void CreateVisuals(TiXmlElement* _elem,
         sdfdbg << "adding visuals from visual group ["
               << visualsIt->first << "]\n";
 
-        std::string visualPrefix = _link->name + std::string("_") +
+        std::string visualName = _link->name + std::string("_") +
           visualsIt->first;
 
         if (groupMeshCount > 0)
         {
           // append _[meshCount] to _link name for additional visuals
           std::ostringstream visualNameStream;
-          visualNameStream << visualPrefix << "_" << groupMeshCount;
-          visualPrefix = visualNameStream.str();
+          visualNameStream << visualName << "_" << groupMeshCount;
+          visualName = visualNameStream.str();
         }
 
-        CreateVisual(_elem, _link, *visual, visualPrefix);
+        CreateVisual(_elem, _link, *visual, visualName);
         ++groupMeshCount;
       }
     }
@@ -2594,18 +2594,18 @@ void CreateVisuals(TiXmlElement* _elem,
     sdfdbg << "creating default visual for link [" << _link->name
            << "]";
 
-    std::string visualPrefix = _link->name;
+    std::string visualName = _link->name;
 
     if (defaultMeshCount > 0)
     {
       // append _[meshCount] to _link name for additional visuals
       std::ostringstream visualNameStream;
-      visualNameStream << visualPrefix << "_" << defaultMeshCount;
-      visualPrefix = visualNameStream.str();
+      visualNameStream << visualName << "_" << defaultMeshCount;
+      visualName = visualNameStream.str();
     }
 
     // create a <visual> block
-    CreateVisual(_elem, _link, *visual, visualPrefix);
+    CreateVisual(_elem, _link, *visual, visualName);
 
     // only 1 default mesh
     ++defaultMeshCount;
