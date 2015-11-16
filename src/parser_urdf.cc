@@ -1002,7 +1002,6 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
       visualIt = _link->visual_array.begin();
       visualIt != _link->visual_array.end(); ++visualIt)
   {
-    // 20151116: changelog for pull request #235
     std::string newVisualName;
     std::size_t lumpIndex = (*visualIt)->name.find(std::string("lump::"));
     if (lumpIndex != std::string::npos)
@@ -1028,7 +1027,6 @@ void ReduceVisualsToParent(UrdfLinkPtr _link)
              << "] to parent [" << _link->getParent()->name
              << "] with name [" << newVisualName << "]\n";
     }
-
     // transform visual origin from _link frame to
     // parent link frame before adding to parent
     (*visualIt)->origin = TransformToParentFrame(
