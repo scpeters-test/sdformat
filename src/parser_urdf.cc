@@ -370,9 +370,8 @@ void ReduceCollisionToParent(UrdfLinkPtr _parent_link,
   else
     collisions->push_back(_collision);
 #else
-  // 20151116: changelog for pull request #235
-  // added a check to see if _collision already exist in
-  // _parent_link::collision_array if not, add it.
+  // check if _collision already exist in _parent_link::collision_array
+  // if not, add it.
   _collision->name = _name;
   std::vector<UrdfCollisionPtr>::iterator collisionIt =
     find(_parent_link->collision_array.begin(),
@@ -453,9 +452,8 @@ void ReduceVisualToParent(UrdfLinkPtr _parent_link,
   else
     visuals->push_back(_visual);
 #else
-  // 20151116: changelog for pull request #235
-  // added a check to see if _visual already exist in
-  // _parent_link::visual_array if not, add it.
+  // check if _visual already exist in _parent_link::visual_array
+  // if not, add it.
   _visual->name = _name;
   std::vector<UrdfVisualPtr>::iterator visualIt =
     find(_parent_link->visual_array.begin(),
