@@ -19,6 +19,7 @@
 #include <map>
 
 #include <boost/filesystem.hpp>
+#include <tinyxml.h>
 
 #include "sdf/Console.hh"
 #include "sdf/Converter.hh"

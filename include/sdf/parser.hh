@@ -17,11 +17,13 @@
 #ifndef _SDF_PARSER_HH_
 #define _SDF_PARSER_HH_
 
-#include <tinyxml.h>
 #include <string>
 
 #include "sdf/SDFImpl.hh"
 #include "sdf/system_util.hh"
+
+class TiXmlDocument;
+class TiXmlElement;
 
 /// \ingroup sdf_parser
 /// \brief namespace for Simulation Description Format parser
