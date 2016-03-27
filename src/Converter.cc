@@ -21,6 +21,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <tinyxml.h>
 
 #include "sdf/SDFImpl.hh"
 #include "sdf/Assert.hh"

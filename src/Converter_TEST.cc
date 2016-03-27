@@ -16,6 +16,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <tinyxml.h>
 #include "sdf/Converter.hh"
 
 ////////////////////////////////////////////////////

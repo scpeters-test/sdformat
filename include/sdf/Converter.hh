@@ -17,10 +17,12 @@
 #ifndef _SDF_CONVERTER_HH_
 #define _SDF_CONVERTER_HH_
 
-#include <tinyxml.h>
 #include <string>
 
 #include "sdf/system_util.hh"
+
+class TiXmlDocument;
+class TiXmlElement;
 
 namespace sdf
 {
