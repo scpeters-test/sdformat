@@ -63,29 +63,37 @@ Console::Console()
 #endif
     if (!home)
     {
+      std::cerr << "No HOME defined in the environment. Will not log." << std::endl;
       sdfwarn << "No HOME defined in the environment. Will not log.";
       return;
     }
+    std::cerr << "HOME " << home << std::endl;
     boost::filesystem::path logFile(home);
     logFile /= ".sdformat";
     logFile /= "sdformat.log";
     boost::filesystem::path logDir = logFile.parent_path();
+    std::cerr << "logDir " << logDir << std::endl;
     if (!boost::filesystem::exists(logDir))
     {
+      std::cerr << "try to create logDir " << logDir << std::endl;
       boost::filesystem::create_directory(logDir);
     }
     else if (!boost::filesystem::is_directory(logDir))
     {
+      std::cerr << logDir << " exists but is not a directory.  Will not log." << std::endl;
       sdfwarn << logDir << " exists but is not a directory.  Will not log.";
       return;
     }
+    std::cerr << "try to open logFile " << logFile << std::endl;
     this->dataPtr->logFileStream.open(logFile.string().c_str(), std::ios::out);
   }
   catch(const boost::filesystem::filesystem_error& e)
   {
+    std::cerr << "Exception while setting up logging: " << e.what() << std::endl;
     sdfwarn << "Exception while setting up logging: " << e.what();
     return;
   }
+  std::cerr << "Console::Console success" << std::endl;
 }
 
 //////////////////////////////////////////////////
@@ -155,6 +163,8 @@ void Console::ConsoleStream::Prefix(const std::string &_lbl,
       _file.substr(index , _file.size() - index) << ":" << _line <<
       "]\033[0m ";
 #else
+    std::cerr << _lbl << " [" <<
+      _file.substr(index , _file.size() - index) << ":" << _line << "] " << std::endl;
     *this->stream << _lbl << " [" <<
       _file.substr(index , _file.size() - index) << ":" << _line << "] ";
 #endif
