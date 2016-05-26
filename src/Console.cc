@@ -63,8 +63,8 @@ Console::Console()
 #endif
     if (!home)
     {
-      std::cerr << "No HOME defined in the environment. Will not log." << std::endl;
-      sdfwarn << "No HOME defined in the environment. Will not log.";
+      std::cerr << "No HOME defined in the environment. Will not log."
+                << std::endl;
       return;
     }
     std::cerr << "HOME " << home << std::endl;
@@ -80,8 +80,8 @@ Console::Console()
     }
     else if (!boost::filesystem::is_directory(logDir))
     {
-      std::cerr << logDir << " exists but is not a directory.  Will not log." << std::endl;
-      sdfwarn << logDir << " exists but is not a directory.  Will not log.";
+      std::cerr << logDir << " exists but is not a directory.  Will not log."
+                << std::endl;
       return;
     }
     std::cerr << "try to open logFile " << logFile << std::endl;
@@ -89,8 +89,9 @@ Console::Console()
   }
   catch(const boost::filesystem::filesystem_error& e)
   {
-    std::cerr << "Exception while setting up logging: " << e.what() << std::endl;
-    sdfwarn << "Exception while setting up logging: " << e.what();
+    std::cerr << "Exception while setting up logging: "
+              << e.what()
+              << std::endl;
     return;
   }
   std::cerr << "Console::Console success" << std::endl;
