@@ -35,6 +35,8 @@ link_directories(${PROJECT_BINARY_DIR}/test)
 
 sdf_build_tests(${tests})
 
+install (TARGETS "INTEGRATION_locale_fix" DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 if (EXISTS ${XMLLINT_EXE})
   # Need to run schema target (build .xsd files) before running schema_test
   add_dependencies(${TEST_TYPE}_schema_test schema)
