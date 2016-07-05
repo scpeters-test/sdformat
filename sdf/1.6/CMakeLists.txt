@@ -73,7 +73,7 @@ foreach(FIL ${sdfs})
     VERBATIM)
 endforeach()
 
-add_custom_target(schema1_6 ALL DEPENDS ${SDF_SCHEMA})
+add_custom_target(schema ALL DEPENDS ${SDF_SCHEMA})
 
 set_source_files_properties(${SDF_SCHEMA} PROPERTIES GENERATED TRUE)
 
