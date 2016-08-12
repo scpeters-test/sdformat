@@ -2,6 +2,14 @@
 <element name="physics" required="1">
   <description>The physics tag specifies the type and properties of the dynamics engine.</description>
 
+  <attribute name="name" type="string" default="default_physics" required="0">
+    <description>The name of this set of physics parameters.</description>
+  </attribute>
+
+  <attribute name="default" type="bool" default="false" required="0">
+    <description>If true, this physics element is set as the default physics profile for the world. If multiple default physics elements exist, the first element marked as default is chosen. If no default physics element exists, the first physics element is chosen.</description>
+  </attribute>
+
   <attribute name="type" type="string" default="ode" required="1">
     <description>The type of the dynamics engine. Current options are ode, bullet, simbody and rtql8.  Defaults to ode if left unspecified.</description>
   </attribute>
@@ -26,8 +34,12 @@
   </element>
 
   <element name="gravity" type="vector3" default="0 0 -9.8" required="1">
-    <description>The gravity vector</description>
+    <description>The gravity vector in m/s^2, expressed in a coordinate frame defined by the spherical_coordinates tag.</description>
   </element> <!-- End Gravity -->
+
+  <element name="magnetic_field" type="vector3" default="5.5645e-6 22.8758e-6 -42.3884e-6" required="1">
+    <description>The magnetic vector in Tesla, expressed in a coordinate frame defined by the spherical_coordinates tag.</description>
+  </element> <!-- End Magnetic -->
 
   <element name="simbody" required="0">
     <description>Simbody specific physics properties</description>
@@ -44,7 +56,7 @@
         friction is supposed to hold object in place.</description>
     </element>
     <element name="contact" required="0">
-      <description>
+      <description><![CDATA[
         Relationship among dissipation, coef. restitution, etc.
         d = dissipation coefficient (1/velocity)
         vc = capture velocity (velocity where e=e_max)
@@ -62,7 +74,7 @@
         cor = e                            [rigid]
   
         Combining rule e = 0,               e1==e2==0
-                         = 2*e1*e2/(e1+e2), otherwise
+                         = 2*e1*e2/(e1+e2), otherwise]]>
       </description>
 
       <element name="stiffness" type="double" default="1e8" required="0">
@@ -172,6 +184,13 @@
       </element>
       <element name="sor" type="double" default="1.3" required="1">
         <description>Set the successive over-relaxation parameter.</description>
+      </element>
+      <element name="use_dynamic_moi_rescaling" type="bool" default="0" required="1">
+        <description>
+          Flag to enable dynamic rescaling of moment of inertia in constrained directions.
+          See gazebo pull request 1114 for the implementation of this feature.
+          https://bitbucket.org/osrf/gazebo/pull-request/1114
+        </description>
       </element>
     </element> <!-- End Solver -->
 
