@@ -48,7 +48,11 @@
       Heading offset of gazebo reference frame, measured as angle between
       East and gazebo x axis, or equivalently, the angle from North to
       gazebo y axis. Counterclockwise rotation (e.g. from North-East to North)
-      about the Down-vector is positive. The angle is specified in degrees.
+      about the Down-vector is positive. Directionality of rotation is
+      meant to be consistent with compass heading convention (e.g. 0 degrees
+      points North and 90 degrees points East, positive rotation indicates
+      counterclockwise rotation when viewed from top-down).
+      The angle is specified in degrees.
     </description>
   </element>
 
