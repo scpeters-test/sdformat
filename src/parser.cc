@@ -157,6 +157,22 @@ bool initDoc(TiXmlDocument *_xmlDoc, ElementPtr _sdf)
 }
 
 //////////////////////////////////////////////////
+static std::string trim(const char *in)
+{
+  std::string str(in);
+
+  const size_t strBegin = str.find_first_not_of(" \t");
+  if (strBegin == std::string::npos)
+  {
+    return "";  // no content
+  }
+
+  const size_t strRange = str.find_last_not_of(" \t") - strBegin + 1;
+
+  return str.substr(strBegin, strRange);
+}
+
+//////////////////////////////////////////////////
 bool initXml(TiXmlElement *_xml, ElementPtr _sdf)
 {
   const char *refString = _xml->Attribute("ref");
@@ -227,8 +243,7 @@ bool initXml(TiXmlElement *_xml, ElementPtr _sdf)
       sdferr << "Attribute is missing a required string\n";
       return false;
     }
-    std::string requiredStr = requiredString;
-    boost::trim(requiredStr);
+    std::string requiredStr = trim(requiredString);
     bool required = requiredStr == "1" ? true : false;
     std::string description;
 
