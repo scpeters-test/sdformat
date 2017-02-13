@@ -17,13 +17,13 @@
 
 #include <vector>
 #include <set>
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
 #include "sdf/SDFImpl.hh"
 #include "sdf/Assert.hh"
 #include "sdf/Console.hh"
 #include "sdf/Converter.hh"
+#include "sdf/Types.hh"
 
 using namespace sdf;
 
@@ -326,24 +326,6 @@ void Converter::Remove(TiXmlElement *_elem, TiXmlElement *_removeElem)
 }
 
 /////////////////////////////////////////////////
-static std::vector<std::string> split(const std::string& str,
-                                      const std::string& splitter)
-{
-  std::vector<std::string> ret;
-  size_t next = 0;
-  size_t current = next;
-
-  while (next != std::string::npos)
-  {
-    next = str.find(splitter, current);
-    ret.push_back(str.substr(current, next - current));
-    current = next + splitter.length();
-  }
-
-  return ret;
-}
-
-/////////////////////////////////////////////////
 void Converter::Move(TiXmlElement *_elem, TiXmlElement *_moveElem,
                      const bool _copy)
 {
@@ -382,7 +364,7 @@ void Converter::Move(TiXmlElement *_elem, TiXmlElement *_moveElem,
   std::vector<std::string> fromTokens = split(fromStr, "::");
   std::vector<std::string> toTokens = split(toStr, "::");
 
-  // split_double_colon always returns at least one element, even with the
+  // split() always returns at least one element, even with the
   // empty string.  Thus we don't check if the fromTokens or toTokens are empty.
 
   // get value of the 'from' element/attribute
