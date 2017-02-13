@@ -96,8 +96,7 @@ std::string sdf::findFile(const std::string &_filename, bool _searchLocalPath,
 
   if (pathCStr)
   {
-    std::vector<std::string> paths;
-    boost::split(paths, pathCStr, boost::is_any_of(":"));
+    std::vector<std::string> paths = sdf::split(pathCStr, ":");
     for (std::vector<std::string>::iterator iter = paths.begin();
          iter != paths.end(); ++iter)
     {
@@ -150,11 +149,10 @@ std::string sdf::findFile(const std::string &_filename, bool _searchLocalPath,
 void sdf::addURIPath(const std::string &_uri, const std::string &_path)
 {
   // Split _path on colons.
-  std::list<std::string> parts;
-  boost::split(parts, _path, boost::is_any_of(":"));
+  std::vector<std::string> parts = sdf::split(_path, ":");
 
   // Add each part of the colon separated path to the global URI map.
-  for (std::list<std::string>::iterator iter = parts.begin();
+  for (std::vector<std::string>::iterator iter = parts.begin();
        iter != parts.end(); ++iter)
   {
     boost::filesystem::path path = *iter;
