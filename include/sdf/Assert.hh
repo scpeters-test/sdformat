@@ -21,6 +21,11 @@
 
 /// \brief This macro define the standard way of launching an exception
 /// inside SDF.
-#define SDF_ASSERT(_expr, _msg) ((!!(_expr)) ? ((void)0) : throw sdf::AssertionInternalError(__FILE__, __LINE__, #_expr, __FUNCTION__, _msg))  // NOLINT(whitespace/line_length)
+#define SDF_ASSERT(_expr, _msg) ((!!(_expr)) ? ((void)0) : \
+                             throw sdf::AssertionInternalError(__FILE__, \
+                                                               __LINE__, \
+                                                               #_expr, \
+                                                               __FUNCTION__, \
+                                                               _msg))
 
 #endif
