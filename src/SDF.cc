@@ -15,7 +15,6 @@
  *
  */
 
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <map>
 #include <list>
@@ -57,7 +56,11 @@ std::string sdf::findFile(const std::string &_filename, bool _searchLocalPath,
     if (_filename.find(iter->first) == 0)
     {
       std::string suffix = _filename;
-      boost::replace_first(suffix, iter->first, "");
+      size_t index = suffix.find(iter->first);
+      if (index != std::string::npos)
+      {
+        suffix.replace(index, iter->first.length(), "");
+      }
 
       // Check each path in the list.
       for (PathList::iterator pathIter = iter->second.begin();
