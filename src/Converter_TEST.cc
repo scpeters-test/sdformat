@@ -749,6 +749,8 @@ TEST(Converter, NullDoc)
                sdf::AssertionInternalError);
   ASSERT_THROW(sdf::Converter::Convert(&xmlDoc, NULL),
                sdf::AssertionInternalError);
+  ASSERT_THROW(sdf::Converter::Convert(NULL, "1.4"),
+               sdf::AssertionInternalError);
 }
 
 /////////////////////////////////////////////////
