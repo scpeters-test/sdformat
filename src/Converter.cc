@@ -154,10 +154,10 @@ bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
 void Converter::Convert(TiXmlDocument *_doc, TiXmlDocument *_convertDoc)
 {
 std::cout << "Converter::Convert A  " << _doc << std::endl;
-std::cout << _doc != nullptr << std::endl;
-std::cout << _doc == nullptr << std::endl;
-std::cout << _doc == NULL << std::endl;
-std::cout << _doc == 0 << std::endl;
+std::cout << (_doc != nullptr) << std::endl;
+std::cout << (_doc == nullptr) << std::endl;
+std::cout << (_doc == NULL) << std::endl;
+std::cout << (_doc == 0) << std::endl;
   SDF_ASSERT(_doc != nullptr, "SDF XML doc is NULL");
 std::cout << "Converter::Convert B  " << _convertDoc << std::endl;
   SDF_ASSERT(_convertDoc != nullptr, "Convert XML doc is nullptr");
