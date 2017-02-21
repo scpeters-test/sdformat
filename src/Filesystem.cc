@@ -39,6 +39,19 @@ bool exists(const std::string &_path)
 
   return ::stat(_path.c_str(), &path_stat) == 0;
 }
+
+//////////////////////////////////////////////////
+bool is_directory(const std::string &_path)
+{
+  struct stat path_stat;
+
+  if (::stat(_path.c_str(), &path_stat) != 0)
+  {
+    return false;
+  }
+
+  return S_ISDIR(path_stat.st_mode);
+}
 #else  // Windows
 //////////////////////////////////////////////////
 static bool not_found_error(int errval)
@@ -141,9 +154,9 @@ bool is_reparse_point_a_symlink(const string &_path)
 {
   handle_wrapper h(create_file_handle(_path, FILE_READ_EA,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    NULL, OPEN_EXISTING,
+                    nullptr, OPEN_EXISTING,
                     FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-                    NULL));
+                    nullptr));
   if (h.handle == INVALID_HANDLE_VALUE)
   {
     return false;
@@ -153,8 +166,8 @@ bool is_reparse_point_a_symlink(const string &_path)
 
   // Query the reparse data
   DWORD dwRetLen;
-  BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0,
-                                  buf.data(), buf.size(), &dwRetLen, NULL);
+  BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, nullptr, 0,
+                                  buf.data(), buf.size(), &dwRetLen, nullptr);
   if (!result)
   {
     return false;
@@ -211,6 +224,44 @@ bool exists(const std::string &_path)
   }
 
   return true;
+}
+
+//////////////////////////////////////////////////
+bool is_directory(const std::string &_path)
+{
+  DWORD attr(::GetFileAttributesW(_path.c_str()));
+  if (attr == 0xFFFFFFFF)
+  {
+    return process_status_failure();
+  }
+
+  //  reparse point handling;
+  //    since GetFileAttributesW does not resolve symlinks, try to open a file
+  //    handle to discover if the file exists
+  if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+  {
+    handle_wrapper h(
+      create_file_handle(
+        _path.c_str(),
+        0,  // dwDesiredAccess; attributes only
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        0,  // lpSecurityAttributes
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS,
+        0));  // hTemplateFile
+
+    if (h.handle == INVALID_HANDLE_VALUE)
+    {
+      return process_status_failure();
+    }
+
+    if (!is_reparse_point_a_symlink(_path))
+    {
+      return true;
+    }
+  }
+
+  return attr & FILE_ATTRIBUTE_DIRECTORY;
 }
 #endif
 }
