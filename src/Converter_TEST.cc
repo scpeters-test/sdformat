@@ -747,12 +747,16 @@ TEST(Converter, NullDoc)
   TiXmlDocument xmlDoc;
   TiXmlDocument convertXmlDoc;
 
+std::cout << "A" << std::endl;
   ASSERT_THROW(sdf::Converter::Convert(NULL, &convertXmlDoc),
                sdf::AssertionInternalError);
+std::cout << "B" << std::endl;
   ASSERT_THROW(sdf::Converter::Convert(&xmlDoc, NULL),
                sdf::AssertionInternalError);
+std::cout << "C" << std::endl;
   ASSERT_THROW(sdf::Converter::Convert(NULL, "1.4"),
                sdf::AssertionInternalError);
+std::cout << "D" << std::endl;
 }
 
 /////////////////////////////////////////////////

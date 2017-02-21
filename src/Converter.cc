@@ -37,9 +37,12 @@ static bool icmp(const char &a, const char &b)
 bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
                         bool _quiet)
 {
+std::cout << "Converter::Convert 1A" << std::endl;
   SDF_ASSERT(_doc != NULL, "SDF XML doc is NULL");
+std::cout << "Converter::Convert 1B" << std::endl;
 
   TiXmlElement *elem = _doc->FirstChildElement("gazebo");
+std::cout << "Converter::Convert 1C" << std::endl;
 
   // Replace <gazebo> with <sdf>
   if (elem && std::stod(_toVersion) >= 1.3)
@@ -56,6 +59,7 @@ bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
     sdferr << "  Unable to determine original SDF version\n";
     return false;
   }
+std::cout << "Converter::Convert 1D" << std::endl;
 
   std::string origVersion = elem->Attribute("version");
 
@@ -71,6 +75,7 @@ bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
            << "  Please use the gz sdf tool to update your SDF files.\n"
            << "    $ gz sdf -c [sdf_file]\n";
   }
+std::cout << "Converter::Convert 1E" << std::endl;
 
   elem->SetAttribute("version", _toVersion);
 
@@ -126,6 +131,7 @@ bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
             sdferr << "Unable to load file[" << convertFile << "]\n";
             return false;
         }
+std::cout << "Converter::Convert 1F" << std::endl;
         ConvertImpl(elem, xmlDoc.FirstChildElement("convert"));
         if ((*it).filename() == _toVersion)
         {
@@ -145,6 +151,7 @@ bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
     return false;
   }
 
+std::cout << "Converter::Convert 1G" << std::endl;
   ConvertImpl(elem, xmlDoc.FirstChildElement("convert"));
 
   return true;
@@ -153,10 +160,14 @@ bool Converter::Convert(TiXmlDocument *_doc, const std::string &_toVersion,
 /////////////////////////////////////////////////
 void Converter::Convert(TiXmlDocument *_doc, TiXmlDocument *_convertDoc)
 {
+std::cout << "Converter::Convert A" << std::endl;
   SDF_ASSERT(_doc != NULL, "SDF XML doc is NULL");
+std::cout << "Converter::Convert B" << std::endl;
   SDF_ASSERT(_convertDoc != NULL, "Convert XML doc is NULL");
+std::cout << "Converter::Convert C" << std::endl;
 
   ConvertImpl(_doc->FirstChildElement(), _convertDoc->FirstChildElement());
+std::cout << "Converter::Convert D" << std::endl;
 }
 
 /////////////////////////////////////////////////
