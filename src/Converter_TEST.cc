@@ -748,15 +748,13 @@ TEST(Converter, NullDoc)
   TiXmlDocument convertXmlDoc;
 
 std::cout << "A" << std::endl;
-  ASSERT_THROW(sdf::Converter::Convert(NULL, &convertXmlDoc),
+  ASSERT_THROW(sdf::Converter::Convert(nullptr, &convertXmlDoc),
                sdf::AssertionInternalError);
 std::cout << "B" << std::endl;
-  ASSERT_THROW(sdf::Converter::Convert(&xmlDoc, NULL),
+  ASSERT_THROW(sdf::Converter::Convert(&xmlDoc, nullptr),
                sdf::AssertionInternalError);
-std::cout << "C" << std::endl;
-  ASSERT_THROW(sdf::Converter::Convert(NULL, "1.4"),
+  ASSERT_THROW(sdf::Converter::Convert(nullptr, "1.4"),
                sdf::AssertionInternalError);
-std::cout << "D" << std::endl;
 }
 
 /////////////////////////////////////////////////
