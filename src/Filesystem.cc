@@ -16,6 +16,7 @@
  */
 
 #include <string>
+#include <vector>
 
 #ifndef _WIN32
 #include <sys/types.h>
@@ -63,6 +64,31 @@ bool create_directory(const std::string &_path)
 std::string const separator(const std::string &_p)
 {
   return _p + "/";
+}
+
+//////////////////////////////////////////////////
+std::string current_path()
+{
+  std::string cur;
+
+  for (int32_t path_max = 128;; path_max *= 2)  // loop 'til buffer large enough
+  {
+    std::vector<char> buf(path_max);
+
+    if (::getcwd(buf.data(), buf.size()) == 0)
+    {
+      if (errno != ERANGE)
+      {
+        break;
+      }
+    }
+    else
+    {
+      cur = std::string(buf.data());
+      break;
+    }
+  }
+  return cur;
 }
 #else  // Windows
 //////////////////////////////////////////////////
@@ -287,6 +313,30 @@ std::string const separator(const std::string &_p)
 {
   return _p + "\\";
 }
+
+//////////////////////////////////////////////////
+std::string current_path()
+{
+  DWORD sz;
+  if ((sz = ::GetCurrentDirectoryW(0, nullptr)) == 0)
+  {
+    sz = 1;
+  }
+
+  std::vector<char> buf(sz);
+
+  if (::GetCurrentDirectoryW(sz, buf.data()) == 0)
+  {
+    // error
+    return std::string("");
+  }
+  else
+  {
+    std::string ret = std::string(buf.data());
+    return ret;
+  }
+}
+
 #endif
 }
 }
