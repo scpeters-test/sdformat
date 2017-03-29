@@ -161,7 +161,7 @@ if (MSVC)
 
   if (NOT USE_EXTERNAL_TINYXML)
     # Disable warnings triggered by the linking of urdfdom internal copy
-    set(WARN_LEVEL "${WARN_LEVEL} /ignore:4049 /ignore:4217")
+    list(APPEND WARN_LEVEL /ignore:4049 /ignore:4217)
   endif()
 
   # Unable to be filtered flags (failing due to limitations in filter_valid_compiler_warnings)
