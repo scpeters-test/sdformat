@@ -183,9 +183,12 @@ public:
                     this->y * this->y +
                     this->z * this->z +
                     this->w * this->w);
+
+#pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
 #pragma GCC diagnostic ignored "-Wfloat-equal"
     if (s == 0.0)
 #pragma GCC diagnostic pop
+#pragma warning(pop)
     {
       this->x = 0.0;
       this->y = 0.0;
