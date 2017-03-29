@@ -159,6 +159,11 @@ endif()
 if (MSVC)
   set(WARN_LEVEL "/W4")
 
+  if (USE_EXTERNAL_TINYXML)
+    # Disable warnings triggered by the linking of urdfdom internal copy
+    set(WARN_LEVEL "${WARN_LEVEL} /ignore:4049 /ignore:4217")
+  endif()
+
   # Unable to be filtered flags (failing due to limitations in filter_valid_compiler_warnings)
   # Handling exceptions rightly
   set(UNFILTERED_FLAGS "/EHsc")
