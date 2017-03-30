@@ -186,7 +186,9 @@ public:
 
 #ifndef _WIN32
 #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
     if (s == 0.0)
+#ifndef _WIN32
 #pragma GCC diagnostic pop
 #endif
     {
