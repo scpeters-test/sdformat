@@ -162,11 +162,6 @@ if (MSVC)
   # Unable to be filtered flags (failing due to limitations in filter_valid_compiler_warnings)
   # Handling exceptions rightly
   set(UNFILTERED_FLAGS "/EHsc")
-
-  if (NOT USE_EXTERNAL_TINYXML)
-    # Disable warnings triggered by the linking of urdfdom internal copy
-    set(UNFILTERED_FLAGS "${UNFILTERED_FLAGS} /ignore:4049 /ignore:4217")
-  endif()
 else()
   # Equivalent to Wall (according to man gcc) but removed the unknown pragams since we use
   # MSVC only pragmas all over the code
