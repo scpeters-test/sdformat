@@ -78,7 +78,10 @@ target_link_libraries(sdformat ${Boost_LIBRARIES} ${IGNITION-MATH_LIBRARIES})
 
 if (USE_EXTERNAL_TINYXML)
   target_link_libraries(sdformat ${tinyxml_LIBRARIES})
-  set_target_properties(sdformat LINK_FLAGS "/IGNORE:4049 /IGNORE:4217")
+else()
+  # Ignore the warnings from the internal library
+  set_target_properties(sdformat PROPERTIES
+      LINK_FLAGS "/IGNORE:4049 /IGNORE:4217")
 endif()
 
 message (STATUS "URDF_LIBRARY_DIRS=${URDF_LIBRARY_DIRS}")
