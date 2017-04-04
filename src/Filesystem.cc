@@ -35,7 +35,7 @@ namespace filesystem
 {
 #ifndef _WIN32
 //////////////////////////////////////////////////
-bool exists(const std::string &_path)
+bool exists(const path_string &_path)
 {
   struct stat path_stat;
 
@@ -43,7 +43,7 @@ bool exists(const std::string &_path)
 }
 
 //////////////////////////////////////////////////
-bool is_directory(const std::string &_path)
+bool is_directory(const path_string &_path)
 {
   struct stat path_stat;
 
@@ -56,21 +56,21 @@ bool is_directory(const std::string &_path)
 }
 
 //////////////////////////////////////////////////
-bool create_directory(const std::string &_path)
+bool create_directory(const path_string &_path)
 {
   return ::mkdir(_path.c_str(), S_IRWXU|S_IRWXG|S_IRWXO) == 0;
 }
 
 //////////////////////////////////////////////////
-std::string const separator(const std::string &_p)
+path_string const separator(const path_string &_p)
 {
   return _p + "/";
 }
 
 //////////////////////////////////////////////////
-std::string current_path()
+path_string current_path()
 {
-  std::string cur;
+  path_string cur;
 
   for (int32_t path_max = 128;; path_max *= 2)  // loop 'til buffer large enough
   {
@@ -85,7 +85,7 @@ std::string current_path()
     }
     else
     {
-      cur = std::string(buf.data());
+      cur = path_string(buf.data());
       break;
     }
   }
@@ -171,7 +171,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
 //////////////////////////////////////////////////
-HANDLE create_file_handle(const std::string &_path, DWORD _dwDesiredAccess,
+HANDLE create_file_handle(const path_string &_path, DWORD _dwDesiredAccess,
                           DWORD _dwShareMode,
                           LPSECURITY_ATTRIBUTES _lpSecurityAttributes,
                           DWORD _dwCreationDisposition,
@@ -189,7 +189,7 @@ HANDLE create_file_handle(const std::string &_path, DWORD _dwDesiredAccess,
 #endif
 
 //////////////////////////////////////////////////
-bool is_reparse_point_a_symlink(const std::string &_path)
+bool is_reparse_point_a_symlink(const path_string &_path)
 {
   handle_wrapper h(create_file_handle(_path, FILE_READ_EA,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -201,7 +201,7 @@ bool is_reparse_point_a_symlink(const std::string &_path)
     return false;
   }
 
-  std::vector<char> buf(MAXIMUM_REPARSE_DATA_BUFFER_SIZE);
+  std::vector<wchar_t> buf(MAXIMUM_REPARSE_DATA_BUFFER_SIZE);
 
   // Query the reparse data
   DWORD dwRetLen;
@@ -227,7 +227,7 @@ bool is_reparse_point_a_symlink(const std::string &_path)
 }
 
 //////////////////////////////////////////////////
-bool exists(const std::string &_path)
+bool exists(const path_string &_path)
 {
   DWORD attr(::GetFileAttributesW(_path.c_str()));
   if (attr == 0xFFFFFFFF)
@@ -264,7 +264,7 @@ bool exists(const std::string &_path)
 }
 
 //////////////////////////////////////////////////
-bool is_directory(const std::string &_path)
+bool is_directory(const path_string &_path)
 {
   DWORD attr(::GetFileAttributesW(_path.c_str()));
   if (attr == 0xFFFFFFFF)
@@ -302,19 +302,19 @@ bool is_directory(const std::string &_path)
 }
 
 //////////////////////////////////////////////////
-bool create_directory(const std::string &_path)
+bool create_directory(const path_string &_path)
 {
   return ::CreateDirectoryW(_path.c_str(), 0) != 0;
 }
 
 //////////////////////////////////////////////////
-std::string const separator(const std::string &_p)
+path_string const separator(const path_string &_p)
 {
   return _p + "\\";
 }
 
 //////////////////////////////////////////////////
-std::string current_path()
+path_string current_path()
 {
   DWORD sz;
   if ((sz = ::GetCurrentDirectoryW(0, nullptr)) == 0)
@@ -322,16 +322,16 @@ std::string current_path()
     sz = 1;
   }
 
-  std::vector<char> buf(sz);
+  std::vector<wchar_t> buf(sz);
 
   if (::GetCurrentDirectoryW(sz, buf.data()) == 0)
   {
     // error
-    return std::string("");
+    return path_string("");
   }
   else
   {
-    std::string ret = std::string(buf.data());
+    path_string ret = path_string(buf.data());
     return ret;
   }
 }
