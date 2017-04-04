@@ -23,7 +23,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #else
-#include <Windows.h>
+#include <windows.h>
+#include <winnt.h>
 #endif
 
 #include "sdf/Filesystem.hh"
@@ -170,7 +171,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
 //////////////////////////////////////////////////
-HANDLE create_file_handle(const string &_path, DWORD _dwDesiredAccess,
+HANDLE create_file_handle(const std::string &_path, DWORD _dwDesiredAccess,
                           DWORD _dwShareMode,
                           LPSECURITY_ATTRIBUTES _lpSecurityAttributes,
                           DWORD _dwCreationDisposition,
@@ -188,7 +189,7 @@ HANDLE create_file_handle(const string &_path, DWORD _dwDesiredAccess,
 #endif
 
 //////////////////////////////////////////////////
-bool is_reparse_point_a_symlink(const string &_path)
+bool is_reparse_point_a_symlink(const std::string &_path)
 {
   handle_wrapper h(create_file_handle(_path, FILE_READ_EA,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -211,7 +212,7 @@ bool is_reparse_point_a_symlink(const string &_path)
     return false;
   }
 
-  ret = reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf)->ReparseTag
+  return reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf)->ReparseTag
     == IO_REPARSE_TAG_SYMLINK
     // Issue 9016 asked that NTFS directory junctions be recognized as
     // directories.  That is equivalent to recognizing them as symlinks, and
@@ -221,10 +222,8 @@ bool is_reparse_point_a_symlink(const string &_path)
     // Directory junctions are very similar to symlinks, but have some
     // performance and other advantages over symlinks. They can be created from
     // the command line with "mklink /j junction-name target-path".
-    || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
+    || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf)->ReparseTag
     == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
-
-  return ret;
 }
 
 //////////////////////////////////////////////////
