@@ -256,30 +256,29 @@ namespace sdf
   {
     try
     {
+      std::stringstream ss;
+      ss << this->dataPtr->value;
+
       if (typeid(T) == typeid(bool) && this->dataPtr->typeName == "string")
       {
-        std::string strValue =
-          boost::lexical_cast<std::string>(this->dataPtr->value);
+        std::string strValue;
+
+        ss >> strValue;
+
+        std::stringstream tmp;
         if (strValue == "true" || strValue  == "1")
         {
-          _value = boost::lexical_cast<T>("1");
+          tmp << "1";
         }
         else
         {
-          _value = boost::lexical_cast<T>("0");
+          tmp << "0";
         }
-      }
-      else if (typeid(T) == this->dataPtr->value.type())
-      {
-#if BOOST_VERSION < 105800
-         _value = boost::get<T>(this->dataPtr->value);
-#else
-         _value = boost::relaxed_get<T>(this->dataPtr->value);
-#endif
+        tmp >> _value;
       }
       else
       {
-        _value = boost::lexical_cast<T>(this->dataPtr->value);
+        ss >> _value;
       }
     }
     catch(...)
