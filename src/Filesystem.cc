@@ -15,6 +15,8 @@
  *
  */
 
+#include <codecvt>
+#include <locale>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -106,6 +108,14 @@ std::wstring widen(const std::string &_str)
   }
 
   return wstm.str();
+}
+
+//////////////////////////////////////////////////
+std::string widen(const std::wstring &_str)
+{
+  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+
+  return converter.to_bytes(_str);
 }
 
 //////////////////////////////////////////////////
@@ -315,7 +325,7 @@ bool is_directory(const std::string &_path)
     }
   }
 
-  return attr & FILE_ATTRIBUTE_DIRECTORY;
+  return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
 //////////////////////////////////////////////////
@@ -348,7 +358,7 @@ std::string current_path()
   }
   else
   {
-    return std::string(buf.data());
+    return narrow(buf.data());
   }
 }
 
