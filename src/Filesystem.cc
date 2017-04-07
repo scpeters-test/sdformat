@@ -111,7 +111,7 @@ std::wstring widen(const std::string &_str)
 }
 
 //////////////////////////////////////////////////
-std::string widen(const std::wstring &_str)
+std::string narrow(const std::wstring &_str)
 {
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 
