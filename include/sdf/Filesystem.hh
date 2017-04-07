@@ -20,20 +20,7 @@
 
 #include <string>
 
-#ifndef _WIN32
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-typedef char path_char;
-#else
-#include <windows.h>
-#include <winnt.h>
-typedef wchar_t path_char;
-#endif
-
 #include "sdf/system_util.hh"
-
-typedef std::basic_string<path_char> path_string;
 
 namespace sdf
 {
@@ -43,25 +30,25 @@ namespace sdf
     /// \param[in] _path  The path to check for existence
     /// \return True if the path exists on the filesystem, false otherwise.
     SDFORMAT_VISIBLE
-    bool exists(const path_string &_path);
+    bool exists(const std::string &_path);
 
     /// \brief Determine whether the given path is a directory.
     /// \param[in] _path  The path to check
     /// \return True if given path exists and is a directory, false otherwise.
     SDFORMAT_VISIBLE
-    bool is_directory(const path_string &_path);
+    bool is_directory(const std::string &_path);
 
     /// \brief Create a new directory on the filesystem.  Intermediate
     ///        directories must already exist.
     /// \param[in] _path  The new directory path to create
     /// \return True if directory creation was successful, false otherwise.
     SDFORMAT_VISIBLE
-    bool create_directory(const path_string &_path);
+    bool create_directory(const std::string &_path);
 
     // The below is C++ variadic template magic to allow an append
     // method that takes 1-n number of arguments to append together.
     SDFORMAT_VISIBLE
-    std::string const separator(path_string const &_s);
+    std::string const separator(std::string const &_s);
 
     /// \brief Append one or more additional path elements to the first
     ///        passed in argument.
@@ -69,9 +56,9 @@ namespace sdf
     /// \return A new string with the paths appended together.
     template<typename... Args>
     SDFORMAT_VISIBLE
-    path_string append(Args const &... args)
+    std::string append(Args const &... args)
     {
-      path_string result;
+      std::string result;
       int unpack[] {
         0, (result += separator(args), 0)...};
       static_cast<void>(unpack);
@@ -81,7 +68,7 @@ namespace sdf
     /// \brief Get the current working path.
     /// \return Current working path if successful, the empty path on error.
     SDFORMAT_VISIBLE
-    path_string current_path();
+    std::string current_path();
   }
 }
 

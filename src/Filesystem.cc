@@ -15,6 +15,7 @@
  *
  */
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -36,7 +37,7 @@ namespace filesystem
 {
 #ifndef _WIN32
 //////////////////////////////////////////////////
-bool exists(const path_string &_path)
+bool exists(const std::string &_path)
 {
   struct stat path_stat;
 
@@ -44,7 +45,7 @@ bool exists(const path_string &_path)
 }
 
 //////////////////////////////////////////////////
-bool is_directory(const path_string &_path)
+bool is_directory(const std::string &_path)
 {
   struct stat path_stat;
 
@@ -57,21 +58,21 @@ bool is_directory(const path_string &_path)
 }
 
 //////////////////////////////////////////////////
-bool create_directory(const path_string &_path)
+bool create_directory(const std::string &_path)
 {
   return ::mkdir(_path.c_str(), S_IRWXU|S_IRWXG|S_IRWXO) == 0;
 }
 
 //////////////////////////////////////////////////
-path_string const separator(const path_string &_p)
+std::string const separator(const std::string &_p)
 {
   return _p + "/";
 }
 
 //////////////////////////////////////////////////
-path_string current_path()
+std::string current_path()
 {
-  path_string cur;
+  std::string cur;
 
   for (int32_t path_max = 128;; path_max *= 2)  // loop 'til buffer large enough
   {
@@ -86,7 +87,7 @@ path_string current_path()
     }
     else
     {
-      cur = path_string(buf.data());
+      cur = std::string(buf.data());
       break;
     }
   }
@@ -94,16 +95,30 @@ path_string current_path()
 }
 #else  // Windows
 //////////////////////////////////////////////////
-static bool not_found_error(int errval)
+std::wstring widen(const std::string &_str)
 {
-  return errval == ERROR_FILE_NOT_FOUND
-    || errval == ERROR_PATH_NOT_FOUND
-    || errval == ERROR_INVALID_NAME  // "tools/jam/src/:sys:stat.h", "//foo"
-    || errval == ERROR_INVALID_DRIVE  // USB card reader with no card inserted
-    || errval == ERROR_NOT_READY  // CD/DVD drive with no disc inserted
-    || errval == ERROR_INVALID_PARAMETER  // ":sys:stat.h"
-    || errval == ERROR_BAD_PATHNAME  // "//nosuch" on Win64
-    || errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
+  std::wostringstream wstm;
+  const std::ctype<wchar_t> &ctfacet =
+    std::use_facet<std::ctype<wchar_t> >(wstm.getloc());
+  for (size_t i = 0; i < _str.size(); ++i)
+  {
+    wstm << ctfacet.widen(_str[i]);
+  }
+
+  return wstm.str();
+}
+
+//////////////////////////////////////////////////
+static bool not_found_error(int _errval)
+{
+  return _errval == ERROR_FILE_NOT_FOUND
+    || _errval == ERROR_PATH_NOT_FOUND
+    || _errval == ERROR_INVALID_NAME  // "tools/jam/src/:sys:stat.h", "//foo"
+    || _errval == ERROR_INVALID_DRIVE  // USB card reader with no card inserted
+    || _errval == ERROR_NOT_READY  // CD/DVD drive with no disc inserted
+    || _errval == ERROR_INVALID_PARAMETER  // ":sys:stat.h"
+    || _errval == ERROR_BAD_PATHNAME  // "//nosuch" on Win64
+    || _errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
 }
 
 //////////////////////////////////////////////////
@@ -172,16 +187,16 @@ typedef struct _REPARSE_DATA_BUFFER {
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
 //////////////////////////////////////////////////
-HANDLE create_file_handle(const path_string &_path, DWORD _dwDesiredAccess,
+HANDLE create_file_handle(const std::string &_path, DWORD _dwDesiredAccess,
                           DWORD _dwShareMode,
                           LPSECURITY_ATTRIBUTES _lpSecurityAttributes,
                           DWORD _dwCreationDisposition,
                           DWORD _dwFlagsAndAttributes,
                           HANDLE _hTemplateFile)
 {
-  return ::CreateFileW(_path.c_str(), _dwDesiredAccess, _dwShareMode,
-                       _lpSecurityAttributes, _dwCreationDisposition,
-                       _dwFlagsAndAttributes,
+  return ::CreateFileW(widen(_path).c_str(), _dwDesiredAccess,
+                       _dwShareMode, _lpSecurityAttributes,
+                       _dwCreationDisposition, _dwFlagsAndAttributes,
                        _hTemplateFile);
 }
 
@@ -190,7 +205,7 @@ HANDLE create_file_handle(const path_string &_path, DWORD _dwDesiredAccess,
 #endif
 
 //////////////////////////////////////////////////
-bool is_reparse_point_a_symlink(const path_string &_path)
+bool is_reparse_point_a_symlink(const std::string &_path)
 {
   handle_wrapper h(create_file_handle(_path, FILE_READ_EA,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -206,14 +221,15 @@ bool is_reparse_point_a_symlink(const path_string &_path)
 
   // Query the reparse data
   DWORD dwRetLen;
-  BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, nullptr, 0,
-                                  buf.data(), buf.size(), &dwRetLen, nullptr);
+  BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, nullptr,
+                                  0, buf.data(), (DWORD)buf.size(),
+                                  &dwRetLen, nullptr);
   if (!result)
   {
     return false;
   }
 
-  return reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf)->ReparseTag
+  return reinterpret_cast<const REPARSE_DATA_BUFFER*>(&buf[0])->ReparseTag
     == IO_REPARSE_TAG_SYMLINK
     // Issue 9016 asked that NTFS directory junctions be recognized as
     // directories.  That is equivalent to recognizing them as symlinks, and
@@ -223,14 +239,14 @@ bool is_reparse_point_a_symlink(const path_string &_path)
     // Directory junctions are very similar to symlinks, but have some
     // performance and other advantages over symlinks. They can be created from
     // the command line with "mklink /j junction-name target-path".
-    || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf)->ReparseTag
+    || reinterpret_cast<const REPARSE_DATA_BUFFER*>(&buf[0])->ReparseTag
     == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
 }
 
 //////////////////////////////////////////////////
-bool exists(const path_string &_path)
+bool exists(const std::string &_path)
 {
-  DWORD attr(::GetFileAttributesW(_path.c_str()));
+  DWORD attr(::GetFileAttributesW(widen(_path).c_str()));
   if (attr == 0xFFFFFFFF)
   {
     return process_status_failure();
@@ -243,7 +259,7 @@ bool exists(const path_string &_path)
   {
     handle_wrapper h(
       create_file_handle(
-        _path.c_str(),
+        _path,
         0,  // dwDesiredAccess; attributes only
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
         0,  // lpSecurityAttributes
@@ -265,9 +281,9 @@ bool exists(const path_string &_path)
 }
 
 //////////////////////////////////////////////////
-bool is_directory(const path_string &_path)
+bool is_directory(const std::string &_path)
 {
-  DWORD attr(::GetFileAttributesW(_path.c_str()));
+  DWORD attr(::GetFileAttributesW(widen(_path).c_str()));
   if (attr == 0xFFFFFFFF)
   {
     return process_status_failure();
@@ -280,7 +296,7 @@ bool is_directory(const path_string &_path)
   {
     handle_wrapper h(
       create_file_handle(
-        _path.c_str(),
+        _path,
         0,  // dwDesiredAccess; attributes only
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
         0,  // lpSecurityAttributes
@@ -303,19 +319,19 @@ bool is_directory(const path_string &_path)
 }
 
 //////////////////////////////////////////////////
-bool create_directory(const path_string &_path)
+bool create_directory(const std::string &_path)
 {
-  return ::CreateDirectoryW(_path.c_str(), 0) != 0;
+  return ::CreateDirectoryW(widen(_path).c_str(), 0) != 0;
 }
 
 //////////////////////////////////////////////////
-path_string const separator(const path_string &_p)
+std::string const separator(const std::string &_p)
 {
   return _p + "\\";
 }
 
 //////////////////////////////////////////////////
-path_string current_path()
+std::string current_path()
 {
   DWORD sz;
   if ((sz = ::GetCurrentDirectoryW(0, nullptr)) == 0)
@@ -328,12 +344,11 @@ path_string current_path()
   if (::GetCurrentDirectoryW(sz, buf.data()) == 0)
   {
     // error
-    return path_string("");
+    return std::string("");
   }
   else
   {
-    path_string ret = path_string(buf.data());
-    return ret;
+    return std::string(buf.data());
   }
 }
 
