@@ -152,6 +152,8 @@ namespace sdf
       /// \brief Private variable to indicate whether the iterator has reached
       ///        the end.
       public: bool end;
+
+      public: std::string test;
     };
   }
 }
