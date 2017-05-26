@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include "sdf/sdf_config.h"
+#include "sdf/Filesystem.hh"
 #include "sdf/ign.hh"
 #include "sdf/parser.hh"
 #include "sdf/system_util.hh"
@@ -25,13 +26,13 @@
 //////////////////////////////////////////////////
 extern "C" SDFORMAT_VISIBLE void cmdCheck(const char *_path)
 {
-  sdf::SDFPtr sdf(new sdf::SDF());
-
-  if (!sdf::init(sdf))
+  if (!sdf::filesystem::exists(_path))
   {
-    std::cerr << "ERROR: SDF parsing the xml failed" << std::endl;
+    std::cerr << "Error: File [" << _path << "] does not exist" << std::endl;
     return;
   }
+
+  sdf::SDFPtr sdf(new sdf::SDF());
 
   if (!sdf::readFile(_path, sdf))
   {
