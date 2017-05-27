@@ -137,3 +137,15 @@ if (NOT DEFINED IGNITION-MATH_LIBRARY_DIRS AND NOT DEFINED IGNITION-MATH_INCLUDE
     message(STATUS "Looking for ignition-math${IGNITION-MATH_REQUIRED_MAJOR_VERSION}-config.cmake - found")
   endif()
 endif()
+
+################################################################################
+# GFlags
+find_library(gflags_LIBRARIES NAMES gflags)
+find_path(gflags_INCLUDE_DIRS gflags/gflags.h ENV CPATH)
+if (NOT gflags_LIBRARIES OR NOT gflags_INCLUDE_DIRS)
+  BUILD_ERROR("Missing: GFlags (libgflags-dev)")
+else()
+  message (STATUS "Found GFlags")
+  include_directories(${gflags_INCLUDE_DIRS})
+  link_directories(${gflags_LIBRARY_DIRS})
+endif()
