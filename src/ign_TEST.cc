@@ -24,7 +24,8 @@
 #include "test_config.h"
 
 /////////////////////////////////////////////////
-std::string custom_exec_str(std::string _cmd)
+std::string custom_exec_str(std::string _cmd,
+                            const bool _expectedSuccess)
 {
   _cmd += " 2>&1";
   FILE *pipe = popen(_cmd.c_str(), "r");
@@ -41,7 +42,10 @@ std::string custom_exec_str(std::string _cmd)
       result += buffer;
   }
 
-  pclose(pipe);
+  auto returnCode = pclose(pipe);
+  EXPECT_EQ(_expectedSuccess, returnCode == 0)
+    << "result of command: " << _cmd;
+
   return result;
 }
 
@@ -57,7 +61,7 @@ TEST(check, SDF)
 
     // Check box_plane_low_friction_test.world
     std::string output =
-      custom_exec_str(std::string("ign sdf -k ") + path);
+      custom_exec_str(std::string("ign sdf -k ") + path, true);
     EXPECT_EQ(output, "Valid.\n");
   }
 
@@ -67,7 +71,7 @@ TEST(check, SDF)
 
     // Check box_bad_test.world
     std::string output =
-      custom_exec_str(std::string("ign sdf -k ") + path);
+      custom_exec_str(std::string("ign sdf -k ") + path, false);
     EXPECT_TRUE(output.find("Unable to set value") != std::string::npos);
   }
 }
