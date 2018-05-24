@@ -36,3 +36,5 @@ sdformat supported cmake parameters at configuring time:
 To uninstall the software installed with the previous steps:
  - cd build/
  - sudo make uninstall
+
+small change to test ABI tests from forks with different heads
