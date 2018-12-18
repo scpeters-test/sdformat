@@ -54,7 +54,7 @@ namespace sdf
     /// \return Errors, which is a vector of Error objects. Each Error includes
     /// an error code and message. An empty vector indicates no error.
     public: Errors Load(ElementPtr _sdf,
-                std::shared_ptr<FrameGraph> _frameGraph);
+                std::shared_ptr<FrameGraph> _frameGraph = nullptr);
 
     /// \brief Get the name of the collision.
     /// The name of the collision must be unique within the scope of a Link.
