@@ -399,9 +399,9 @@ bool Model::SetPoseFrame(const std::string &_frame)
 }
 
 /////////////////////////////////////////////////
-const Link *Model::LinkByName(const std::string &_name) const
+Link *Model::LinkByName(const std::string &_name) const
 {
-  for (auto const &l : this->dataPtr->links)
+  for (auto &l : this->dataPtr->links)
   {
     if (l.Name() == _name)
     {
