@@ -354,13 +354,38 @@ const std::string &Link::PoseFrame() const
 }
 
 /////////////////////////////////////////////////
-void Link::SetPose(const ignition::math::Pose3d &_pose)
+bool Link::SetPose(const ignition::math::Pose3d &_pose)
 {
+  const ignition::math::graph::VertexRef_M<PoseWithFrameName> frameVertices =
+      this->dataPtr->frameGraph->Vertices(this->PoseFrame());
+
+  if (frameVertices.size() != 1)
+    return false;
+
+  using Matrix4d = ignition::math::Matrix4d;
+  ignition::math::graph::DirectedEdge<Matrix4d> &edgeFromParent =
+        this->dataPtr->frameGraph->EdgeFromVertices(
+            frameVertices.begin()->first, this->dataPtr->frameVertexId);
+  if (edgeFromParent.Id() ==
+      ignition::math::graph::DirectedEdge<Matrix4d>::NullEdge.Id())
+    return false;
+
+  ignition::math::graph::DirectedEdge<Matrix4d> &edgeToParent =
+        this->dataPtr->frameGraph->EdgeFromVertices(
+            this->dataPtr->frameVertexId, frameVertices.begin()->first);
+  if (edgeToParent.Id() ==
+      ignition::math::graph::DirectedEdge<Matrix4d>::NullEdge.Id())
+    return false;
+
+  this->dataPtr->pose = _pose;
   // Store the pose data in the frame graph vertex
   this->dataPtr->frameGraph->VertexFromId(
       this->dataPtr->frameVertexId).Data().first = _pose;
-  // TODO: update the edges to parent
-  this->dataPtr->pose = _pose;
+  // Update the edges
+  edgeFromParent.Data() = Matrix4d(_pose);
+  edgeToParent.Data() = Matrix4d(_pose.Inverse());
+
+  return true;
 }
 
 /////////////////////////////////////////////////

@@ -162,7 +162,8 @@ namespace sdf
     /// \brief Set the pose of the link.
     /// \sa const ignition::math::Pose3d &Pose() const
     /// \param[in] _pose The new link pose.
-    public: void SetPose(const ignition::math::Pose3d &_pose);
+    /// \return True if the pose was set, false otherwise.
+    public: bool SetPose(const ignition::math::Pose3d &_pose);
 
     /// \copydoc Model::PoseFrame() const
     public: const std::string &PoseFrame() const;
