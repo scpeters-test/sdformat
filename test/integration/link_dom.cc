@@ -630,5 +630,15 @@ TEST(DOMLink, LinkChain)
   EXPECT_EQ(Pose3d(-1, -2, -3, 0, 0, 0), linkTwo->PoseInFrame("frame_in_two"));
   EXPECT_EQ(Pose3d(-1, 0, -3, 0, 0, 0), linkThree->PoseInFrame("frame_in_two"));
   EXPECT_EQ(Pose3d(-1, 0, -8, 0, 0, 0), linkFour->PoseInFrame("frame_in_two"));
+
+  // test changing the pose information programmatically
+  // need a non-const pointer to link
+  sdf::Link *link1 = model->LinkByName("one");
+  ASSERT_TRUE(link1 != nullptr);
+  const ignition::math::Pose3d newPose(4, 5, 6, .1, 0, 0);
+  link1->SetPose(newPose);
+  EXPECT_EQ(newPose, link1->Pose());
+  EXPECT_EQ(newPose, link1->PoseInFrame());
+  EXPECT_EQ(newPose, link1->PoseInFrame(model->Name()));
 }
 
