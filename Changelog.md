@@ -1,3 +1,10 @@
+## SDFormat 9.0
+
+### SDFormat 9.X.X (201X-XX-XX)
+
+1. Added sdf specification version 1.7.
+   * [Pull request 512](https://bitbucket.org/osrf/sdformat/pull-requests/512)
+
 ## SDFormat 8.0
 
 ### SDFormat 8.X.X (201X-XX-XX)
