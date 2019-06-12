@@ -51,6 +51,21 @@
     </element>
   </element> <!-- End depth_camera -->
 
+  <element name="rgbd_camera" required="0">
+    <description>Depth camera parameters</description>
+    <element name="depth_clip" required="1">
+      <description>The near and far clip planes for the depth sensor. Objects closer or farther than these planes are not represented in the pointcloud.</description>
+
+      <element name="near" type="double" default=".1" min="0.0" required="1">
+        <description>Near clipping plane</description>
+      </element>
+
+      <element name="far" type="double" default="5" min="0.0" required="1">
+        <description>Far clipping plane</description>
+      </element>
+    </element> <!-- End Clip -->
+  </element> <!-- End depth_camera -->
+
   <element name="noise" required="0">
     <description>The properties of the noise model that should be applied to generated images</description>
     <element name="type" type="string" default="gaussian" required="1">
