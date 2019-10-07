@@ -2,6 +2,8 @@
 
 ### SDFormat 8.X.X (201X-XX-XX)
 
+### SDFormat 8.4.0 (2019-10-09)
+
 1. Element: don't print unset attributes.
     * [Pull request 571](https://bitbucket.org/osrf/sdformat/pull-requests/571)
 
