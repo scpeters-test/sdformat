@@ -14,15 +14,17 @@
  * limitations under the License.
  *
 */
-#ifndef _SDF_CONVERTER_HH_
-#define _SDF_CONVERTER_HH_
-
-#include <tinyxml.h>
+#ifndef SDF_CONVERTER_HH_
+#define SDF_CONVERTER_HH_
 
 #include <string>
 
 #include <sdf/sdf_config.h>
 #include "sdf/system_util.hh"
+
+// Forward declarations.
+class TiXmlDocument;
+class TiXmlElement;
 
 namespace sdf
 {

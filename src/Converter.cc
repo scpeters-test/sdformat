@@ -15,6 +15,8 @@
  *
  */
 
+#include <tinyxml.h>
+
 #include <algorithm>
 #include <map>
 #include <set>

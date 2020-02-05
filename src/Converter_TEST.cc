@@ -16,6 +16,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <tinyxml.h>
 #include <sstream>
 #include "sdf/Exception.hh"
 #include "sdf/Converter.hh"
